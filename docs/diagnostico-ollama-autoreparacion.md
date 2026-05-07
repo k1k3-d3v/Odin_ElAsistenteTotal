@@ -169,6 +169,8 @@ El informe diario se envía siempre e incluye:
 - fuentes revisadas/visitadas;
 - fuentes de memoria procesadas recientemente.
 
+El formato se actualizó a HTML de Telegram para mejorar la lectura en móvil: encabezado de estado general, secciones por bloques, severidades con iconos y fuentes en formato monoespaciado.
+
 El modo alerta solo envía mensaje si hay problemas `warning` o `critical` y si la firma del problema ha cambiado respecto al último aviso, evitando spam repetitivo.
 
 ## Cron corregido

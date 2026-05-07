@@ -24,3 +24,28 @@ Las decisiones de diseño se documentarán con especial atención a las herramie
 
 \section{Seguridad, privacidad y calidad}
 El diseño sigue una lógica de mínima exposición: servicios internos no publicados directamente, acceso remoto mediante túneles cifrados, separación por redes, credenciales gestionadas con cuidado y copias de seguridad verificables. La calidad se medirá por estabilidad de servicios, trazabilidad de flujos, reproducibilidad de despliegues y cumplimiento de casos de uso.
+
+\section{Acceso remoto: OpenVPN, WireGuard y Tailscale}
+Uno de los requisitos transversales de Odín es poder acceder al servidor desde fuera del hogar sin exponer directamente los servicios internos a Internet. Durante la planificación se contemplaron alternativas clásicas como OpenVPN y WireGuard. OpenVPN es una solución madura y flexible basada en SSL/TLS, con soporte para certificados, usuarios, reglas y despliegues complejos \cite{openvpnHowTo,openvpnManual}. Su principal inconveniente para este proyecto es la carga de administración: certificados, perfiles, puertos, reglas de red y mantenimiento operativo.
+
+WireGuard representa una alternativa más moderna, simple y eficiente. Su diseño se apoya en criptografía actual y en el concepto de \textit{cryptokey routing}, asociando claves públicas con direcciones permitidas dentro del túnel \cite{wireguardDocs,wireguardWhitepaper}. Para Odín era una opción técnicamente muy atractiva, pero seguía exigiendo resolver manualmente aspectos prácticos: direccionamiento, claves, peers, exposición o reenvío de puertos, DNS dinámico y comportamiento ante redes cambiantes.
+
+La implementación final adopta Tailscale. Tailscale utiliza WireGuard como protocolo criptográfico subyacente, pero añade una capa de coordinación, identidad, NAT traversal, DNS interno y gestión de dispositivos mediante una red privada denominada \textit{tailnet} \cite{tailscaleConcepts,tailscaleConnectivity}. Esta decisión se tomó por motivos operativos: la solución previa basada en DuckDNS resultó inestable en determinados momentos, especialmente cuando el servicio DNS dinámico fallaba o se degradaba. Tailscale elimina la dependencia directa de DuckDNS, evita abrir puertos y permite acceder al servidor por VPN de forma más robusta.
+
+\begin{table}[H]
+  \centering
+  \caption{Comparativa de alternativas de acceso remoto}
+  \label{tab:vpn-comparativa}
+  \begin{tabularx}{\textwidth}{lXXX}
+    \toprule
+    Criterio & OpenVPN & WireGuard & Tailscale \\
+    \midrule
+    Base técnica & SSL/TLS, certificados y perfiles & Protocolo moderno con claves públicas & WireGuard más coordinación e identidad \\
+    Configuración & Alta & Media & Baja \\
+    NAT traversal & Requiere diseño de red o puerto accesible & Requiere diseño manual & Integrado con conexión directa o relays \\
+    DNS/dispositivos & Manual & Manual & MagicDNS y tailnet \cite{tailscaleMagicDNS} \\
+    Mantenimiento & Alto & Medio & Bajo \\
+    Encaje en Odín & Potente pero pesado & Eficiente pero más manual & Elegido por robustez y simplicidad \\
+    \bottomrule
+  \end{tabularx}
+\end{table}

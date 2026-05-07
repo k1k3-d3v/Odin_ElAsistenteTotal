@@ -18,6 +18,7 @@ import subprocess
 import sys
 import urllib.parse
 import urllib.request
+from html import escape as html_escape
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -412,6 +413,7 @@ def telegram_send(token: str, chat_id: str, message: str) -> None:
         data = urllib.parse.urlencode({
             "chat_id": chat_id,
             "text": chunk,
+            "parse_mode": "HTML",
             "disable_web_page_preview": "true",
         }).encode("utf-8")
         req = urllib.request.Request(url, data=data, method="POST")
@@ -419,21 +421,40 @@ def telegram_send(token: str, chat_id: str, message: str) -> None:
             response.read()
 
 
+def sev_icon(severity: str) -> str:
+    return {
+        "critical": "🔴",
+        "warning": "🟠",
+        "info": "🔵",
+    }.get(severity, "⚪")
+
+
+def short_line(text: str, limit: int = 145) -> str:
+    clean = " ".join(str(text).split())
+    if len(clean) <= limit:
+        return clean
+    return clean[: limit - 1] + "…"
+
+
 def format_telegram_report(report: dict[str, Any], daily: bool) -> str:
     findings = report.get("findings", [])
     critical = [f for f in findings if f["severity"] == "critical"]
     warnings = [f for f in findings if f["severity"] == "warning"]
     infos = [f for f in findings if f["severity"] == "info"]
-    title = "📋 Informe diario de Odín" if daily else "⚠️ Alerta de Odín"
+    title = "📋 <b>Informe diario de Odín</b>" if daily else "⚠️ <b>Alerta de Odín</b>"
+    health = "🟢 OK"
+    if critical:
+        health = "🔴 CRÍTICO"
+    elif warnings:
+        health = "🟠 ATENCIÓN"
     lines = [
         title,
-        f"Fecha UTC: {report['timestamp']}",
-        f"Host: {report['hostname']}",
+        f"Estado general: <b>{health}</b>",
+        f"Fecha UTC: <code>{html_escape(report['timestamp'])}</code>",
+        f"Host: <code>{html_escape(report['hostname'])}</code>",
         "",
-        "Resumen:",
-        f"- Críticos: {len(critical)}",
-        f"- Avisos: {len(warnings)}",
-        f"- Info: {len(infos)}",
+        "🧭 <b>Resumen</b>",
+        f"🔴 Críticos: <b>{len(critical)}</b> · 🟠 Avisos: <b>{len(warnings)}</b> · 🔵 Info: <b>{len(infos)}</b>",
     ]
 
     ollama = report["checks"]["ollama"]
@@ -446,45 +467,53 @@ def format_telegram_report(report: dict[str, Any], daily: bool) -> str:
 
     lines += [
         "",
-        "Estado:",
-        f"- Ollama: service={'OK' if ollama['service_active'] else 'KO'}, api={'OK' if ollama['api_ok'] else 'KO'}",
-        f"- GPU: use={gpu.get('gpu_use_percent')}%, vram={gpu.get('vram_allocated_percent')}%, temp={gpu.get('temperatures_c')}",
-        f"- Docker críticos problemáticos: {len(docker.get('problem_containers', []))}",
-        f"- Cron rutas rotas actuales: {len(cron.get('missing_paths', []))}",
-        f"- Disco: {disk.get('raw', '').replace(chr(10), ' | ')}",
+        "🫀 <b>Estado operativo</b>",
+        f"• Ollama: servicio <b>{'OK' if ollama['service_active'] else 'KO'}</b>, API <b>{'OK' if ollama['api_ok'] else 'KO'}</b>",
+        f"• GPU: uso <b>{gpu.get('gpu_use_percent')}%</b>, VRAM <b>{gpu.get('vram_allocated_percent')}%</b>, temp <code>{html_escape(str(gpu.get('temperatures_c')))}</code>",
+        f"• Docker críticos problemáticos: <b>{len(docker.get('problem_containers', []))}</b>",
+        f"• Cron rutas rotas actuales: <b>{len(cron.get('missing_paths', []))}</b>",
     ]
+    disk_raw = disk.get("raw", "").splitlines()
+    if len(disk_raw) > 1:
+        lines.append("• Disco:")
+        for row in disk_raw[1:]:
+            lines.append(f"  <code>{html_escape(short_line(row, 115))}</code>")
     if qdrant:
         lines.append(
-            f"- Qdrant memoria_ia: {'OK' if qdrant.get('available') else 'KO'}, points={qdrant.get('points_count')}, vectors={qdrant.get('vectors_count')}"
+            f"• Qdrant <code>memoria_ia</code>: <b>{'OK' if qdrant.get('available') else 'KO'}</b>, puntos={qdrant.get('points_count')}, vectores={qdrant.get('vectors_count')}"
         )
 
     if findings:
-        lines += ["", "Qué hay de malo:"]
-        for item in findings[:18]:
-            lines.append(f"- [{item['severity']}] {item['title']}: {item['detail']}")
+        lines += ["", "🧯 <b>Qué hay de malo</b>"]
+        for item in findings[:16]:
+            icon = sev_icon(item["severity"])
+            lines.append(
+                f"{icon} <b>{html_escape(item['title'])}</b>\n"
+                f"   <code>{html_escape(short_line(item['detail'], 155))}</code>"
+            )
     else:
-        lines += ["", "Qué hay de malo:", "- Nada crítico detectado."]
+        lines += ["", "🧯 <b>Qué hay de malo</b>", "🟢 Nada crítico detectado."]
 
     recent = ingestion.get("recent_relevant_lines", [])
     processed = ingestion.get("processed_sources", [])
-    lines += ["", "Qué hay de nuevo:"]
+    lines += ["", "🆕 <b>Qué hay de nuevo</b>"]
     if recent:
-        lines.extend(f"- {line}" for line in recent[-12:])
+        lines.extend(f"• {html_escape(short_line(line, 160))}" for line in recent[-10:])
     else:
-        lines.append("- Sin actividad reciente detectada en logs de ingesta.")
+        lines.append("• Sin actividad reciente detectada en logs de ingesta.")
 
-    lines += ["", "Fuentes revisadas/visitadas:"]
+    lines += ["", "🔎 <b>Fuentes revisadas/visitadas</b>"]
     for source in report.get("report_sources", []):
-        lines.append(f"- {source}")
+        lines.append(f"• <code>{html_escape(source)}</code>")
     if processed:
-        lines += ["", "Fuentes de memoria procesadas recientemente:"]
-        lines.extend(f"- {src}" for src in processed[-15:])
+        lines += ["", "🧠 <b>Fuentes de memoria procesadas recientemente</b>"]
+        lines.extend(f"• <code>{html_escape(short_line(src, 150))}</code>" for src in processed[-12:])
 
     if report.get("actions"):
-        lines += ["", "Acciones ejecutadas:"]
+        lines += ["", "🛠️ <b>Acciones ejecutadas</b>"]
         for action in report["actions"]:
             rc = action.get("result", {}).get("returncode")
-            lines.append(f"- {action.get('action')} rc={rc}")
+            lines.append(f"• <code>{html_escape(str(action.get('action')))}</code> rc={rc}")
     return "\n".join(lines)
 
 

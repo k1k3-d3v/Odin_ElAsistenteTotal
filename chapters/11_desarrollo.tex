@@ -15,6 +15,34 @@ Esta sección recogerá la configuración real del entorno: sistema operativo, e
 \section{Fase 4: domótica e interacción}
 \placeholder{Describir Home Assistant, dispositivos integrados, satélites de voz, automatizaciones domésticas y casos de interacción natural.}
 
+\section{Fase 4.1: voz, STT y TTS}
+La capa de voz ha sido una de las partes más complejas del proyecto. La entrada de voz requiere convertir audio en texto de forma fiable (STT/ASR), mientras que la salida exige generar una voz suficientemente natural y rápida (TTS). En un asistente cotidiano, la calidad de esta capa determina si el sistema se siente vivo o torpe: una respuesta técnicamente correcta pierde valor si tarda demasiado o si la voz resulta incómoda.
+
+Para STT se han probado varias aproximaciones, incluyendo Whisper, faster-whisper, Wyoming Whisper y un servicio ASR propio basado en ONNX. Esta diversidad responde a la necesidad de equilibrar latencia, precisión, consumo y facilidad de integración con Home Assistant y Open WebUI. En el estado actual conviven servicios de voz orientados a distintas pruebas: \texttt{faster-whisper-server}, \texttt{wyoming-whisper} y \texttt{odin-asr}.
+
+La síntesis de voz ha sido todavía más problemática. El objetivo era conseguir una voz realista y rápida, pero la GPU AMD ha limitado muchas opciones por falta de soporte ROCm maduro. Se probaron alternativas como Piper, Kokoro, Chatterbox y PocketTTS. Piper se mantiene como opción estable para el asistente físico o móvil: no es la voz más realista, pero responde rápido y se integra bien. Chatterbox fue una de las pocas opciones que llegó a funcionar sobre GPU, pero su latencia resultó demasiado alta para interacción conversacional. PocketTTS quedó como línea actual de experimentación para una interfaz compatible con estilo OpenAI.
+
+\begin{table}[H]
+  \centering
+  \caption{Resumen de pruebas de voz}
+  \label{tab:voz-pruebas}
+  \begin{tabularx}{\textwidth}{l l X}
+    \toprule
+    Herramienta & Tipo & Resultado \\
+    \midrule
+    Whisper / faster-whisper & STT & Precisión alta, con pruebas en CPU y variantes de servidor. \\
+    Wyoming Whisper & STT & Útil por integración con el ecosistema Home Assistant/Wyoming. \\
+    Odin ONNX ASR & STT & Servicio propio para experimentar con inferencia y control local. \\
+    Piper & TTS & Estable y rápido; usado para el asistente físico/móvil. \\
+    Kokoro & TTS & Probado, pero no consolidado como solución final. \\
+    Chatterbox & TTS & Funcionó en GPU, pero con latencia excesiva. \\
+    PocketTTS & TTS & Línea actual de prueba como servidor compatible con estilo OpenAI. \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+Este proceso ilustra una diferencia importante entre una demo y un sistema personal real: no basta con que una herramienta funcione una vez. Debe ser mantenible, rápida, compatible con el hardware disponible y suficientemente robusta para integrarse en rutinas diarias.
+
 \section{Fase 5: nube privada y memoria}
 \placeholder{Explicar servicios de almacenamiento, notas, documentos, calendarios, RAG, embeddings, base vectorial, indexación y recuperación de conocimiento.}
 
