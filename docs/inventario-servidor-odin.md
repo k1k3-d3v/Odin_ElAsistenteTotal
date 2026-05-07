@@ -121,6 +121,32 @@ Contenedores detenidos observados:
 | 11235 | crawl4ai |
 | 49112 | PocketTTS |
 
+## Open WebUI Tools
+
+Open WebUI contiene varias tools que convierten el chat en una interfaz operativa sobre Odín. Se han identificado desde la tabla `tool` de la base SQLite de Open WebUI, sin extraer código ni secretos.
+
+| Tool | Función |
+| --- | --- |
+| `buscar_fotos` | Buscar fotos en Immich |
+| `guardar_nota` | Guardar notas, resúmenes y documentos en Nextcloud vía n8n |
+| `recordatorio` | Crear recordatorios en calendario de Home Assistant |
+| `lista_de_la_compra` | Añadir productos a la lista de compra de Home Assistant |
+| `buscar_nextcloud` | Buscar en notas de Nextcloud |
+| `salud_del_sistema` | Consultar salud del sistema |
+| `vigilancia_frigate` | Consultas/acciones sobre vigilancia Frigate |
+| `qr_code_generator_for_open_webui` | Generar códigos QR desde el chat |
+| `home_assistant` | Control de domótica, calendario, compra y salud desde Home Assistant |
+| `guardar_transcripcion_de_video_o_pagina_web` | Lectura de webs y transcripciones de YouTube con Crawl4AI |
+| `home_assistant_connector` | Puente con Home Assistant Assist |
+
+## Ollama
+
+Ollama está instalado en `/usr/local/bin/ollama` y registrado como servicio systemd (`ollama.service`). En la inspección estaba parado, pero los logs muestran uso previo con GPU AMD/ROCm y un runner terminado por `killed`, dato útil para documentar problemas de VRAM o estabilidad del stack AMD.
+
+## Acceso remoto
+
+El diseño inicial mencionaba WireGuard, pero el uso actual descrito por el autor se basa en Tailscale/VPN por estabilidad práctica. La razón es evitar los problemas sufridos con DuckDNS, especialmente en momentos de caída o degradación del servicio. Para la memoria, Tailscale debe presentarse como una solución VPN basada en WireGuard que reduce exposición pública y complejidad operativa.
+
 ## Automatizaciones cron
 
 ```cron
