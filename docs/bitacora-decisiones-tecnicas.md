@@ -114,6 +114,8 @@ Esto debe conectarse con los riesgos previstos:
 - necesidad de gestionar qué modelos quedan residentes;
 - posible fallback o reinicio controlado.
 
+El 2026-05-07 se levantó de nuevo con `systemctl start ollama` y la API respondió correctamente en `/api/tags`. Se creó además `odin_autorepair.py`, una herramienta conservadora que diagnostica Ollama, GPU, Docker y disco, y que solo arranca Ollama automáticamente cuando está inactivo y se ejecuta con `--repair`.
+
 ## Estado general
 
 El servidor está en una fase experimental avanzada, no en una fase limpia de producción. Hay piezas en uso, piezas descartadas y pruebas en cuarentena. Esto no es un defecto para la memoria; al contrario, permite explicar el proceso real de construcción de Odín:

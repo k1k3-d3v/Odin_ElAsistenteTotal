@@ -6,8 +6,12 @@ La validación se organizará por capas y por casos de uso. Primero se comprobar
 \section{Pruebas funcionales}
 \placeholder{Tabla RF vs prueba: interacción natural, inferencia local, ingesta, RAG, domótica, alertas, acceso remoto y copias de seguridad.}
 
+Como primera prueba de autoreparabilidad se validó el flujo de diagnóstico de Ollama. El servicio se encontraba inicialmente inactivo, se arrancó mediante systemd y se comprobó la disponibilidad de la API local consultando \texttt{/api/tags}. Posteriormente se ejecutó \texttt{odin\_autorepair.py --repair}; al detectar que Ollama estaba activo y la API respondía, la herramienta no realizó ninguna acción destructiva ni reinicios innecesarios.
+
 \section{Pruebas no funcionales}
 \placeholder{Medir latencia, consumo, uso de VRAM/RAM, estabilidad de contenedores, recuperación tras fallo, exposición de puertos, tiempos de backup y experiencia de uso.}
+
+La prueba también registró señales útiles para evaluar estabilidad: uso de GPU, porcentaje de VRAM asignada, temperaturas, estado de contenedores relevantes y ocupación de disco. En la ejecución observada, \texttt{rocm-smi} informó temperaturas en torno a 38--40 grados y ausencia de procesos KFD activos tras el arranque del servicio, mientras que Docker no presentaba contenedores críticos en estado problemático.
 
 \section{Resultados obtenidos}
 \placeholder{Incluir capturas de paneles, logs de flujos, respuestas del modelo, uso de recursos, pruebas de automatización y comparativas entre modelos o configuraciones.}

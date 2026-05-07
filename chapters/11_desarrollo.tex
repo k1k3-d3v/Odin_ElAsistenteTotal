@@ -19,7 +19,11 @@ Esta sección recogerá la configuración real del entorno: sistema operativo, e
 \placeholder{Explicar servicios de almacenamiento, notas, documentos, calendarios, RAG, embeddings, base vectorial, indexación y recuperación de conocimiento.}
 
 \section{Fase 6: seguridad, acceso remoto y monitorización}
-\placeholder{Detallar VPN, proxy inverso si aplica, certificados, segmentación, alertas, dashboards, métricas, healthchecks, limpieza de caché y autoreparación.}
+Dentro de esta fase se incorpora una primera herramienta de autoreparabilidad para Odín. El objetivo no es reiniciar servicios de forma indiscriminada, sino diagnosticar el estado del ecosistema y actuar solo cuando la reparación es segura. La herramienta \texttt{odin\_autorepair.py} comprueba el estado de \texttt{ollama.service}, la disponibilidad de la API local de Ollama, eventos recientes en \texttt{journalctl}, señales de presión en AMDGPU, estado de contenedores principales, métricas de GPU mediante \texttt{rocm-smi} y uso de disco.
+
+La política de reparación es conservadora: por defecto solo genera un informe; con el modo \texttt{--repair} arranca Ollama si el servicio está inactivo; y solo reinicia un Ollama activo si se solicita explícitamente. Esta decisión evita que la capa de autoreparación introduzca más riesgo que el fallo original, especialmente en un sistema donde conviven contenedores, GPU compartida y servicios experimentales.
+
+El primer caso de uso real de esta herramienta fue el diagnóstico de una caída parcial de Ollama. Los logs mostraban runners de modelo terminados con \texttt{signal: killed}, avisos de ROCm/\texttt{rocblaslt} relacionados con \texttt{gfx1200}, prompts truncados por superar la ventana de contexto y múltiples eventos de evacuación de colas AMDGPU. El servicio principal, sin embargo, había quedado parado de forma limpia por systemd. Tras arrancarlo de nuevo, la API local respondió correctamente y la herramienta confirmó que no era necesario ejecutar más acciones.
 
 \section{Problemas encontrados}
 \placeholder{Documentar incidencias reales: drivers, memoria, latencia, conflictos entre contenedores, permisos, seguridad, backups, integraciones inestables o recortes de alcance.}
