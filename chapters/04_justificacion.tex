@@ -1,0 +1,27 @@
+\chapter{Justificación y estado del arte}
+
+\section{Estado del arte}
+El espacio tecnológico en el que se sitúa Odín combina varias familias de soluciones: asistentes comerciales, plataformas de domótica, herramientas de autoalojamiento, modelos de lenguaje locales, orquestadores de automatización y sistemas de recuperación de información. Cada una resuelve una parte del problema, pero ninguna ofrece por sí sola la integración buscada: privacidad fuerte, capacidad cognitiva, automatización proactiva y control total de la infraestructura.
+
+\subsection{Asistentes comerciales}
+Amazon Alexa, Google Assistant, Siri y otros asistentes comerciales ofrecen facilidad de uso e integración inmediata con dispositivos de consumo. Sin embargo, su valor se apoya en infraestructuras remotas y ecosistemas cerrados. Para un proyecto centrado en soberanía digital, esta dependencia introduce limitaciones importantes: falta de auditabilidad, cambios unilaterales de servicio, dependencia de conectividad externa y tratamiento opaco de datos sensibles.
+
+\subsection{Autoalojamiento y domótica}
+Plataformas como Home Assistant, Nextcloud, Vaultwarden o servicios equivalentes permiten recuperar control sobre datos y automatizaciones. Su debilidad no es la privacidad, sino la fragmentación. Son piezas sólidas, pero requieren una capa de coordinación que interprete contexto, conecte eventos, active flujos y permita interactuar mediante lenguaje natural.
+
+\subsection{Inferencia local y modelos open-weights}
+La aparición de modelos de lenguaje abiertos, motores de inferencia local y cuantización ha hecho viable ejecutar capacidades de IA generativa en hardware de consumo. Herramientas como Ollama, llama.cpp o servidores compatibles con APIs de chat permiten incorporar LLMs sin depender de proveedores externos. El desafío se desplaza entonces a la ingeniería: gestionar VRAM, latencia, modelos residentes, fallback a CPU, seguridad de los prompts y conexión con datos propios.
+
+\subsection{RAG y memoria personal}
+La generación aumentada por recuperación permite que el asistente no se limite a su conocimiento preentrenado, sino que consulte documentos personales, notas, PDFs o registros internos. En Odín, esta pieza es esencial para convertir el sistema en un cerebro extendido: una interfaz semántica sobre la vida digital del usuario. La memoria no debe ser una conversación almacenada en una nube ajena, sino un índice privado, consultable y verificable.
+
+\subsection{Orquestadores y automatización}
+Herramientas como n8n o Node-RED permiten conectar eventos y servicios mediante flujos visuales o programables \cite{n8nDocs}. En Odín, esta capa actúa como sistema nervioso: recibe entradas, decide rutas, invoca modelos, transforma datos, almacena resultados y dispara acciones. Por eso la memoria dedicará una sección específica a los flujos diseñados, sus nodos principales, errores encontrados y criterios de robustez.
+
+\section{Solucion escogida}
+La solución escogida no consiste en sustituir una plataforma comercial por una única aplicación propia, sino en construir una arquitectura híbrida de servicios autoalojados coordinados por una capa de inteligencia local. Odín combina infraestructura doméstica, contenedores, inferencia local, automatización, acceso remoto seguro, almacenamiento privado y monitorización.
+
+El criterio principal es que cada componente cumpla una función clara y que su integración aporte más que la suma de las partes. La domótica proporciona sentidos y acciones sobre el entorno físico \cite{homeAssistantDocs}. La nube privada actúa como memoria documental \cite{nextcloudDocs}. El LLM local interpreta lenguaje natural y genera respuestas mediante herramientas como Ollama o llama.cpp \cite{ollamaDocs,llamacppRepo}. El RAG conecta la IA con información personal. El orquestador transforma eventos en flujos reproducibles. La VPN y la segmentación protegen el perímetro \cite{wireguardWhitepaper}. La monitorización permite que el sistema observe su propio estado.
+
+\section{Análisis make vs buy}
+La decisión de construir Odín frente a contratar servicios existentes se justifica por tres motivos. El primero es la privacidad: el proyecto trabaja con datos personales, voz, documentos, credenciales y eventos domésticos. El segundo es el aprendizaje: el valor académico reside en diseñar, integrar y validar una arquitectura completa, no en consumir una API cerrada. El tercero es la independencia: un asistente personal debe seguir funcionando aunque cambie una política comercial, desaparezca una suscripción o falle una conexión externa.

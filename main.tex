@@ -1,0 +1,106 @@
+\documentclass[12pt,a4paper,oneside]{report}
+
+% Idioma y codificacion
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish,es-tabla]{babel}
+\usepackage{csquotes}
+
+% Pagina y tipografia
+\usepackage{geometry}
+\geometry{left=3cm,right=2.5cm,top=3cm,bottom=3cm}
+\usepackage{setspace}
+\onehalfspacing
+\usepackage{parskip}
+\usepackage{microtype}
+
+% Elementos graficos y tablas
+\usepackage{graphicx}
+\graphicspath{{figures/}}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{xcolor}
+\usepackage{enumitem}
+
+% Codigo y enlaces
+\usepackage{listings}
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage[hidelinks]{hyperref}
+\usepackage[nameinlink,noabbrev]{cleveref}
+
+% Cabeceras
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\setlength{\headheight}{15pt}
+\fancyhf{}
+\lhead{\nouppercase{\leftmark}}
+\rhead{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% Formato de capitulos
+\usepackage{titlesec}
+\titleformat{\chapter}[hang]
+  {\normalfont\huge\bfseries}
+  {\thechapter.}{0.75em}{}
+\titlespacing*{\chapter}{0pt}{-10pt}{24pt}
+
+% Datos del TFG: rellena estos campos cuando tengas la informacion definitiva.
+\newcommand{\studentid}{idXXXXXX}
+\newcommand{\tfgtitle}{Proyecto Odín: el asistente total}
+\newcommand{\tfgsubtitle}{Asistente personal local-first, soberano y proactivo}
+\newcommand{\tfgauthor}{Enrique de Vicente-Tutor Castillo}
+\newcommand{\tfgdirector}{Jordi Fornés}
+\newcommand{\tfgdirectorinfo}{Facultat d'Informàtica de Barcelona}
+\newcommand{\tfgdegree}{Grado en Ingeniería Informática}
+\newcommand{\tfgspeciality}{Tecnologías de la Información}
+\newcommand{\tfgfaculty}{Facultat d'Informàtica de Barcelona (FIB)}
+\newcommand{\tfguniversity}{Universitat Politècnica de Catalunya (UPC) - BarcelonaTech}
+\newcommand{\tfgdate}{Curso 2025--2026}
+\newcommand{\tfgtype}{Memoria del Trabajo de Fin de Grado}
+
+\newcommand{\placeholder}[1]{%
+  \par\noindent\textcolor{gray}{\textit{#1}}\par
+}
+
+\setlist[itemize]{leftmargin=1.2cm}
+\setlist[enumerate]{leftmargin=1.2cm}
+
+\begin{document}
+
+\pagenumbering{gobble}
+\input{chapters/00_cover}
+
+\cleardoublepage
+\pagenumbering{roman}
+\input{chapters/01_acknowledgements}
+\input{chapters/02_abstracts}
+
+\cleardoublepage
+\tableofcontents
+\cleardoublepage
+\listoftables
+\cleardoublepage
+\listoffigures
+
+\cleardoublepage
+\pagenumbering{arabic}
+\input{chapters/03_contextualizacion}
+\input{chapters/04_justificacion}
+\input{chapters/05_alcance}
+\input{chapters/06_metodologia}
+\input{chapters/07_planificacion}
+\input{chapters/08_gestion_economica}
+\input{chapters/09_sostenibilidad}
+\input{chapters/10_diseno_solucion}
+\input{chapters/11_desarrollo}
+\input{chapters/12_pruebas_resultados}
+\input{chapters/13_conclusiones}
+\input{chapters/14_referencias}
+
+\appendix
+\input{appendices/anexo_a}
+
+\end{document}

@@ -1,0 +1,55 @@
+\chapter{Planificacion temporal}
+
+\section{Descripcion de las tareas}
+La planificación inicial estima 545 horas de dedicación distribuidas desde febrero hasta junio de 2026. Aunque la memoria final ajustará estas cifras con el trabajo realmente realizado, se mantiene la división en bloques porque ayuda a explicar la evolución del proyecto.
+
+\subsection{Gestion del proyecto}
+Planificación, seguimiento, revisión de alcance, reuniones académicas y organización de la documentación.
+
+\subsection{Analisis e investigacion}
+Estudio de herramientas local-first, modelos LLM, motores de inferencia, seguridad perimetral, orquestadores, RAG y limitaciones del hardware.
+
+\subsection{Diseno de la solucion}
+Definición de topología de servicios, redes de contenedores, flujos de automatización, estructura de almacenamiento, acceso remoto y estrategia de copias de seguridad.
+
+\subsection{Implementacion}
+Despliegue de infraestructura, instalación de herramientas, integración de servicios, configuración de modelos locales, flujos de n8n, domótica, nube privada y monitorización.
+
+\subsection{Pruebas y validacion}
+Pruebas funcionales, latencia, estabilidad, uso de VRAM, recuperación ante fallos, seguridad de acceso remoto y validación de casos de uso reales.
+
+\section{Estimacion de tiempos}
+\placeholder{Incluye una tabla con horas estimadas por tarea y fase.}
+
+\begin{table}[H]
+  \centering
+  \caption{Plantilla de estimacion de tiempos}
+  \label{tab:estimacion-tiempos}
+  \begin{tabularx}{\textwidth}{lXr}
+    \toprule
+    Codigo & Tarea & Horas \\
+    \midrule
+    GP & Gestion y seguimiento del proyecto & 70 \\
+    AN & Analisis e investigacion & 45 \\
+    DS & Diseno de la solucion & 60 \\
+    IM & Implementacion e integracion & 220 \\
+    QA & Pruebas y validacion & 50 \\
+    DO & Redaccion de memoria y defensa & 100 \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\section{Hitos del proyecto}
+\begin{itemize}
+  \item \textbf{M1}: cierre de planificación, requisitos y alcance.
+  \item \textbf{M2}: servidor físico operativo y contenedores base desplegados.
+  \item \textbf{M3}: modelos LLM locales respondiendo sin dependencia externa.
+  \item \textbf{M4}: integración mínima funcional entre voz, automatización y servicio privado.
+  \item \textbf{M5}: memoria final, evidencias técnicas y defensa.
+\end{itemize}
+
+\section{Diagrama de Gantt}
+\placeholder{Incluir aquí el diagrama de Gantt definitivo, actualizado con la planificación real y las desviaciones producidas durante el desarrollo.}
+
+\section{Gestion del riesgo}
+Los riesgos principales se concentran en la compatibilidad del stack AMD/ROCm, la saturación de VRAM al combinar LLM, RAG, voz y visión, la dependencia de un único nodo físico, la seguridad del acceso remoto y el crecimiento incontrolado del alcance. La mitigación combina fallback a CPU, carga bajo demanda de modelos, snapshots, copias de seguridad, segmentación de red y poda de funcionalidades secundarias si el calendario lo exige.

@@ -1,0 +1,40 @@
+# LaTeX build outputs
+build/
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.run.xml
+*.synctex.gz
+*.toc
+*.lof
+*.lot
+
+# Local environments and editor state
+.venv/
+.DS_Store
+.idea/
+.vscode/
+
+# Secrets and server deployment files for future Odín services
+.env
+.env.*
+!.env.example
+**/secrets/
+**/secrets.*
+**/*secret*
+**/*token*
+**/*key*
+**/*credential*
+
+# Runtime data from self-hosted services
+data/
+volumes/
+backups/
+uploads/
+media/
+photos/

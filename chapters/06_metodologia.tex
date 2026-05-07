@@ -1,0 +1,23 @@
+\chapter{Metodologia y herramientas de seguimiento}
+
+\section{Metodologia}
+El desarrollo se aborda mediante una metodología iterativa e incremental. Esta elección responde a la naturaleza experimental del proyecto: integrar IA local, contenedores, domótica, RAG y acceso remoto seguro implica incertidumbres técnicas que no pueden resolverse solo con diseño previo. Cada iteración debe producir un bloque funcional, medible y conectable al resto del ecosistema.
+
+La construcción se organiza en sprints técnicos: infraestructura base, inferencia local, orquestación, integración sensorial, memoria documental, seguridad, monitorización y expansión de servicios. Al final de cada ciclo se revisan resultados, problemas, consumo de recursos, estabilidad y utilidad real.
+
+\section{Herramientas de seguimiento}
+El seguimiento del trabajo se apoya en control de versiones, documentación técnica y registro de decisiones. Las configuraciones de contenedores, scripts, flujos de automatización y notas de despliegue deben mantenerse versionadas para poder reproducir cambios y revertir errores. La memoria funcionará además como bitácora técnica: cada herramienta relevante tendrá una explicación de uso, motivación, configuración, problemas y papel dentro de Odín.
+
+\section{Mecanismos de rigor y control}
+El rigor se garantiza mediante validaciones por capas. Primero se comprueba la estabilidad de la infraestructura. Después se validan servicios individuales. Finalmente se prueban flujos completos: entrada, procesamiento, decisión, acción y persistencia. Para cada subsistema se documentarán criterios de aceptación, errores encontrados y medidas de mitigación.
+
+\section{Profundización en herramientas}
+Una prioridad de la memoria final será explicar con detalle las herramientas utilizadas, no como una lista decorativa sino como decisiones de ingeniería. Para cada herramienta principal se incluirá:
+\begin{itemize}
+  \item problema concreto que resuelve dentro de Odín;
+  \item motivo de elección frente a alternativas;
+  \item arquitectura de despliegue y configuración relevante;
+  \item integración con el resto de servicios;
+  \item limitaciones encontradas durante el desarrollo;
+  \item evidencias de funcionamiento mediante capturas, logs, tablas o pruebas.
+\end{itemize}

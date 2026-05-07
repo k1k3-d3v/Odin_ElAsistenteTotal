@@ -1,0 +1,67 @@
+\chapter{Alcance}
+
+\section{Objetivo principal}
+Diseñar, desplegar y validar un ecosistema autoalojado de asistencia personal, denominado Odín, capaz de integrar inteligencia artificial local, automatización, domótica, nube privada, acceso remoto seguro y monitorización proactiva bajo principios local-first, open source y privacidad por diseño.
+
+\section{Objetivos secundarios}
+\begin{itemize}
+  \item Desplegar una infraestructura base estable sobre hardware propio, con servicios aislados y reproducibles.
+  \item Ejecutar modelos de lenguaje locales y evaluar su viabilidad en términos de latencia, consumo y memoria gráfica.
+  \item Integrar un orquestador de flujos capaz de conectar entradas del usuario, modelos de IA y servicios internos.
+  \item Construir una primera capa de memoria mediante ingesta, clasificación y recuperación de documentos o notas.
+  \item Incorporar automatizaciones domóticas y casos de uso de interacción natural.
+  \item Implementar acceso remoto seguro mediante VPN o túneles cifrados, evitando exposición innecesaria de puertos.
+  \item Definir mecanismos de copias de seguridad, monitorización y autorecuperación.
+  \item Implementar una interfaz de control desde la que se pueda observar y gobernar el ecosistema.
+  \item Documentar herramientas, configuraciones, problemas, decisiones y resultados de forma reproducible.
+\end{itemize}
+
+\section{Mapa funcional de Odín}
+El alcance práctico del proyecto se organiza en cuatro bloques, derivados de la planificación funcional del asistente:
+
+\begin{itemize}
+  \item \textbf{Hacer}: guardar ideas, notas y archivos; crear recordatorios; consultar el estado del sistema; enviar comandos de reparación; almacenar recetas; controlar la domótica; crear temporizadores; reproducir música; y realizar búsquedas en Internet cuando sea necesario.
+  \item \textbf{Pensar}: navegar entre ideas, notas y archivos; mantener una conversación coherente; revisar grabaciones; consultar historial de salud; y buscar fotografías mediante Immich u otro sistema equivalente.
+  \item \textbf{Proactivo}: actualizar memoria con cada actividad relevante; avisar ante eventos de cámaras de seguridad; actualizar datos de salud; ejecutar rutinas de autoreparación; realizar copias de seguridad en dispositivo externo o nube; y subir automáticamente fotografías a Immich.
+  \item \textbf{Otros}: disponer de un botón de limpieza de caché, un dashboard de control global y una vía para hablar con Odín mediante voz.
+\end{itemize}
+
+Quedan explícitamente fuera del alcance principal la gestión avanzada de contraseñas y la autoclasificación de correos, ya que existen servicios especializados que cubren esas necesidades de forma suficiente para este TFG.
+
+\section{Requerimientos funcionales}
+\begin{itemize}
+  \item \textbf{RF-01}: el sistema debe permitir interactuar con el asistente mediante lenguaje natural.
+  \item \textbf{RF-02}: el sistema debe ejecutar inferencia local para consultas compatibles con los recursos disponibles.
+  \item \textbf{RF-03}: el sistema debe permitir la ingesta de contenido personal, como enlaces, notas, documentos, audio o imágenes.
+  \item \textbf{RF-04}: el sistema debe clasificar y almacenar información en servicios privados controlados por el usuario.
+  \item \textbf{RF-05}: el sistema debe consultar información propia mediante recuperación semántica o mecanismos equivalentes.
+  \item \textbf{RF-06}: el sistema debe integrarse con servicios domóticos para ejecutar acciones sobre el entorno.
+  \item \textbf{RF-07}: el sistema debe enviar alertas proactivas ante eventos relevantes de infraestructura, seguridad o automatización.
+  \item \textbf{RF-08}: el sistema debe permitir acceso remoto cifrado sin exponer servicios críticos directamente a Internet.
+  \item \textbf{RF-09}: el sistema debe mantener copias de seguridad de configuraciones y datos críticos.
+  \item \textbf{RF-10}: el sistema debe ofrecer un panel de control para observar servicios, métricas y acciones principales.
+  \item \textbf{RF-11}: el sistema debe permitir limpiar cachés o estados temporales de forma controlada.
+  \item \textbf{RF-12}: el sistema debe gestionar fotografías mediante subida automática y búsqueda posterior.
+\end{itemize}
+
+\section{Requerimientos no funcionales}
+\begin{itemize}
+  \item \textbf{Privacidad}: los datos sensibles deben permanecer en infraestructura propia siempre que sea técnicamente viable.
+  \item \textbf{Disponibilidad}: los servicios esenciales deben poder recuperarse tras fallos de contenedores o reinicios.
+  \item \textbf{Seguridad}: el acceso externo debe realizarse mediante canales autenticados y cifrados.
+  \item \textbf{Mantenibilidad}: la configuración debe organizarse de forma versionable y documentada.
+  \item \textbf{Eficiencia}: la GPU debe reservarse para cargas que justifiquen su consumo, delegando tareas triviales a servicios ligeros.
+  \item \textbf{Escalabilidad modular}: nuevos servicios deben añadirse sin rediseñar toda la arquitectura.
+\end{itemize}
+
+\section{Limitaciones y fuera de alcance}
+El proyecto no pretende competir con asistentes comerciales en número de integraciones ni ofrecer un producto final listo para usuarios no técnicos. Tampoco se plantea entrenar un modelo fundacional propio. El foco está en integrar herramientas existentes, desplegarlas con criterio, medir su comportamiento y demostrar una arquitectura funcional y ampliable.
+
+\section{Casos de uso representativos}
+\begin{itemize}
+  \item Enviar una nota de voz desde el móvil para que Odín la transcriba, extraiga tareas y la archive.
+  \item Consultar documentos personales mediante lenguaje natural y recibir respuestas con contexto recuperado.
+  \item Activar una rutina domótica nocturna mediante una orden simple.
+  \item Recibir una alerta si la GPU, el almacenamiento o un servicio crítico presentan anomalías.
+  \item Guardar enlaces o fotografías como entrada universal para su posterior clasificación.
+\end{itemize}

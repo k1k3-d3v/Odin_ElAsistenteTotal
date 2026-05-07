@@ -1,0 +1,45 @@
+\chapter{Introducción y contextualización}
+
+Vivimos rodeados de sistemas que prometen simplificarnos la vida, pero que a menudo terminan multiplicando la fragmentación. Las fotografías están en un servicio, los documentos en otro, los recordatorios en calendarios sincronizados con terceros, la domótica en aplicaciones cerradas y las conversaciones con asistentes de inteligencia artificial en plataformas que apenas conocen el contexto real del usuario. El resultado es paradójico: nunca hemos generado tanta información personal, y nunca ha estado tan repartida, tan mediada y tan lejos de nuestro control directo.
+
+La idea que origina este trabajo nace precisamente de esa tensión. No se trata únicamente de encender una luz con la voz o de pedir a un modelo de lenguaje que resuma un texto aislado. El objetivo es explorar si es posible construir un asistente personal de verdad: un sistema capaz de escuchar, clasificar, recordar, consultar, automatizar y actuar sobre un ecosistema digital privado sin convertir cada interacción en una cesión de datos a una nube corporativa. Un asistente que pueda recibir una nota de voz en el metro, una fotografía de una receta, un enlace técnico, una alerta de temperatura de la GPU o una orden domótica, y que sepa transformar todo ello en acciones útiles dentro de una infraestructura propia.
+
+Así nace el Proyecto Odín. Odín se plantea como un ecosistema local-first, autoalojado y orientado a edge computing, donde la inteligencia artificial no vive como un servicio externo sino como una capacidad integrada en el hardware del usuario. Su ambición es actuar como un centro neurálgico personal: una capa de coordinación entre servicios de nube privada, automatización, domótica, inferencia local, recuperación semántica de información y monitorización del propio sistema. La memoria no documenta solo una aplicación, sino la construcción progresiva de una arquitectura soberana: una pequeña nube personal con capacidad cognitiva, diseñada para funcionar bajo criterios de privacidad, trazabilidad, eficiencia y control \cite{kleppmann2019localfirst,satyanarayanan2009cloudlets}.
+
+\section{Marco académico}
+Este proyecto se desarrolla como Trabajo de Fin de Grado del Grado en Ingeniería Informática, dentro de la especialidad de Tecnologías de la Información. Su naturaleza encaja especialmente con esta mención porque combina administración de sistemas, redes, seguridad, integración de servicios, despliegue de infraestructura, automatización, ingeniería de datos e inteligencia artificial aplicada.
+
+La planificación inicial del proyecto definió una carga aproximada de 545 horas distribuidas entre gestión, análisis, diseño, implementación, pruebas y documentación. La presente memoria parte de esa planificación, pero la amplía con una mirada más técnica y reflexiva: no solo se describirá qué se quería construir, sino qué herramientas se han utilizado, por qué se eligieron, qué problemas aparecieron al integrarlas y qué aprendizajes se derivan de operar un sistema de IA local en infraestructura doméstica.
+
+\section{Identificación del problema}
+Los asistentes personales comerciales han popularizado la interacción por voz y la automatización doméstica, pero siguen estando limitados por tres problemas estructurales. En primer lugar, dependen de infraestructuras remotas que procesan información sensible fuera del entorno del usuario. En segundo lugar, operan como cajas negras con escasa capacidad de auditoría, modificación o integración profunda. En tercer lugar, suelen quedar encerrados en ecosistemas cerrados, donde cada proveedor decide qué puede conectarse, qué puede automatizarse y qué datos son accesibles.
+
+La alternativa autoalojada tradicional tampoco resuelve por completo el problema. Herramientas como plataformas domóticas, nubes privadas, orquestadores o servidores de inferencia local aportan piezas valiosas, pero cada una funciona como una isla. El reto de Odín consiste en conectar esas piezas en un sistema coherente: un asistente capaz de razonar sobre información personal, activar automatizaciones, responder desde documentos propios, vigilar su estado interno y mantener el control de los datos en la infraestructura del usuario.
+
+\section{Más allá del hogar inteligente}
+Odín no se concibe como un dispositivo estático situado en una habitación, sino como un agente ubicuo. La interacción puede producirse desde el móvil, desde un satélite de voz, desde un flujo automatizado, desde un panel web o desde una alerta del propio sistema. Esta visión conecta con la computación ubicua: la tecnología deja de ser una aplicación concreta para convertirse en una capa persistente que acompaña al usuario en distintos contextos \cite{weiser1991computer}.
+
+La dimensión proactiva es igual de importante. Un asistente útil no debería limitarse a esperar comandos. Si un servicio cae, si una copia de seguridad falla o si la GPU alcanza una temperatura peligrosa, el sistema debe ser capaz de detectarlo, notificarlo y, cuando sea seguro, actuar. Esta memoria profundizará por tanto en la arquitectura técnica que permite pasar de un conjunto de servicios instalados a un ecosistema coordinado \cite{tennenhouse2000proactive}.
+
+\section{Terminología y conceptos clave}
+\begin{itemize}
+  \item \textbf{Local-first}: enfoque en el que los datos y la lógica principal residen en infraestructura controlada por el usuario, manteniendo la nube externa como complemento opcional y no como dependencia central \cite{kleppmann2019localfirst}.
+  \item \textbf{Self-hosting}: despliegue y mantenimiento de servicios propios en hardware privado, asumiendo responsabilidades de administración, seguridad, copias de seguridad y disponibilidad.
+  \item \textbf{Edge computing}: procesamiento de datos cerca del lugar donde se generan, reduciendo latencia y evitando transferencias innecesarias a centros de datos externos \cite{satyanarayanan2009cloudlets}.
+  \item \textbf{LLM local}: modelo de lenguaje ejecutado en hardware propio, normalmente mediante cuantización y motores de inferencia optimizados.
+  \item \textbf{RAG}: arquitectura de generación aumentada por recuperación que permite consultar documentos propios mediante búsquedas semánticas antes de generar una respuesta \cite{lewis2020rag}.
+  \item \textbf{Orquestación}: coordinación de eventos, servicios y acciones mediante flujos automatizados, integraciones y reglas de decisión.
+  \item \textbf{Zero Trust}: enfoque de seguridad que evita confiar de forma implícita en la red y exige autenticación, cifrado y segmentación incluso dentro de entornos propios.
+\end{itemize}
+
+\section{Competencias técnicas}
+El proyecto requiere seleccionar, desplegar, integrar y administrar sistemas de información bajo criterios de coste, calidad y seguridad. También exige diseñar servicios basados en red, gestionar infraestructura, evaluar tecnologías emergentes, construir automatizaciones, aplicar medidas de privacidad y documentar de forma rigurosa decisiones técnicas complejas. Estas competencias se materializan tanto en la arquitectura final como en el proceso de experimentación: instalar, romper, medir, corregir y justificar.
+
+\section{Actores implicados}
+\begin{itemize}
+  \item \textbf{Autor, desarrollador y usuario final}: responsable del diseño, despliegue, configuración, pruebas y uso diario del ecosistema.
+  \item \textbf{Director del TFG}: figura académica de seguimiento, revisión metodológica y orientación técnica.
+  \item \textbf{Tribunal evaluador}: encargado de valorar la calidad académica, técnica y documental del trabajo.
+  \item \textbf{Usuarios del entorno doméstico}: beneficiarios potenciales de servicios como nube privada, automatizaciones, copias de seguridad o domótica.
+  \item \textbf{Comunidad open source}: proyectos y mantenedores sobre los que se apoya la solución, como motores de inferencia, plataformas domóticas, herramientas de automatización y servicios autoalojados.
+\end{itemize}

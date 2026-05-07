@@ -1,0 +1,26 @@
+\chapter{Especificacion y diseno de la solucion}
+
+\section{Vision general}
+Odín se diseña como una arquitectura por capas. La capa física proporciona cómputo, almacenamiento y aceleración. La capa de virtualización y contenedores aísla servicios. La capa de datos almacena documentos, configuraciones, embeddings y registros. La capa cognitiva ejecuta modelos locales y recuperación semántica. La capa de orquestación conecta eventos con acciones. Finalmente, la capa de interacción permite usar el sistema desde voz, móvil, panel web o automatizaciones.
+
+\section{Arquitectura del sistema}
+\placeholder{Incluir diagrama de arquitectura general: servidor, GPU, contenedores, red interna, VPN, Home Assistant, n8n, Ollama/llama.cpp, Open WebUI si aplica, almacenamiento, base vectorial, nube privada, Immich, dashboard y clientes.}
+
+\section{Modelo de datos}
+El modelo de datos debe distinguir entre datos personales persistentes, configuraciones de servicios, logs de automatización, embeddings para búsqueda semántica y estados temporales de conversación. Esta separación es importante para definir copias de seguridad, políticas de retención y aislamiento entre servicios.
+
+\section{Flujos principales}
+\begin{itemize}
+  \item Flujo de consulta: entrada en lenguaje natural, clasificación, recuperación de contexto, inferencia local y respuesta.
+  \item Flujo de ingesta: recepción de contenido, extracción, normalización, clasificación, almacenamiento e indexación.
+  \item Flujo de fotografía: subida automática desde móvil, procesamiento, almacenamiento, búsqueda y recuperación posterior.
+  \item Flujo domótico: comando, interpretación, validación, acción sobre Home Assistant y confirmación.
+  \item Flujo de monitorización: métrica, detección de anomalía, decisión, alerta y posible autoreparación.
+  \item Flujo de acceso remoto: cliente externo, túnel seguro, autenticación y acceso a servicios internos.
+\end{itemize}
+
+\section{Decisiones de diseno}
+Las decisiones de diseño se documentarán con especial atención a las herramientas usadas. No bastará con decir que se ha utilizado Docker, n8n u Ollama; se explicará qué aporta cada herramienta, qué alternativas existían, qué configuración fue necesaria y qué límites aparecieron durante el despliegue.
+
+\section{Seguridad, privacidad y calidad}
+El diseño sigue una lógica de mínima exposición: servicios internos no publicados directamente, acceso remoto mediante túneles cifrados, separación por redes, credenciales gestionadas con cuidado y copias de seguridad verificables. La calidad se medirá por estabilidad de servicios, trazabilidad de flujos, reproducibilidad de despliegues y cumplimiento de casos de uso.
