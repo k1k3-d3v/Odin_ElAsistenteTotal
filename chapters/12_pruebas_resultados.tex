@@ -8,10 +8,14 @@ La validación se organizará por capas y por casos de uso. Primero se comprobar
 
 Como primera prueba de autoreparabilidad se validó el flujo de diagnóstico de Ollama. El servicio se encontraba inicialmente inactivo, se arrancó mediante systemd y se comprobó la disponibilidad de la API local consultando \texttt{/api/tags}. Posteriormente se ejecutó \texttt{odin\_autorepair.py --repair}; al detectar que Ollama estaba activo y la API respondía, la herramienta no realizó ninguna acción destructiva ni reinicios innecesarios.
 
+También se validó el envío de informes a Telegram mediante \texttt{odin\_autorepair.py --daily}. El mensaje se generó reutilizando la configuración ya existente en los scripts de mantenimiento del servidor y sin versionar credenciales en el repositorio. Finalmente se probó el modo \texttt{--alert}, que detectó avisos vigentes relacionados con runners de Ollama, eventos AMDGPU y ocupación de disco, enviando alerta únicamente al cambiar la firma del problema.
+
 \section{Pruebas no funcionales}
 \placeholder{Medir latencia, consumo, uso de VRAM/RAM, estabilidad de contenedores, recuperación tras fallo, exposición de puertos, tiempos de backup y experiencia de uso.}
 
 La prueba también registró señales útiles para evaluar estabilidad: uso de GPU, porcentaje de VRAM asignada, temperaturas, estado de contenedores relevantes y ocupación de disco. En la ejecución observada, \texttt{rocm-smi} informó temperaturas en torno a 38--40 grados y ausencia de procesos KFD activos tras el arranque del servicio, mientras que Docker no presentaba contenedores críticos en estado problemático.
+
+La verificación del cron permitió comprobar que las rutas antiguas ya no estaban presentes en la configuración activa. No obstante, los logs conservaban errores previos, por lo que la herramienta distingue entre rutas rotas vigentes y errores históricos encontrados en los logs. Esta separación reduce falsos positivos y hace que la alerta sea más útil.
 
 \section{Resultados obtenidos}
 \placeholder{Incluir capturas de paneles, logs de flujos, respuestas del modelo, uso de recursos, pruebas de automatización y comparativas entre modelos o configuraciones.}

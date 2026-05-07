@@ -25,5 +25,9 @@ La política de reparación es conservadora: por defecto solo genera un informe;
 
 El primer caso de uso real de esta herramienta fue el diagnóstico de una caída parcial de Ollama. Los logs mostraban runners de modelo terminados con \texttt{signal: killed}, avisos de ROCm/\texttt{rocblaslt} relacionados con \texttt{gfx1200}, prompts truncados por superar la ventana de contexto y múltiples eventos de evacuación de colas AMDGPU. El servicio principal, sin embargo, había quedado parado de forma limpia por systemd. Tras arrancarlo de nuevo, la API local respondió correctamente y la herramienta confirmó que no era necesario ejecutar más acciones.
 
+Como ampliación, la herramienta se integró con Telegram para ofrecer dos niveles de comunicación: un informe diario exhaustivo y alertas cuando aparece o cambia un problema relevante. El informe incluye el estado de Ollama, GPU, contenedores, disco, cron, Qdrant y logs de ingesta; además, enumera las fuentes revisadas y las fuentes de memoria procesadas recientemente. Esta integración convierte la monitorización en una funcionalidad proactiva real: Odín no solo almacena conocimiento, sino que informa sobre su propio estado operativo.
+
+Durante esta integración se detectó una deuda técnica importante: el cron seguía apuntando a rutas antiguas de scripts que habían sido reorganizados. Se corrigieron las rutas hacia \texttt{/home/k1k3/odin/scripts/} y se añadió una programación periódica: sincronización incremental, ingesta horaria, alertas cada quince minutos e informe diario.
+
 \section{Problemas encontrados}
 \placeholder{Documentar incidencias reales: drivers, memoria, latencia, conflictos entre contenedores, permisos, seguridad, backups, integraciones inestables o recortes de alcance.}

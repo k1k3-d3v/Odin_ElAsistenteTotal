@@ -116,6 +116,10 @@ Esto debe conectarse con los riesgos previstos:
 
 El 2026-05-07 se levantó de nuevo con `systemctl start ollama` y la API respondió correctamente en `/api/tags`. Se creó además `odin_autorepair.py`, una herramienta conservadora que diagnostica Ollama, GPU, Docker y disco, y que solo arranca Ollama automáticamente cuando está inactivo y se ejecuta con `--repair`.
 
+Posteriormente se amplió la herramienta para enviar informes a Telegram. El informe diario resume estado, errores, novedades y fuentes revisadas. El modo alerta se ejecuta de forma frecuente y solo envía mensaje cuando aparece o cambia un problema relevante, evitando repetir avisos idénticos.
+
+También se corrigió el cron, que seguía apuntando a rutas antiguas fuera de `/home/k1k3/odin/scripts/`. Este fallo era una buena evidencia de deuda técnica producida por la reorganización del servidor.
+
 ## Estado general
 
 El servidor está en una fase experimental avanzada, no en una fase limpia de producción. Hay piezas en uso, piezas descartadas y pruebas en cuarentena. Esto no es un defecto para la memoria; al contrario, permite explicar el proceso real de construcción de Odín:

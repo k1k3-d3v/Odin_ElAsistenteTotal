@@ -16,6 +16,8 @@ import re
 import shutil
 import subprocess
 import sys
+import urllib.parse
+import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -35,6 +37,16 @@ IMPORTANT_CONTAINERS = {
     "faster-whisper-server",
     "crawl4ai",
 }
+
+DEFAULT_TELEGRAM_CONFIG_SOURCES = [
+    "/home/k1k3/odin/scripts/telegram.env",
+    "/home/k1k3/odin/scripts/cron_odin_ingesta.sh",
+    "/home/k1k3/odin/scripts/backup_diario.sh",
+]
+
+ODIN_SYNC_LOG = Path("/home/k1k3/odin_sync.log")
+CRON_ODIN_LOG = Path("/home/k1k3/cron_odin.log")
+STATE_FILE = Path("/home/k1k3/odin/logs/autorepair/state.json")
 
 
 def run(cmd: list[str], timeout: int = 20) -> dict[str, Any]:
@@ -187,6 +199,82 @@ def check_disk() -> dict[str, Any]:
     return {"raw": df["stdout"], "warnings": warnings}
 
 
+def tail_lines(path: Path, limit: int = 220) -> list[str]:
+    try:
+        lines = path.read_text(errors="ignore").splitlines()
+    except FileNotFoundError:
+        return []
+    return lines[-limit:]
+
+
+def check_ingestion_logs() -> dict[str, Any]:
+    lines = tail_lines(ODIN_SYNC_LOG, 260)
+    cron_lines = tail_lines(CRON_ODIN_LOG, 120)
+    combined = lines + cron_lines
+
+    missing_paths = sorted(set(re.findall(r"(?:can't open file '([^']+)'|(/home/k1k3/[^: ]+): not found)", "\n".join(combined))))
+    flattened_missing = []
+    for item in missing_paths:
+        if isinstance(item, tuple):
+            flattened_missing.extend([x for x in item if x])
+        elif item:
+            flattened_missing.append(item)
+
+    processed = []
+    for line in combined:
+        for pattern in [r"Procesando:\s*(.+)$", r"Sincronizado:\s*(.+?)(?:\s*\(|$)"]:
+            match = re.search(pattern, line)
+            if match:
+                processed.append(match.group(1).strip())
+
+    detected = []
+    for line in combined:
+        if any(marker in line for marker in ["Sin cambios", "Todo está al día", "Procesando", "Sincronizado", "Detectados"]):
+            detected.append(line.strip())
+
+    return {
+        "log_sources": [str(ODIN_SYNC_LOG), str(CRON_ODIN_LOG)],
+        "recent_missing_paths_in_logs": sorted(set(flattened_missing)),
+        "processed_sources": sorted(set(processed))[-30:],
+        "recent_relevant_lines": detected[-30:],
+    }
+
+
+def check_cron_paths() -> dict[str, Any]:
+    crontab = run(["crontab", "-l"], timeout=10)
+    paths = []
+    for line in crontab["stdout"].splitlines():
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        paths.extend(re.findall(r"(/home/k1k3/[^\s]+)", line))
+    missing = sorted({p for p in paths if not Path(p).exists()})
+    return {
+        "raw": crontab["stdout"],
+        "referenced_paths": sorted(set(paths)),
+        "missing_paths": missing,
+    }
+
+
+def check_qdrant() -> dict[str, Any]:
+    # Qdrant HTTP API is enough here; no Python client dependency required.
+    url = "http://127.0.0.1:6333/collections/memoria_ia"
+    try:
+        with urllib.request.urlopen(url, timeout=4) as response:
+            data = json.loads(response.read().decode("utf-8"))
+        result = data.get("result", {})
+        return {
+            "available": True,
+            "collection": "memoria_ia",
+            "status": result.get("status"),
+            "vectors_count": result.get("vectors_count"),
+            "points_count": result.get("points_count"),
+            "indexed_vectors_count": result.get("indexed_vectors_count"),
+        }
+    except Exception as exc:
+        return {"available": False, "collection": "memoria_ia", "error": str(exc)}
+
+
 def repair(report: dict[str, Any], restart_ollama: bool) -> list[dict[str, Any]]:
     actions = []
     ollama = report["checks"]["ollama"]
@@ -201,6 +289,203 @@ def repair(report: dict[str, Any], restart_ollama: bool) -> list[dict[str, Any]]
             "result": run(["sudo", "-n", "systemctl", "restart", "ollama"], timeout=30),
         })
     return actions
+
+
+def load_state(path: Path = STATE_FILE) -> dict[str, Any]:
+    try:
+        return json.loads(path.read_text())
+    except Exception:
+        return {}
+
+
+def save_state(state: dict[str, Any], path: Path = STATE_FILE) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(state, indent=2, ensure_ascii=False) + "\n")
+
+
+def report_findings(report: dict[str, Any]) -> list[dict[str, str]]:
+    findings: list[dict[str, str]] = []
+    ollama = report["checks"]["ollama"]
+    if not ollama["service_active"]:
+        findings.append({"severity": "critical", "title": "Ollama caído", "detail": "ollama.service no está activo."})
+    elif not ollama["api_ok"]:
+        findings.append({"severity": "critical", "title": "API de Ollama no responde", "detail": "La API local /api/tags no responde."})
+
+    signals = ollama["signals"]
+    if signals["runner_killed"]:
+        findings.append({
+            "severity": "warning",
+            "title": "Runners de Ollama terminados",
+            "detail": f"{signals['runner_killed']} eventos 'signal: killed' en las últimas 24h.",
+        })
+    if signals["amdgpu_queue_evicted"]:
+        findings.append({
+            "severity": "warning",
+            "title": "Eventos AMDGPU",
+            "detail": f"{signals['amdgpu_queue_evicted']} evacuaciones de cola AMDGPU en kernel.",
+        })
+    if signals["rocblaslt_missing_tensile"]:
+        findings.append({
+            "severity": "info",
+            "title": "Avisos rocBLASLt/gfx1200",
+            "detail": "Falta TensileLibrary_lazy_gfx1200.dat en logs de Ollama.",
+        })
+    if signals["prompt_truncated"]:
+        findings.append({
+            "severity": "info",
+            "title": "Prompts truncados",
+            "detail": f"{signals['prompt_truncated']} prompts superaron la ventana configurada.",
+        })
+
+    for container in report["checks"]["docker"].get("problem_containers", []):
+        findings.append({
+            "severity": "critical",
+            "title": f"Contenedor problemático: {container['name']}",
+            "detail": container["status"],
+        })
+
+    for warning in report["checks"]["disk"].get("warnings", []):
+        findings.append({
+            "severity": warning["severity"],
+            "title": f"Disco {warning['mount']} al {warning['use_percent']}%",
+            "detail": "Revisar limpieza, backups o traslado de datos.",
+        })
+
+    cron = report["checks"].get("cron", {})
+    for path in cron.get("missing_paths", []):
+        findings.append({
+            "severity": "critical",
+            "title": "Cron apunta a ruta inexistente",
+            "detail": path,
+        })
+
+    ingestion = report["checks"].get("ingestion", {})
+    if ingestion.get("recent_missing_paths_in_logs"):
+        findings.append({
+            "severity": "info",
+            "title": "Hay errores antiguos/recientes de cron en logs",
+            "detail": ", ".join(ingestion["recent_missing_paths_in_logs"][:4]),
+        })
+
+    qdrant = report["checks"].get("qdrant", {})
+    if not qdrant.get("available"):
+        findings.append({
+            "severity": "warning",
+            "title": "Qdrant/memoria_ia no comprobable",
+            "detail": qdrant.get("error", "sin detalle"),
+        })
+    return findings
+
+
+def finding_signature(findings: list[dict[str, str]]) -> str:
+    relevant = [
+        f"{f['severity']}|{f['title']}|{f['detail']}"
+        for f in findings
+        if f["severity"] in {"critical", "warning"}
+    ]
+    return "\n".join(sorted(relevant))
+
+
+def load_telegram_config(paths: list[str]) -> tuple[str | None, str | None, str]:
+    token = os.environ.get("TELEGRAM_BOT_TOKEN") or os.environ.get("TOKEN")
+    chat_id = os.environ.get("TELEGRAM_CHAT_ID") or os.environ.get("CHAT_ID")
+    source = "environment"
+    if token and chat_id:
+        return token, chat_id, source
+
+    for path in paths:
+        p = Path(path)
+        if not p.exists():
+            continue
+        text = p.read_text(errors="ignore")
+        token_match = re.search(r'(?m)^\s*(?:TOKEN|TELEGRAM_BOT_TOKEN)=["\']?([^"\'\n]+)', text)
+        chat_match = re.search(r'(?m)^\s*(?:CHAT_ID|TELEGRAM_CHAT_ID)=["\']?([^"\'\n]+)', text)
+        if token_match and chat_match:
+            return token_match.group(1).strip(), chat_match.group(1).strip(), str(p)
+    return None, None, "not_found"
+
+
+def telegram_send(token: str, chat_id: str, message: str) -> None:
+    url = f"https://api.telegram.org/bot{token}/sendMessage"
+    chunks = [message[i:i + 3600] for i in range(0, len(message), 3600)]
+    for chunk in chunks:
+        data = urllib.parse.urlencode({
+            "chat_id": chat_id,
+            "text": chunk,
+            "disable_web_page_preview": "true",
+        }).encode("utf-8")
+        req = urllib.request.Request(url, data=data, method="POST")
+        with urllib.request.urlopen(req, timeout=10) as response:
+            response.read()
+
+
+def format_telegram_report(report: dict[str, Any], daily: bool) -> str:
+    findings = report.get("findings", [])
+    critical = [f for f in findings if f["severity"] == "critical"]
+    warnings = [f for f in findings if f["severity"] == "warning"]
+    infos = [f for f in findings if f["severity"] == "info"]
+    title = "📋 Informe diario de Odín" if daily else "⚠️ Alerta de Odín"
+    lines = [
+        title,
+        f"Fecha UTC: {report['timestamp']}",
+        f"Host: {report['hostname']}",
+        "",
+        "Resumen:",
+        f"- Críticos: {len(critical)}",
+        f"- Avisos: {len(warnings)}",
+        f"- Info: {len(infos)}",
+    ]
+
+    ollama = report["checks"]["ollama"]
+    gpu = report["checks"]["gpu"]
+    disk = report["checks"]["disk"]
+    docker = report["checks"]["docker"]
+    qdrant = report["checks"].get("qdrant", {})
+    ingestion = report["checks"].get("ingestion", {})
+    cron = report["checks"].get("cron", {})
+
+    lines += [
+        "",
+        "Estado:",
+        f"- Ollama: service={'OK' if ollama['service_active'] else 'KO'}, api={'OK' if ollama['api_ok'] else 'KO'}",
+        f"- GPU: use={gpu.get('gpu_use_percent')}%, vram={gpu.get('vram_allocated_percent')}%, temp={gpu.get('temperatures_c')}",
+        f"- Docker críticos problemáticos: {len(docker.get('problem_containers', []))}",
+        f"- Cron rutas rotas actuales: {len(cron.get('missing_paths', []))}",
+        f"- Disco: {disk.get('raw', '').replace(chr(10), ' | ')}",
+    ]
+    if qdrant:
+        lines.append(
+            f"- Qdrant memoria_ia: {'OK' if qdrant.get('available') else 'KO'}, points={qdrant.get('points_count')}, vectors={qdrant.get('vectors_count')}"
+        )
+
+    if findings:
+        lines += ["", "Qué hay de malo:"]
+        for item in findings[:18]:
+            lines.append(f"- [{item['severity']}] {item['title']}: {item['detail']}")
+    else:
+        lines += ["", "Qué hay de malo:", "- Nada crítico detectado."]
+
+    recent = ingestion.get("recent_relevant_lines", [])
+    processed = ingestion.get("processed_sources", [])
+    lines += ["", "Qué hay de nuevo:"]
+    if recent:
+        lines.extend(f"- {line}" for line in recent[-12:])
+    else:
+        lines.append("- Sin actividad reciente detectada en logs de ingesta.")
+
+    lines += ["", "Fuentes revisadas/visitadas:"]
+    for source in report.get("report_sources", []):
+        lines.append(f"- {source}")
+    if processed:
+        lines += ["", "Fuentes de memoria procesadas recientemente:"]
+        lines.extend(f"- {src}" for src in processed[-15:])
+
+    if report.get("actions"):
+        lines += ["", "Acciones ejecutadas:"]
+        for action in report["actions"]:
+            rc = action.get("result", {}).get("returncode")
+            lines.append(f"- {action.get('action')} rc={rc}")
+    return "\n".join(lines)
 
 
 def write_reports(report: dict[str, Any], log_dir: Path) -> None:
@@ -225,6 +510,15 @@ def main() -> int:
         default="/home/k1k3/odin/logs/autorepair",
         help="directory where JSON reports are written",
     )
+    parser.add_argument("--telegram", action="store_true", help="send report to Telegram")
+    parser.add_argument("--daily", action="store_true", help="send a complete daily report")
+    parser.add_argument("--alert", action="store_true", help="send Telegram only when warning/critical state changes")
+    parser.add_argument(
+        "--telegram-config",
+        action="append",
+        default=[],
+        help="file containing TOKEN/CHAT_ID or TELEGRAM_BOT_TOKEN/TELEGRAM_CHAT_ID",
+    )
     args = parser.parse_args()
 
     report = {
@@ -236,8 +530,23 @@ def main() -> int:
             "gpu": check_gpu(),
             "docker": check_docker(),
             "disk": check_disk(),
+            "ingestion": check_ingestion_logs(),
+            "cron": check_cron_paths(),
+            "qdrant": check_qdrant(),
         },
         "actions": [],
+        "report_sources": [
+            "systemctl status ollama",
+            "journalctl -u ollama --since '24 hours ago'",
+            "journalctl -k --since '24 hours ago'",
+            "rocm-smi --showuse --showmemuse --showtemp --showpids",
+            "docker ps -a",
+            "df -h / /mnt/almacen",
+            str(ODIN_SYNC_LOG),
+            str(CRON_ODIN_LOG),
+            "crontab -l",
+            "http://127.0.0.1:6333/collections/memoria_ia",
+        ],
         "notes": [
             "No containers are restarted automatically.",
             "Ollama is only started automatically when inactive and --repair is used.",
@@ -250,7 +559,30 @@ def main() -> int:
         # Re-check Ollama after repair attempts.
         report["post_repair_ollama"] = check_ollama()
 
+    report["findings"] = report_findings(report)
     write_reports(report, Path(args.log_dir))
+
+    if args.telegram or args.daily or args.alert:
+        paths = args.telegram_config + DEFAULT_TELEGRAM_CONFIG_SOURCES
+        token, chat_id, source = load_telegram_config(paths)
+        report["telegram_config_source"] = source
+        if not token or not chat_id:
+            print("Telegram config not found", file=sys.stderr)
+            return 2
+
+        should_send = args.daily or args.telegram
+        if args.alert:
+            state = load_state()
+            signature = finding_signature(report["findings"])
+            should_send = bool(signature) and signature != state.get("last_alert_signature")
+            if should_send:
+                state["last_alert_signature"] = signature
+                state["last_alert_at"] = report["timestamp"]
+                save_state(state)
+
+        if should_send:
+            telegram_send(token, chat_id, format_telegram_report(report, daily=args.daily))
+
     print(json.dumps(report, indent=2, ensure_ascii=False))
     return 0
 

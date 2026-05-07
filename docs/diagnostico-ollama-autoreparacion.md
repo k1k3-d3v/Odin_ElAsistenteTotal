@@ -97,6 +97,8 @@ También está versionada en el repositorio:
 tools/odin_autorepair.py
 ```
 
+El 2026-05-07 se amplió para enviar informes por Telegram reutilizando el `TOKEN` y el `CHAT_ID` ya existentes en los scripts de cron del servidor. Estos secretos no se versionan en el repositorio.
+
 ## Qué comprueba
 
 - Estado de `ollama.service`.
@@ -106,6 +108,9 @@ tools/odin_autorepair.py
 - Estado de GPU mediante `rocm-smi`.
 - Estado de contenedores importantes.
 - Uso de disco en `/` y `/mnt/almacen`.
+- Estado de rutas referenciadas por `crontab`.
+- Logs de ingesta y sincronización.
+- Estado de la colección `memoria_ia` en Qdrant.
 
 ## Política de reparación
 
@@ -145,6 +150,47 @@ La herramienta escribe informes JSON en:
 ```text
 /home/k1k3/odin/logs/autorepair/
 ```
+
+## Informes por Telegram
+
+La herramienta soporta dos modos de notificación:
+
+```bash
+/home/k1k3/odin/scripts/odin_autorepair.py --daily
+/home/k1k3/odin/scripts/odin_autorepair.py --repair --alert
+```
+
+El informe diario se envía siempre e incluye:
+
+- resumen de críticos, avisos e información;
+- estado de Ollama, GPU, Docker, cron, disco y Qdrant;
+- qué hay de malo;
+- qué hay de nuevo según logs de ingesta;
+- fuentes revisadas/visitadas;
+- fuentes de memoria procesadas recientemente.
+
+El modo alerta solo envía mensaje si hay problemas `warning` o `critical` y si la firma del problema ha cambiado respecto al último aviso, evitando spam repetitivo.
+
+## Cron corregido
+
+Se detectó que el cron antiguo apuntaba a rutas que ya no existían:
+
+```text
+/home/k1k3/update_odin.py
+/home/k1k3/lanzar_ingesta.sh
+/home/k1k3/cron_odin_ingesta.sh
+```
+
+Se actualizó el crontab a rutas reales dentro de `/home/k1k3/odin/scripts/` y se añadió reporte/autoreparación:
+
+```cron
+*/30 * * * * /home/k1k3/env/bin/python3 /home/k1k3/odin/scripts/update_odin.py >> /home/k1k3/odin_sync.log 2>&1
+0 * * * * /home/k1k3/odin/scripts/lanzar_ingesta.sh >> /home/k1k3/odin_sync.log 2>&1
+*/15 * * * * /home/k1k3/odin/scripts/odin_autorepair.py --repair --alert >> /home/k1k3/odin/logs/autorepair/cron.log 2>&1
+0 9 * * * /home/k1k3/odin/scripts/odin_autorepair.py --daily >> /home/k1k3/odin/logs/autorepair/cron.log 2>&1
+```
+
+Antes de modificar el cron se guardó una copia en `/home/k1k3/odin/logs/autorepair/`.
 
 ## Conclusión para la memoria
 
