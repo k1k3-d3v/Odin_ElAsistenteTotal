@@ -71,7 +71,7 @@ La migración se realizó de forma conservadora: primero se detuvo únicamente e
 Esta fase también define una política de limpieza prudente. Se pueden eliminar contenedores detenidos, imágenes Docker no utilizadas y caché de construcción, pero se evita borrar volúmenes Docker, modelos, bases de datos o carpetas de cuarentena sin una revisión explícita. En un proyecto como Odín, parte del valor académico está precisamente en los experimentos fallidos; limpiarlos sin inventario supondría perder trazabilidad sobre decisiones técnicas.
 
 \section{Fase 8: organización de contenedores}
-El despliegue de Odín se apoya principalmente en Docker Compose. En el estado actual existen seis stacks activos: núcleo, fotos, audio, cámaras, proxy domótico y TTS experimental. En la práctica corresponden a \texttt{odin-master}, \texttt{immich}, \texttt{audio}, \texttt{frigate}, \texttt{ha-proxy} y \texttt{pocket-tts}. Esta separación no es todavía perfecta, pero permite entender el sistema por dominios.
+El despliegue de Odín se apoya principalmente en Docker Compose. En el estado actual existen siete stacks activos: núcleo, fotos, audio, cámaras, proxy domótico, monitorización y TTS experimental. En la práctica corresponden a \texttt{odin-master}, \texttt{immich}, \texttt{audio}, \texttt{frigate}, \texttt{ha-proxy}, \texttt{netdata} y \texttt{pocket-tts}. Esta separación no es todavía perfecta, pero permite entender el sistema por dominios.
 
 \begin{table}[H]
   \centering
@@ -86,12 +86,13 @@ El despliegue de Odín se apoya principalmente en Docker Compose. En el estado a
     \texttt{audio} & 4 & Piper, faster-whisper, Wyoming Whisper y ASR propio. \\
     \texttt{frigate} & 1 & Videovigilancia y detección de personas. \\
     \texttt{ha-proxy} & 1 & Proxy local hacia Home Assistant. \\
+    \texttt{netdata} & 1 & Monitorización visual de host, Docker, discos, red y alarmas. \\
     \texttt{pocket-tts} & 1 & Servidor TTS compatible con una API de estilo OpenAI. \\
     \bottomrule
   \end{tabularx}
 \end{table}
 
-La revisión mostró que todos los contenedores activos estaban levantados y que los servicios con \textit{healthcheck} aparecían como \texttt{healthy}. Como parte de la reorganización, el stack principal se movió desde \nolinkurl{/home/k1k3/odin-master} a \nolinkurl{/home/k1k3/odin/core/odin-master}, se actualizó el montaje de datos de Open WebUI a \nolinkurl{/home/k1k3/odin/data/openweb_ui_data} y \texttt{ha-proxy} pasó de ser un contenedor manual a formar parte de un stack Compose propio. Esta organización facilita documentar cada herramienta con sus fuentes oficiales: Open WebUI para interfaz y extensibilidad \citep{openwebuiToolsDocs,openwebuiFunctionsDocs}, Immich para fotos \citep{immichDockerInstall}, Qdrant para almacenamiento vectorial \citep{qdrantStorageDocs}, n8n para automatización \citep{n8nDockerDocs} y Frigate para videovigilancia \citep{frigateInstallDocs}. Quedan tareas de orden: separar responsabilidades dentro de \texttt{odin-master}, mover secretos históricos a ficheros \texttt{.env} y revisar volúmenes procedentes de pruebas antiguas antes de eliminarlos.
+La revisión mostró que todos los contenedores activos estaban levantados y que los servicios con \textit{healthcheck} aparecían como \texttt{healthy}. Como parte de la reorganización, el stack principal se movió desde \nolinkurl{/home/k1k3/odin-master} a \nolinkurl{/home/k1k3/odin/core/odin-master}, se actualizó el montaje de datos de Open WebUI a \nolinkurl{/home/k1k3/odin/data/openweb_ui_data} y \texttt{ha-proxy} pasó de ser un contenedor manual a formar parte de un stack Compose propio. Home Assistant no se ejecuta en Docker dentro de Odín, sino en la Raspberry Pi 5; el proxy únicamente facilita el acceso local desde el servidor. Para la observabilidad visual se añadió Netdata, accesible desde la red local y embebible en Home Assistant mediante una tarjeta Webpage/iframe \citep{netdataDockerInstall,homeAssistantIframeCard}. Esta organización facilita documentar cada herramienta con sus fuentes oficiales: Open WebUI para interfaz y extensibilidad \citep{openwebuiToolsDocs,openwebuiFunctionsDocs}, Immich para fotos \citep{immichDockerInstall}, Qdrant para almacenamiento vectorial \citep{qdrantStorageDocs}, n8n para automatización \citep{n8nDockerDocs} y Frigate para videovigilancia \citep{frigateInstallDocs}. Quedan tareas de orden: separar responsabilidades dentro de \texttt{odin-master}, mover secretos históricos a ficheros \texttt{.env} y revisar volúmenes procedentes de pruebas antiguas antes de eliminarlos.
 
 \section{Problemas encontrados}
 \placeholder{Documentar incidencias reales: drivers, memoria, latencia, conflictos entre contenedores, permisos, seguridad, backups, integraciones inestables o recortes de alcance.}

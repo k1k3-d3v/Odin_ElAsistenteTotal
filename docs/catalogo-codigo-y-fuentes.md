@@ -14,6 +14,7 @@ Este documento organiza que fragmentos de codigo conviene incluir en la memoria 
 | Immich | Compose real del servidor, version saneada | Si, fragmento | Muestra uso de almacenamiento externo y ML con ROCm |
 | Audio/STT/TTS | `/home/k1k3/odin/audio/docker-compose.yml`, saneado | Si, tabla o fragmento | Resume Piper, Whisper, Wyoming y ASR propio |
 | Home Assistant proxy | `server-compose/home-assistant-proxy/docker-compose.yml` | Si | Ejemplo pequeno, limpio y sin secretos |
+| Netdata | `server-compose/netdata/docker-compose.yml` | Si | Dashboard visual de monitorizacion compatible con Home Assistant |
 | Frigate | Compose/config saneado | Tal vez | Util si se explica deteccion de personas y decision CPU/GPU |
 | Open WebUI tools | Export/snapshot saneado de tools | Si, varios fragmentos pequenos | Es lo que diferencia a Odin: acciones reales desde el chat |
 | Ingesta master | `odin_ingesta_master.py`, fragmentos | Si | Explica RAG local: extraccion, chunking, embeddings y Qdrant |
@@ -33,6 +34,8 @@ Este documento organiza que fragmentos de codigo conviene incluir en la memoria 
 | Frigate installation | https://docs.frigate.video/frigate/installation |
 | Tailscale y WireGuard | https://tailscale.com/docs/concepts/what-is-tailscale |
 | Tailscale con IP dinamica | https://tailscale.com/docs/reference/wireguard-dynamic-ip |
+| Netdata en Docker | https://learn.netdata.cloud/docs/netdata-agent/installation/docker |
+| Home Assistant Webpage card | https://www.home-assistant.io/dashboards/iframe/ |
 
 ## Criterio para elegir fragmentos
 

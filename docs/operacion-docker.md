@@ -17,6 +17,7 @@ La organizacion actual se basa en separar los contenedores por dominio funcional
 | `audio` | `/home/k1k3/odin/audio/docker-compose.yml` | 4 | Piper, faster-whisper, Wyoming Whisper y ASR propio |
 | `frigate` | `/home/k1k3/odin/automation/frigate/docker-compose.yml` | 1 | Videovigilancia y deteccion de personas |
 | `home-assistant-proxy` | `/home/k1k3/odin/automation/home-assistant-proxy/docker-compose.yml` | 1 | Proxy local hacia Home Assistant |
+| `netdata` | `/home/k1k3/odin/monitoring/netdata/docker-compose.yml` | 1 | Monitorizacion visual de Odín |
 | `pocket-tts-openai_streaming_server` | `/home/k1k3/odin/audio/pocket-tts-openai_streaming_server/docker-compose.yml` | 1 | TTS compatible con API estilo OpenAI |
 
 ## Contenedores por area
@@ -30,6 +31,7 @@ La organizacion actual se basa en separar los contenedores por dominio funcional
 | Automatizacion | `n8n-odin`, `evolution-odin`, `evolution-db`, `redis-odin` |
 | Seguridad/acceso | `cloudflared-odin`, `ha-proxy`, Tailscale fuera de Docker |
 | Camaras | `frigate` |
+| Monitorizacion | `netdata` |
 | Utilidades | `stirling-pdf` |
 
 ## Reorganizacion ejecutada
@@ -52,7 +54,9 @@ Open WebUI recibio atencion especial. Antes del cambio, el contenedor montaba su
 /home/k1k3/openweb_ui_data -> /home/k1k3/odin/data/openweb_ui_data
 ```
 
-Tambien se incorporo `ha-proxy` a Docker Compose. Antes era un contenedor creado manualmente, sin etiquetas Compose; ahora pertenece al stack `home-assistant-proxy`.
+Tambien se incorporo `ha-proxy` a Docker Compose. Antes era un contenedor creado manualmente, sin etiquetas Compose; ahora pertenece al stack `home-assistant-proxy`. Home Assistant no se ha levantado en Docker en Odín: sigue alojado en la Raspberry Pi 5, y `ha-proxy` actua solo como puente HTTP local.
+
+Para la monitorizacion visual se desplego Netdata en `/home/k1k3/odin/monitoring/netdata`. El servicio escucha en `http://192.168.86.105:19999` y puede integrarse en Home Assistant mediante una tarjeta Webpage/iframe, sin modificar la instalacion principal de HA.
 
 ## Estado observado
 
@@ -62,10 +66,10 @@ Validacion final:
 
 | Indicador | Valor |
 | --- | ---: |
-| Contenedores totales | 22 |
+| Contenedores totales | 23 |
 | Contenedores sin Compose | 0 |
 | Contenedores no sanos | 0 |
-| Proyectos Compose activos | 6 |
+| Proyectos Compose activos | 7 |
 
 Puntos a vigilar:
 
@@ -83,6 +87,7 @@ Puntos a vigilar:
 | Nextcloud | `http://127.0.0.1:8082/` | `302` |
 | n8n | `http://127.0.0.1:5679/` | `200` |
 | Immich | `http://127.0.0.1:2283/api/server/ping` | `200` |
+| Netdata | `http://127.0.0.1:19999/api/v1/info` | `200` |
 | Stirling PDF | `http://127.0.0.1:8080/` | `401`, servicio activo con autenticacion |
 
 ## Politica de limpieza
@@ -108,6 +113,7 @@ Acciones evitadas:
 | `/home/k1k3/odin/storage` | Nextcloud, Immich, bases de datos y politica de almacenamiento |
 | `/home/k1k3/odin/audio` | STT, ASR, TTS y satelites de voz |
 | `/home/k1k3/odin/automation` | n8n, Home Assistant bridge, Evolution API y Frigate |
+| `/home/k1k3/odin/monitoring` | Netdata, exportadores y futuras herramientas de observabilidad |
 | `/home/k1k3/odin/scripts` | Cron, ingesta, autoreparacion, backups y herramientas auxiliares |
 | `/home/k1k3/odin/docs` | Inventario operativo, decisiones tecnicas y runbooks |
 

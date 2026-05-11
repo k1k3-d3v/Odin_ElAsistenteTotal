@@ -20,6 +20,7 @@ ENDPOINTS = {
     "qdrant": "http://127.0.0.1:6333/collections/memoria_ia",
     "n8n": "http://127.0.0.1:5679/",
     "nextcloud": "http://127.0.0.1:8082/",
+    "netdata": "http://127.0.0.1:19999/api/v1/info",
 }
 
 
