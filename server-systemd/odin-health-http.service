@@ -1,0 +1,16 @@
+[Unit]
+Description=Odín Home Assistant health JSON server
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=k1k3
+Group=k1k3
+WorkingDirectory=/home/k1k3/odin/public
+ExecStart=/usr/bin/python3 -m http.server 8765 --bind 0.0.0.0
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

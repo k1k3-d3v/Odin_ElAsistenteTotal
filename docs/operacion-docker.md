@@ -58,6 +58,15 @@ Tambien se incorporo `ha-proxy` a Docker Compose. Antes era un contenedor creado
 
 Todos los contenedores activos aparecen en estado `Up`. Los contenedores principales que exponen healthcheck (`immich`, `webui`, `crawl4ai`, `frigate`, `stirling-pdf`, `pockettts`) aparecen como `healthy`.
 
+Validacion final:
+
+| Indicador | Valor |
+| --- | ---: |
+| Contenedores totales | 22 |
+| Contenedores sin Compose | 0 |
+| Contenedores no sanos | 0 |
+| Proyectos Compose activos | 6 |
+
 Puntos a vigilar:
 
 - `odin-master` concentra demasiadas responsabilidades; para memoria y mantenimiento seria mas claro separar `core`, `automation`, `storage` y `ingestion`.
