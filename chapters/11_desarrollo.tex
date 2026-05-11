@@ -270,7 +270,7 @@ Odín tiene dos capas para Home Assistant. La primera, \texttt{home\_assistant},
 
 La vía estructurada permite controlar mejor la acción: primero \texttt{control\_home\_assistant} busca entidades candidatas y después \texttt{execute\_action} ejecuta el servicio adecuado. Esto evita que el modelo diga que ha encendido algo solo por haber encontrado una entidad. La vía Assist, en cambio, aprovecha el agente conversacional de Home Assistant, sus áreas, alias, frases personalizadas e intents. Es más natural, pero delega más decisión en HA.
 
-Además, \texttt{home\_assistant} incluye funciones para lista de la compra, calendario y salud. \texttt{manage\_shopping\_list} permite añadir, borrar o leer elementos. \texttt{manage\_calendar} crea eventos con fechas y horas estructuradas. \texttt{get\_health\_status} intenta leer datos de salud desde sensores expuestos en Home Assistant. Esto cubre varias ramas del mapa inicial: control domótico, recordatorios, lista de la compra, historial de salud y acciones desde conversación.
+Además, \texttt{home\_assistant} incluye funciones para lista de la compra, calendario y salud. \texttt{manage\_shopping\_list} permite añadir, borrar o leer elementos. \texttt{manage\_calendar} crea eventos con fechas y horas estructuradas. \texttt{get\_health\_status} intenta leer datos de salud desde sensores expuestos en Home Assistant. Los temporizadores y la música no necesitan una tool propia porque se resuelven desde Home Assistant y HA Voice, que ya funcionan como capa domótica natural. Esto cubre varias ramas del mapa inicial: control domótico, recordatorios, lista de la compra, historial de salud y acciones desde conversación.
 
 \subsection{Cobertura respecto al mapa funcional}
 La \cref{tab:cobertura-mapa-funcional} compara lo que se quería inicialmente con lo que ya existe en Odín. La idea no es vender que todo está terminado al mismo nivel, sino distinguir entre funcionalidad implementada, funcionalidad parcial y funcionalidad que queda fuera de alcance.
@@ -295,8 +295,8 @@ La \cref{tab:cobertura-mapa-funcional} compara lo que se quería inicialmente co
   Crear recordatorios & Implementado & \texttt{recordatorio} y calendario vía n8n/Home Assistant. \\
   Consultar estado del sistema & Implementado & \texttt{salud\_del\_sistema}, \texttt{odin\_autorepair.py}, Telegram y JSON para HA. \\
   Control de domótica & Implementado & \texttt{home\_assistant} y \texttt{home\_assistant\_connector}. \\
-  Crear temporizadores & Parcial & Puede hacerse si Home Assistant Assist lo resuelve, pero no aparece como tool propia específica. \\
-  Reproducir música & Parcial & Depende de entidades/servicios de Home Assistant; no hay tool musical dedicada. \\
+  Crear temporizadores & Implementado vía HA & Se gestionan desde Home Assistant/HA Voice, sin necesidad de duplicar una tool específica en Open WebUI. \\
+  Reproducir música & Implementado vía HA Voice & La reproducción musical funciona desde HA Voice, que es la interfaz más natural para este caso. \\
   Buscar en internet & Implementado & \texttt{search\_and\_crawl\_web} con Crawl4AI. \\
   Navegar entre ideas, notas y archivos & Implementado & \texttt{buscar\_nextcloud}, Qdrant/Nextcloud e ingesta. \\
   Conversación coherente & Implementado por plataforma & Open WebUI aporta contexto conversacional; la memoria privada añade recuperación documental. \\
@@ -306,18 +306,18 @@ La \cref{tab:cobertura-mapa-funcional} compara lo que se quería inicialmente co
   Actualizar memoria tras actividad & Implementado & Cron de ingesta y scripts de actualización documentados. \\
   Avisar vulnerabilidad de contraseña & Fuera de alcance & Se omite porque los gestores/servicios externos ya lo cubren. \\
   Autoclasificar correos & Fuera de alcance & Se omite por el mismo criterio indicado por el autor. \\
-  Aviso por cámaras de seguridad & Parcial & Frigate detecta eventos; la proactividad depende de automatizaciones de notificación. \\
+  Aviso por presencia/cámaras & Implementado & Existe una automatización de Home Assistant que notifica cuando alguien llega usando el sensor de presencia. \\
   Datos de salud actualizados & Parcial & Existe lectura desde HA, pero depende de sensores móviles y permisos. \\
   Autoreparabilidad & Implementado & \texttt{odin\_autorepair.py} y \texttt{salud\_del\_sistema}. \\
   Backup externo/nube & Parcial & Hay política y almacenamiento en \nolinkurl{/mnt/almacen}; falta cerrar plan de copia final. \\
   Subida automática de fotos & Implementado & Immich con biblioteca migrada a \nolinkurl{/mnt/almacen/immich}. \\
-  Botón limpiar caché & Parcial & Existe acción \texttt{clean} en salud del sistema; falta exponerlo como botón visual en HA/Open WebUI. \\
-  Dashboard de control & Parcial & Netdata y JSON HA cubren monitorización; falta dashboard único de operación total. \\
-  Dar voz a Odín & Parcial & Piper funciona y PocketTTS está en prueba; la voz realista y rápida sigue siendo un reto. \\
+  Limpiar caché / nuevo chat & Resuelto por UX & No requiere una función propia: cuando la conversación acumula contexto, se puede iniciar un nuevo chat. \\
+  Dashboard de control & Pendiente & Netdata y JSON HA cubren monitorización; queda crear un dashboard único desde Home Assistant. \\
+  Dar voz a Odín & Implementado con limitación & Piper/HA Voice cubren la voz funcional. Se acepta como límite que no se alcanzará una voz más realista y rápida dentro del alcance. \\
 \end{longtable}
 \endgroup
 
-La conclusión de esta matriz es clara: la mayor parte funcional del proyecto ya existe, pero no toda está igualmente cerrada. Lo implementado con más solidez es memoria documental, notas, fotos, domótica, estado del sistema, cámaras, monitorización e ingesta. Lo parcial se concentra en experiencia final de voz, temporizadores/música como herramientas dedicadas, dashboard único y política definitiva de backup. Esta distinción ayuda a definir el alcance entregable sin ocultar trabajo futuro.
+La conclusión de esta matriz es clara: la mayor parte funcional del proyecto ya existe. Lo implementado con más solidez es memoria documental, notas, fotos, domótica, estado del sistema, presencia/cámaras, monitorización, ingesta, temporizadores y música mediante Home Assistant. Lo pendiente real se concentra en cerrar un dashboard único de control, formalizar la política definitiva de backup, documentar mejor los datos de salud si los sensores quedan estables y plantear como trabajo futuro un agente de ordenador capaz de actuar sobre el escritorio. La voz queda como una limitación aceptada: funciona, pero no alcanza todavía la naturalidad ideal que se buscaba al inicio.
 
 \section{Problemas encontrados}
 \placeholder{Documentar incidencias reales: drivers, memoria, latencia, conflictos entre contenedores, permisos, seguridad, backups, integraciones inestables o recortes de alcance.}
