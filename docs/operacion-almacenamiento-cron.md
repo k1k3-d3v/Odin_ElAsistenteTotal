@@ -63,6 +63,8 @@ Cron activo:
 
 El script de ingesta se probo manualmente y proceso 35 archivos nuevos o modificados. Qdrant quedo disponible con la coleccion `memoria_ia` en estado `green` y 3554 puntos. Tambien se saco la configuracion de Telegram a `/home/k1k3/odin/scripts/telegram.env`, con permisos restrictivos y sin versionar secretos.
 
+Tras mover el stack principal a `/home/k1k3/odin/core/odin-master`, se actualizo la ruta de `VAULT_PATH` en `odin_ingesta_master.py`. La cache de ingesta estaba creada por `root`, lo que provocaba un `PermissionError` al ejecutar el wrapper desde cron. Se corrigio la propiedad a `k1k3:k1k3`, se reescribieron las rutas antiguas de cache y se repitio la prueba con resultado correcto.
+
 ## Immich
 
 Immich almacenaba la biblioteca en:

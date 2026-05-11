@@ -10,11 +10,11 @@ Esta sección recogerá la configuración real del entorno: sistema operativo, e
 \placeholder{Profundizar en Ollama, llama.cpp u otras herramientas utilizadas: instalación, modelos probados, cuantización, uso de VRAM, latencia, problemas con AMD/ROCm, fallback y resultados.}
 
 \section{Fase 3: orquestación y automatización}
-La orquestación de Odín combina dos niveles. El primero corresponde a servicios de alto nivel, como Open WebUI, n8n, Home Assistant, Nextcloud, Qdrant, Immich, Frigate y los servicios de voz. El segundo corresponde a automatizaciones de sistema: tareas programadas, scripts de ingesta, informes de salud y herramientas de autoreparación.
+La orquestación de Odín combina dos niveles. El primero corresponde a servicios de alto nivel, como Open WebUI, n8n, Home Assistant, Nextcloud, Qdrant, Immich, Frigate y los servicios de voz. El segundo corresponde a automatizaciones de sistema: tareas programadas, scripts de ingesta, informes de salud y herramientas de autoreparación. La capa de contenedores se apoya en Docker Compose, que permite describir servicios, redes y volúmenes en ficheros declarativos \citep{dockerComposeFileReference,dockerComposeVolumes}.
 
 Durante la revisión operativa se detectó una situación típica de proyectos personales que crecen por iteración: existían scripts reorganizados dentro de \nolinkurl{/home/k1k3/odin/scripts/}, pero el cron de \texttt{root} seguía apuntando a rutas antiguas en \nolinkurl{/home/k1k3}. Esto producía errores periódicos aunque el sistema principal siguiera funcionando. La solución fue consolidar la programación bajo el usuario \texttt{k1k3}, desactivar el cron de \texttt{root} y dejar copias históricas antes de cada cambio.
 
-La ingesta activa queda ejecutada por \nolinkurl{cron_odin_ingesta.sh}, que llama a \nolinkurl{odin_ingesta_master.py}. Este flujo indexa documentos de Nextcloud en Qdrant usando el modelo \nolinkurl{mixedbread-ai/mxbai-embed-large-v1}. Se evita activar simultáneamente el script incremental antiguo \nolinkurl{update_odin.py}, porque utiliza otro modelo de embeddings y podría introducir inconsistencias dimensionales en la colección vectorial. Esta decisión refleja una idea importante del proyecto: automatizar no significa ejecutar todo lo disponible, sino elegir un camino mantenible y coherente.
+La ingesta activa queda ejecutada por \nolinkurl{cron_odin_ingesta.sh}, que llama a \nolinkurl{odin_ingesta_master.py}. Este flujo indexa documentos de Nextcloud en Qdrant usando el modelo \nolinkurl{mixedbread-ai/mxbai-embed-large-v1}. Se evita activar simultáneamente el script incremental antiguo \nolinkurl{update_odin.py}, porque utiliza otro modelo de embeddings y podría introducir inconsistencias dimensionales en la colección vectorial. Esta decisión refleja una idea importante del proyecto: automatizar no significa ejecutar todo lo disponible, sino elegir un camino mantenible y coherente. Durante la reorganización de carpetas se ajustó la ruta de la bóveda de Nextcloud al nuevo árbol \nolinkurl{/home/k1k3/odin/core/odin-master} y se corrigieron permisos de la caché de ingesta para que cron pudiera actualizarla sin privilegios de \texttt{root}.
 
 También se separó la configuración de Telegram en un fichero \texttt{telegram.env} con permisos restrictivos. De esta forma los scripts pueden enviar avisos sin dejar tokens incrustados en el código operativo ni en la memoria del proyecto.
 
@@ -71,7 +71,7 @@ La migración se realizó de forma conservadora: primero se detuvo únicamente e
 Esta fase también define una política de limpieza prudente. Se pueden eliminar contenedores detenidos, imágenes Docker no utilizadas y caché de construcción, pero se evita borrar volúmenes Docker, modelos, bases de datos o carpetas de cuarentena sin una revisión explícita. En un proyecto como Odín, parte del valor académico está precisamente en los experimentos fallidos; limpiarlos sin inventario supondría perder trazabilidad sobre decisiones técnicas.
 
 \section{Fase 8: organización de contenedores}
-El despliegue de Odín se apoya principalmente en Docker Compose. En el estado actual existen cinco stacks activos: \texttt{odin-master}, \texttt{immich}, \texttt{audio}, \texttt{frigate} y el stack abreviado aquí como \texttt{pocket-tts}. Esta separación no es todavía perfecta, pero permite entender el sistema por dominios: núcleo conversacional, fotos, voz, cámaras y TTS experimental.
+El despliegue de Odín se apoya principalmente en Docker Compose. En el estado actual existen seis stacks activos: núcleo, fotos, audio, cámaras, proxy domótico y TTS experimental. En la práctica corresponden a \texttt{odin-master}, \texttt{immich}, \texttt{audio}, \texttt{frigate}, \texttt{ha-proxy} y \texttt{pocket-tts}. Esta separación no es todavía perfecta, pero permite entender el sistema por dominios.
 
 \begin{table}[H]
   \centering
@@ -85,12 +85,13 @@ El despliegue de Odín se apoya principalmente en Docker Compose. En el estado a
     \texttt{immich} & 4 & Gestión de fotos, base de datos, Redis y machine learning con ROCm. \\
     \texttt{audio} & 4 & Piper, faster-whisper, Wyoming Whisper y ASR propio. \\
     \texttt{frigate} & 1 & Videovigilancia y detección de personas. \\
+    \texttt{ha-proxy} & 1 & Proxy local hacia Home Assistant. \\
     \texttt{pocket-tts} & 1 & Servidor TTS compatible con una API de estilo OpenAI. \\
     \bottomrule
   \end{tabularx}
 \end{table}
 
-La revisión mostró que todos los contenedores activos estaban levantados y que los servicios con \textit{healthcheck} aparecían como \texttt{healthy}. Aun así, quedan tareas de orden: integrar \texttt{ha-proxy} en un compose versionado, separar responsabilidades dentro de \texttt{odin-master}, mover secretos históricos a ficheros \texttt{.env} y revisar redes o volúmenes procedentes de pruebas antiguas antes de eliminarlos.
+La revisión mostró que todos los contenedores activos estaban levantados y que los servicios con \textit{healthcheck} aparecían como \texttt{healthy}. Como parte de la reorganización, el stack principal se movió desde \nolinkurl{/home/k1k3/odin-master} a \nolinkurl{/home/k1k3/odin/core/odin-master}, se actualizó el montaje de datos de Open WebUI a \nolinkurl{/home/k1k3/odin/data/openweb_ui_data} y \texttt{ha-proxy} pasó de ser un contenedor manual a formar parte de un stack Compose propio. Esta organización facilita documentar cada herramienta con sus fuentes oficiales: Open WebUI para interfaz y extensibilidad \citep{openwebuiToolsDocs,openwebuiFunctionsDocs}, Immich para fotos \citep{immichDockerInstall}, Qdrant para almacenamiento vectorial \citep{qdrantStorageDocs}, n8n para automatización \citep{n8nDockerDocs} y Frigate para videovigilancia \citep{frigateInstallDocs}. Quedan tareas de orden: separar responsabilidades dentro de \texttt{odin-master}, mover secretos históricos a ficheros \texttt{.env} y revisar volúmenes procedentes de pruebas antiguas antes de eliminarlos.
 
 \section{Problemas encontrados}
 \placeholder{Documentar incidencias reales: drivers, memoria, latencia, conflictos entre contenedores, permisos, seguridad, backups, integraciones inestables o recortes de alcance.}

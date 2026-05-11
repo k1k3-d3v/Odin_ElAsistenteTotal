@@ -12,10 +12,11 @@ La organizacion actual se basa en separar los contenedores por dominio funcional
 
 | Stack | Ruta | Servicios | Funcion |
 | --- | --- | ---: | --- |
-| `odin-master` | `/home/k1k3/odin-master/docker-compose.yml` | 11 | Open WebUI, Qdrant, Nextcloud, n8n, Evolution API, Cloudflared, Crawl4AI y Stirling PDF |
+| `odin-master` | `/home/k1k3/odin/core/odin-master/docker-compose.yml` | 11 | Open WebUI, Qdrant, Nextcloud, n8n, Evolution API, Cloudflared, Crawl4AI y Stirling PDF |
 | `immich` | `/home/k1k3/odin/media/immich-app/docker-compose.yml` | 4 | Fotos, base de datos, Redis y machine learning de Immich |
 | `audio` | `/home/k1k3/odin/audio/docker-compose.yml` | 4 | Piper, faster-whisper, Wyoming Whisper y ASR propio |
 | `frigate` | `/home/k1k3/odin/automation/frigate/docker-compose.yml` | 1 | Videovigilancia y deteccion de personas |
+| `home-assistant-proxy` | `/home/k1k3/odin/automation/home-assistant-proxy/docker-compose.yml` | 1 | Proxy local hacia Home Assistant |
 | `pocket-tts-openai_streaming_server` | `/home/k1k3/odin/audio/pocket-tts-openai_streaming_server/docker-compose.yml` | 1 | TTS compatible con API estilo OpenAI |
 
 ## Contenedores por area
@@ -31,17 +32,49 @@ La organizacion actual se basa en separar los contenedores por dominio funcional
 | Camaras | `frigate` |
 | Utilidades | `stirling-pdf` |
 
+## Reorganizacion ejecutada
+
+Se movio el stack principal desde `/home/k1k3/odin-master` a:
+
+```text
+/home/k1k3/odin/core/odin-master
+```
+
+Para reducir riesgo se mantuvo un enlace simbolico de compatibilidad:
+
+```text
+/home/k1k3/odin-master -> /home/k1k3/odin/core/odin-master
+```
+
+Open WebUI recibio atencion especial. Antes del cambio, el contenedor montaba sus datos desde `/home/k1k3/openweb_ui_data`, una ruta externa al arbol principal. Se verifico que el contenido ya existia en `/home/k1k3/odin/data/openweb_ui_data`, se actualizo el compose para usar esa ruta y se dejo el camino antiguo como enlace simbolico de compatibilidad:
+
+```text
+/home/k1k3/openweb_ui_data -> /home/k1k3/odin/data/openweb_ui_data
+```
+
+Tambien se incorporo `ha-proxy` a Docker Compose. Antes era un contenedor creado manualmente, sin etiquetas Compose; ahora pertenece al stack `home-assistant-proxy`.
+
 ## Estado observado
 
 Todos los contenedores activos aparecen en estado `Up`. Los contenedores principales que exponen healthcheck (`immich`, `webui`, `crawl4ai`, `frigate`, `stirling-pdf`, `pockettts`) aparecen como `healthy`.
 
 Puntos a vigilar:
 
-- `ha-proxy` aparece sin etiqueta Compose, por lo que conviene integrarlo en un compose versionado o documentar claramente su creacion manual.
 - `odin-master` concentra demasiadas responsabilidades; para memoria y mantenimiento seria mas claro separar `core`, `automation`, `storage` y `ingestion`.
 - Hay secretos historicos incrustados en compose y scripts antiguos. La direccion correcta es moverlos a `.env` y no versionarlos.
-- Existen redes Docker antiguas o de pruebas, como `parakeet-tdt-06b-v3-fastapi-openai_default`, que se deben revisar antes de borrar.
+- Se eliminaron redes Docker sin contenedores asociadas a pruebas antiguas.
 - Los volumenes Docker no se han eliminado porque pueden contener datos o caches utiles.
+
+## Validacion posterior
+
+| Servicio | Comprobacion | Resultado |
+| --- | --- | --- |
+| Open WebUI | `http://127.0.0.1:3000/health` | `200` |
+| Qdrant | `http://127.0.0.1:6333/collections/memoria_ia` | `200`, coleccion `green` |
+| Nextcloud | `http://127.0.0.1:8082/` | `302` |
+| n8n | `http://127.0.0.1:5679/` | `200` |
+| Immich | `http://127.0.0.1:2283/api/server/ping` | `200` |
+| Stirling PDF | `http://127.0.0.1:8080/` | `401`, servicio activo con autenticacion |
 
 ## Politica de limpieza
 
@@ -69,4 +102,4 @@ Acciones evitadas:
 | `/home/k1k3/odin/scripts` | Cron, ingesta, autoreparacion, backups y herramientas auxiliares |
 | `/home/k1k3/odin/docs` | Inventario operativo, decisiones tecnicas y runbooks |
 
-La reorganizacion debe hacerse por fases: primero documentar, despues mover secretos a `.env`, luego separar compose sin cambiar volumenes, y finalmente limpiar carpetas historicas.
+La reorganizacion debe hacerse por fases: primero documentar, despues mover secretos a `.env`, luego separar compose sin cambiar volumenes, y finalmente limpiar carpetas historicas. El primer paso ya queda completado: los stacks Docker activos estan bajo `/home/k1k3/odin` o sus subcarpetas.

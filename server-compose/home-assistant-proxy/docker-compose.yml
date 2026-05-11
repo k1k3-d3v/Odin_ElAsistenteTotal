@@ -1,0 +1,12 @@
+name: home-assistant-proxy
+
+services:
+  ha-proxy:
+    image: alpine/socat
+    container_name: ha-proxy
+    restart: unless-stopped
+    command:
+      - tcp-listen:8123,fork,reuseaddr
+      - tcp:192.168.122.252:8123
+    ports:
+      - "8123:8123"
