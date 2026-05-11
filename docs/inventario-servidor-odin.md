@@ -13,8 +13,8 @@ Hardware detectado: ASRock A520M-HVS, AMD Ryzen 5 5600G, GPU AMD Radeon RX 9070/
 
 | Punto | Tamaño | Uso aproximado | Comentario |
 | --- | ---: | ---: | --- |
-| `/` | 914 GB | 80% | Sistema principal y servicios |
-| `/mnt/almacen` | 880 GB | 24% | Almacenamiento auxiliar/backups |
+| `/` | 914 GB | 79% | Sistema principal y servicios |
+| `/mnt/almacen` | 880 GB | 48% | Almacenamiento auxiliar/backups; biblioteca Immich migrada |
 | `/boot` | 2 GB | 18% | Arranque |
 
 ## Aceleración IA
@@ -51,7 +51,7 @@ Nota: el mensaje de bienvenida del sistema muestra una temperatura absurda (`389
 | `automation/frigate/` | Frigate para cámaras y detección |
 | `core/` | Servicios core y Open WebUI |
 | `data/` | Datos persistentes de Open WebUI |
-| `media/immich-app/` | Immich y machine learning asociado |
+| `media/immich-app/` | Immich y machine learning asociado; `UPLOAD_LOCATION=/mnt/almacen/immich` |
 | `scripts/` | Automatizaciones de backup, ingesta y actualización |
 
 ## Docker Compose
@@ -150,11 +150,14 @@ El diseño inicial mencionaba WireGuard, pero el uso actual descrito por el auto
 ## Automatizaciones cron
 
 ```cron
-*/30 * * * * /home/k1k3/env/bin/python3 /home/k1k3/update_odin.py >> /home/k1k3/odin_sync.log 2>&1
-0 * * * * /home/k1k3/lanzar_ingesta.sh >> /home/k1k3/odin_sync.log 2>&1
+# Odín cron desactivado temporalmente por reorganización de almacenamiento/NVMe.
+# */30 * * * * /home/k1k3/env/bin/python3 /home/k1k3/odin/scripts/update_odin.py >> /home/k1k3/odin_sync.log 2>&1
+# 0 * * * * /home/k1k3/odin/scripts/lanzar_ingesta.sh >> /home/k1k3/odin_sync.log 2>&1
+# */15 * * * * /home/k1k3/odin/scripts/odin_autorepair.py --repair --alert >> /home/k1k3/odin/logs/autorepair/cron.log 2>&1
+# 0 9 * * * /home/k1k3/odin/scripts/odin_autorepair.py --daily >> /home/k1k3/odin/logs/autorepair/cron.log 2>&1
 ```
 
-Hay scripts equivalentes dentro de `/home/k1k3/odin/scripts/`, por lo que conviene revisar si las rutas del cron son versiones antiguas o wrappers.
+Las entradas quedan comentadas hasta completar la reorganización del almacenamiento y el futuro uso del NVMe externo de 1 TB. La copia histórica del crontab se conserva en `/home/k1k3/odin/logs/autorepair/`.
 
 ## Correspondencia con el mapa funcional
 
