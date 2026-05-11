@@ -92,7 +92,113 @@ El despliegue de Odín se apoya principalmente en Docker Compose. En el estado a
   \end{tabularx}
 \end{table}
 
-La revisión mostró que todos los contenedores activos estaban levantados y que los servicios con \textit{healthcheck} aparecían como \texttt{healthy}. Como parte de la reorganización, el stack principal se movió desde \nolinkurl{/home/k1k3/odin-master} a \nolinkurl{/home/k1k3/odin/core/odin-master}, se actualizó el montaje de datos de Open WebUI a \nolinkurl{/home/k1k3/odin/data/openweb_ui_data} y \texttt{ha-proxy} pasó de ser un contenedor manual a formar parte de un stack Compose propio. Home Assistant no se ejecuta en Docker dentro de Odín, sino en la Raspberry Pi 5; el proxy únicamente facilita el acceso local desde el servidor. Para la observabilidad visual se añadió Netdata, accesible desde la red local y embebible en Home Assistant mediante una tarjeta Webpage/iframe \citep{netdataDockerInstall,homeAssistantIframeCard}. Esta organización facilita documentar cada herramienta con sus fuentes oficiales: Open WebUI para interfaz y extensibilidad \citep{openwebuiToolsDocs,openwebuiFunctionsDocs}, Immich para fotos \citep{immichDockerInstall}, Qdrant para almacenamiento vectorial \citep{qdrantStorageDocs}, n8n para automatización \citep{n8nDockerDocs} y Frigate para videovigilancia \citep{frigateInstallDocs}. Quedan tareas de orden: separar responsabilidades dentro de \texttt{odin-master}, mover secretos históricos a ficheros \texttt{.env} y revisar volúmenes procedentes de pruebas antiguas antes de eliminarlos.
+La revisión mostró que todos los contenedores activos estaban levantados y que los servicios con \textit{healthcheck} aparecían como \texttt{healthy}. Como parte de la reorganización, el stack principal se movió desde \nolinkurl{/home/k1k3/odin-master} a \nolinkurl{/home/k1k3/odin/core/odin-master}, se actualizó el montaje de datos de Open WebUI a \nolinkurl{/home/k1k3/odin/data/openweb_ui_data} y \texttt{ha-proxy} pasó de ser un contenedor manual a formar parte de un stack Compose propio. Home Assistant no se ejecuta en Docker dentro de Odín, sino en la Raspberry Pi 5; el proxy únicamente facilita el acceso local desde el servidor. Para la observabilidad visual se añadió Netdata, accesible desde la red local y embebible en Home Assistant mediante una tarjeta Webpage/iframe \citep{netdataDockerInstall,homeAssistantIframeCard}. Esta organización facilita documentar cada herramienta con sus fuentes oficiales: Open WebUI para interfaz y extensibilidad \citep{openwebuiDocs,openwebuiToolsDocs,openwebuiFunctionsDocs}, Immich para fotos \citep{immichDockerInstall}, Qdrant para almacenamiento vectorial \citep{qdrantDocs,qdrantStorageDocs}, n8n para automatización \citep{n8nDocs,n8nDockerDocs} y Frigate para videovigilancia \citep{frigateInstallDocs}. Quedan tareas de orden: separar responsabilidades dentro de \texttt{odin-master}, mover secretos históricos a ficheros \texttt{.env} y revisar volúmenes procedentes de pruebas antiguas antes de eliminarlos.
+
+\subsection{Inventario completo de contenedores}
+La \cref{tab:contenedores-docker-completos} recoge el inventario operativo completo observado el 11 de mayo de 2026. Esta tabla es importante para la memoria porque transforma el despliegue real en una evidencia verificable: no se describe una arquitectura ideal, sino el sistema que está funcionando en el servidor. Para evitar exponer secretos, se documentan nombres de contenedor, imagen, stack, función y fuente técnica, pero no variables de entorno sensibles ni credenciales.
+
+\begingroup
+\tiny
+\setlength{\tabcolsep}{2pt}
+\setlength{\LTpre}{0pt}
+\setlength{\LTpost}{8pt}
+\begin{longtable}{p{0.19\textwidth}p{0.16\textwidth}p{0.47\textwidth}p{0.12\textwidth}}
+  \caption{Inventario completo de contenedores Docker de Odín}
+  \label{tab:contenedores-docker-completos}\\
+  \toprule
+  Contenedor & Stack & Función en Odín & Fuente \\
+  \midrule
+  \endfirsthead
+  \toprule
+  Contenedor & Stack & Función en Odín & Fuente \\
+  \midrule
+  \endhead
+  \bottomrule
+  \endfoot
+  \texttt{webui-odin} & \texttt{odin-master} & Interfaz principal basada en Open WebUI para conversaciones, herramientas y acceso a modelos locales o compatibles con API externa. & \citep{openwebuiDocs} \\
+  \texttt{qdrant-odin} & \texttt{odin-master} & Base vectorial Qdrant para recuperación semántica, memoria y futuras búsquedas RAG. & \citep{qdrantDocs,qdrantStorageDocs} \\
+  \texttt{n8n-odin} & \texttt{odin-master} & Orquestador n8n: conecta eventos, llamadas HTTP, herramientas y automatizaciones. & \citep{n8nDocs,n8nDockerDocs} \\
+  \texttt{nextcloud-odin} & \texttt{odin-master} & Nube privada Nextcloud para documentos, notas, ficheros y material ingerible por Odín. & \citep{nextcloudDocs} \\
+  \texttt{nextcloud-db} & \texttt{odin-master} & Base MariaDB de Nextcloud. Se mantiene separada para persistencia y copias. & \citep{mariadbDocs,nextcloudDocs} \\
+  \texttt{evolution-odin} & \texttt{odin-master} & Evolution API para integrar canales de mensajería con flujos automatizados. & \citep{evolutionApiDocs} \\
+  \texttt{evolution-db} & \texttt{odin-master} & Base PostgreSQL de Evolution API. Aísla el estado de mensajería del resto del sistema. & \citep{postgres15Docs,evolutionApiDocs} \\
+  \texttt{redis-odin} & \texttt{odin-master} & Redis para caché o colas asociadas a automatización y servicios internos. & \citep{redisDocs} \\
+  \texttt{cloudflared-odin} & \texttt{odin-master} & Túnel Cloudflare histórico para acceso controlado; actualmente Tailscale es la opción preferida. & \citep{cloudflareTunnelDocs,tailscaleWhatIs} \\
+  \texttt{crawl4ai} & \texttt{odin-master} & Extracción de contenido web para guardar páginas, transcripciones y contexto reutilizable. & \citep{crawl4aiDocs} \\
+  \texttt{stirling-pdf} & \texttt{odin-master} & Utilidad local Stirling PDF para manipular documentos sin depender de servicios externos. & \citep{stirlingPdfDocs} \\
+  \texttt{immich\_server} & \texttt{immich} & Servicio principal de Immich para biblioteca fotográfica y subida desde móvil. & \citep{immichDocs,immichDockerInstall} \\
+  \texttt{immich\_postgres} & \texttt{immich} & Base de datos especializada de Immich, con extensiones vectoriales para funciones internas. & \citep{immichDockerInstall,postgres15Docs} \\
+  \texttt{immich\_machine\_learning} & \texttt{immich} & Servicio de ML de Immich con ROCm, usado para análisis local de imágenes. & \citep{immichRequirements,rocmDocs} \\
+  \texttt{immich\_redis} & \texttt{immich} & Caché y cola de trabajo de Immich mediante Valkey. & \citep{valkeyDocs,immichDockerInstall} \\
+  \texttt{frigate} & \texttt{frigate} & Videovigilancia, cámaras y detección de personas. En Odín se usa CPU para no saturar la GPU AMD. & \citep{frigateInstallDocs} \\
+  \texttt{piper} & \texttt{audio} & Síntesis de voz estable para asistente físico o móvil. & \citep{linuxserverPiperDocs} \\
+  \texttt{faster-whisper-server} & \texttt{audio} & Servicio STT basado en Whisper/faster-whisper para transcripción en CPU. & \citep{speachesDocs} \\
+  \texttt{wyoming-whisper} & \texttt{audio} & Integración de Whisper mediante protocolo Wyoming, útil para Home Assistant. & \citep{wyomingWhisperRepo,homeAssistantDocs} \\
+  \texttt{odin-asr} & \texttt{audio} & Servicio propio de reconocimiento de voz basado en ONNX para experimentar con control local. & \citep{rocmDocs} \\
+  \texttt{pockettts-server} & \texttt{pocket-tts} & TTS experimental compatible con una API de estilo OpenAI. & \citep{openwebuiDocs} \\
+  \texttt{ha-proxy} & \texttt{home-assistant-proxy} & Proxy TCP/HTTP mediante \texttt{socat} hacia Home Assistant alojado en Raspberry Pi 5. & \citep{alpineSocatDockerHub,homeAssistantDocs} \\
+  \texttt{netdata} & \texttt{netdata} & Monitorización visual de CPU, memoria, discos, red, Docker y alarmas. & \citep{netdataDockerInstall} \\
+\end{longtable}
+\endgroup
+
+Las fechas de consulta de las referencias se han distribuido entre el 7 y el 11 de mayo de 2026. Esto permite reflejar el proceso real de documentación: primero se revisaron las piezas troncales del proyecto (Docker, Open WebUI, Qdrant, Nextcloud, Tailscale y ROCm), después las integraciones de automatización y acceso (n8n, Evolution API, Cloudflare Tunnel, bases de datos), y finalmente las piezas visuales o auxiliares (Netdata, Home Assistant iframe, Stirling PDF, Valkey y servicios de voz). La bibliografía no debe presentarse como una lista ornamental al final, sino como respaldo directo de decisiones técnicas concretas.
+
+\subsection{Stack \texttt{odin-master}: núcleo conversacional, datos y automatización}
+El stack \texttt{odin-master} concentra once servicios y es el corazón histórico de Odín. No es la organización ideal a largo plazo, porque mezcla interfaz, automatización, almacenamiento, bases de datos, conectividad y utilidades. Sin embargo, su existencia es coherente con la evolución del proyecto: Odín no nació como un producto cerrado, sino como un sistema incremental en el que cada necesidad real iba añadiendo una pieza.
+
+El contenedor \texttt{webui-odin} proporciona la interfaz principal. Open WebUI es especialmente relevante porque no se limita a ser una pantalla de chat: permite conectar modelos, usar herramientas, ampliar comportamiento mediante funciones y operar como una capa de interacción entre el usuario y el resto de servicios \citep{openwebuiDocs,openwebuiToolsDocs,openwebuiFunctionsDocs}. En Odín esta interfaz cumple tres funciones: conversación con modelos, acceso a herramientas propias y punto de entrada cotidiano para consultar memoria, fotos, domótica o estado del sistema.
+
+\texttt{qdrant-odin} sostiene la memoria semántica. Qdrant permite almacenar vectores, colecciones y metadatos, lo que encaja con una arquitectura RAG en la que los documentos no se consultan únicamente por nombre de archivo, sino por similitud semántica \citep{qdrantDocs,qdrantStorageDocs}. En la práctica, la colección \texttt{memoria\_ia} actúa como índice de conocimiento personal: documentos de Nextcloud, notas y contenido extraído pueden convertirse en embeddings y recuperarse posteriormente como contexto.
+
+\texttt{n8n-odin} representa la capa de orquestación. Su papel no es sustituir al código propio, sino reducir fricción para conectar servicios: llamadas HTTP, webhooks, calendarios, mensajes, integraciones con Home Assistant y flujos de automatización \citep{n8nDocs,n8nDockerDocs}. Esta separación es importante: Open WebUI puede ser la cara conversacional, pero n8n es una de las manos operativas. Permite que una intención detectada en una conversación acabe en una acción concreta.
+
+\texttt{nextcloud-odin} y \texttt{nextcloud-db} aportan la nube privada. Nextcloud permite mantener documentos, notas, ficheros y material de trabajo en infraestructura propia \citep{nextcloudDocs}. La base \texttt{nextcloud-db}, basada en MariaDB, queda separada porque el estado de una nube privada es crítico: perder la base de datos puede ser más grave que perder una caché. Esta decisión conecta con la filosofía \textit{local-first}: los datos personales deben seguir estando bajo control del usuario aunque el sistema use capas de IA encima.
+
+La pareja \texttt{evolution-odin} y \texttt{evolution-db} añade una vía de integración de mensajería. En un asistente proactivo, los canales de salida importan casi tanto como los de entrada: si Odín detecta un fallo, una tarea pendiente o un evento relevante, necesita poder avisar. Evolution API cubre ese espacio de integración con mensajería, mientras PostgreSQL mantiene su estado persistente \citep{evolutionApiDocs,postgres15Docs}. En la memoria se debe tratar como una capacidad de comunicación, no como una pieza aislada.
+
+\texttt{redis-odin} aparece como infraestructura auxiliar. Redis se usa habitualmente como caché, cola o almacenamiento temporal de baja latencia \citep{redisDocs}. En un sistema con tantos servicios, disponer de un componente de este tipo evita que todas las operaciones dependan de bases de datos relacionales o ficheros. No guarda la memoria principal del proyecto, pero sí ayuda a que flujos y servicios respondan con menos latencia.
+
+\texttt{cloudflared-odin} es una pieza histórica de conectividad. Cloudflare Tunnel permite conectar servicios internos con la red de Cloudflare sin abrir directamente puertos entrantes tradicionales \citep{cloudflareTunnelDocs}. Aun así, la decisión actual de Odín se inclina hacia Tailscale porque resuelve de forma más simple el acceso privado entre dispositivos, evita depender de DNS dinámico externo y encaja mejor con el uso por VPN descrito en la \cref{tab:vpn-comparativa} \citep{tailscaleWhatIs,tailscaleDynamicIp}. En la memoria conviene explicar esta convivencia como transición técnica, no como contradicción.
+
+\texttt{crawl4ai} cubre una necesidad muy propia de Odín: transformar contenido web en material guardable, resumible e indexable. Su valor no está solo en descargar HTML, sino en servir de puente entre páginas, transcripciones y memoria \citep{crawl4aiDocs}. Esto conecta con herramientas de Open WebUI como guardar una página o una transcripción para que después se pueda buscar en Qdrant o archivar en Nextcloud.
+
+\texttt{stirling-pdf} añade una utilidad local para manipular PDF \citep{stirlingPdfDocs}. Aunque pueda parecer secundaria, es coherente con la idea del asistente total: muchos documentos académicos, administrativos o técnicos llegan como PDF. Tener una herramienta local reduce dependencia de webs externas, evita subir documentos privados a servicios de terceros y mantiene la operación dentro de la infraestructura propia.
+
+\subsection{Stack \texttt{immich}: fotos, recuerdos y almacenamiento pesado}
+Immich representa la dimensión visual y personal de Odín. En lugar de tratar las fotos como simples archivos, el sistema las convierte en un repositorio consultable y automatizable. El contenedor \texttt{immich\_server} gestiona la aplicación principal, subida desde móvil, organización y API. La documentación oficial recomienda Docker Compose como método de despliegue, con un fichero \texttt{.env} que define, entre otros valores, la ubicación de la biblioteca \citep{immichDockerInstall}.
+
+La decisión operativa más importante fue mover \texttt{UPLOAD\_LOCATION} a \nolinkurl{/mnt/almacen/immich}. Esto separa datos multimedia del sistema raíz. En la validación se comprobó que origen y destino tenían 202 GB y 77.666 ficheros, y que los contenedores de Immich quedaban en estado \texttt{healthy}. Esta operación no solo libera presión sobre el disco principal: también clarifica qué debe respaldarse, qué puede crecer y qué no debe mezclarse con configuraciones o bases de datos.
+
+\texttt{immich\_postgres} almacena el estado persistente. Aunque PostgreSQL es una base ampliamente utilizada, en Immich aparece empaquetada con extensiones específicas para soportar capacidades de búsqueda y tratamiento de metadatos \citep{postgres15Docs,immichDockerInstall}. Por eso no se debe sustituir ni limpiar como si fuera una base genérica. Su volumen forma parte del núcleo de datos de la biblioteca.
+
+\texttt{immich\_machine\_learning} es una pieza especialmente interesante para la memoria porque usa ROCm. A diferencia de Frigate, donde se decidió no usar la GPU por compatibilidad y saturación, Immich sí aprovecha la aceleración AMD para tareas de machine learning sobre imágenes \citep{immichRequirements,rocmDocs}. Esta diferencia demuestra que la política de GPU no es ``usar siempre'' o ``no usar nunca'', sino asignar aceleración donde aporta valor sin comprometer la estabilidad general.
+
+\texttt{immich\_redis}, desplegado con Valkey, actúa como cola y caché de la aplicación \citep{valkeyDocs}. Su estado es menos crítico que la base de datos, pero sigue siendo necesario para que la aplicación funcione correctamente. En términos de arquitectura, Immich enseña una lección repetida en Odín: un servicio visible suele depender de varias piezas invisibles. Documentar solo \texttt{immich\_server} ocultaría la complejidad real del despliegue.
+
+\subsection{Stack \texttt{audio}: STT, ASR y síntesis de voz}
+La capa de audio reúne cuatro contenedores: Piper, faster-whisper, Wyoming Whisper y el ASR propio de Odín. Esta zona es una de las más experimentales del proyecto porque la interacción por voz exige latencia baja, naturalidad y compatibilidad con el hardware disponible. Además, al trabajar con GPU AMD, muchas soluciones orientadas a CUDA no son trasladables directamente.
+
+\texttt{piper} se mantiene como TTS estable. No es necesariamente la voz más realista, pero cumple un requisito fundamental: responder rápido y de forma fiable \citep{linuxserverPiperDocs}. En un asistente físico o móvil, la respuesta inmediata puede ser más valiosa que una voz perfecta que llega demasiado tarde.
+
+\texttt{faster-whisper-server} proporciona STT mediante una interfaz de servidor. La imagen desplegada es CPU, lo que reduce dependencia de ROCm y evita competir con Ollama o Immich por GPU. Esta elección sacrifica parte del rendimiento potencial, pero mejora aislamiento y previsibilidad. El proyecto \texttt{speaches} mantiene una aproximación compatible con APIs de voz, lo que facilita integraciones posteriores \citep{speachesDocs}.
+
+\texttt{wyoming-whisper} existe por integración. El protocolo Wyoming se usa dentro del ecosistema de Home Assistant para conectar satélites de voz y servicios de transcripción; por eso esta pieza no se evalúa solo por precisión, sino por encaje con la domótica \citep{wyomingWhisperRepo,homeAssistantDocs}. En Odín, donde Home Assistant vive en una Raspberry Pi 5 y el servidor principal aporta cómputo, esta separación puede ser útil: HA coordina dispositivos y Odín ejecuta tareas más pesadas.
+
+\texttt{odin-asr} es el servicio propio basado en ONNX. Su importancia académica es distinta a la de los contenedores anteriores: no se incluye solo para ``tener otro STT'', sino para experimentar con control local, formatos de modelo y despliegue propio. Aunque una herramienta externa pueda ser más madura, un componente propio permite justificar decisiones, medir límites y mostrar aportación técnica en la memoria.
+
+\subsection{Stacks especializados: cámaras, Home Assistant, monitorización y TTS}
+\texttt{frigate} cubre la videovigilancia. En Odín se usa para detección de personas y cámaras, pero se ha tomado una decisión concreta: usar CPU para detección en lugar de GPU. La razón es práctica. La GPU AMD ya se utiliza en Ollama e Immich, y en Frigate la compatibilidad y la saturación no compensaban la mejora esperada. Como la detección funciona suficientemente bien en CPU, se reserva la GPU para cargas donde sí aporta una diferencia clara \citep{frigateInstallDocs,rocmDocs}.
+
+\texttt{ha-proxy} es deliberadamente simple. Home Assistant no se ha levantado en Docker en Odín porque ya está instalado en la Raspberry Pi 5. El contenedor basado en \texttt{alpine/socat} solo actúa como puente hacia esa instancia \citep{alpineSocatDockerHub,homeAssistantDocs}. Esta decisión evita duplicar HA, reduce riesgo y respeta la arquitectura real de la casa: la Raspberry Pi queda como centro domótico y Odín como servidor de IA, memoria y automatización.
+
+\texttt{netdata} aporta la capa visual de monitorización. A diferencia del JSON de estado, pensado para sensores y automatizaciones, Netdata ofrece un panel navegable con CPU, memoria, red, discos, procesos, Docker y alarmas \citep{netdataDockerInstall}. Se integra en Home Assistant mediante una tarjeta Webpage/iframe \citep{homeAssistantIframeCard}. Así se cubren dos necesidades diferentes: lectura automática de estado para alertas y una interfaz humana bonita para inspeccionar el servidor.
+
+\texttt{pockettts-server} es el TTS experimental compatible con estilo OpenAI. Su papel actual es servir como línea de prueba para una voz más natural y conectable desde interfaces que ya entienden APIs de tipo OpenAI. No sustituye todavía a Piper, porque la experiencia de voz exige estabilidad y baja latencia. En la memoria debe aparecer como ejemplo de iteración técnica: se probaron varias alternativas, se mantuvo una opción estable y se dejó otra como línea de mejora.
+
+\subsection{Criterios de operación y limpieza}
+El inventario también permitió definir una política de limpieza. Se ejecutaron acciones seguras como eliminar contenedores detenidos, caché de construcción e imágenes no utilizadas. En cambio, se evitaron acciones destructivas como borrar volúmenes, modelos, bases de datos, la carpeta de cuarentena o el origen antiguo de Immich. Esta prudencia es necesaria porque en un sistema experimental los restos no son siempre basura: a veces son evidencias de decisiones, pruebas fallidas o datos que aún no han sido migrados.
+
+El objetivo a medio plazo es separar \texttt{odin-master} en dominios más claros: núcleo conversacional, automatización, almacenamiento, ingesta y utilidades. La reorganización ya ha empezado con carpetas específicas dentro de \nolinkurl{/home/k1k3/odin}: \texttt{core}, \texttt{audio}, \texttt{media}, \texttt{automation}, \texttt{monitoring} y \texttt{scripts}. La regla será mover primero la documentación, después separar secretos a \texttt{.env}, luego dividir Compose sin tocar volúmenes y finalmente limpiar carpetas históricas con inventario previo.
 
 \section{Problemas encontrados}
 \placeholder{Documentar incidencias reales: drivers, memoria, latencia, conflictos entre contenedores, permisos, seguridad, backups, integraciones inestables o recortes de alcance.}
