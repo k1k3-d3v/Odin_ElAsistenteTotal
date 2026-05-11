@@ -13,7 +13,7 @@ Durante la reorganizacion del servidor Odín se detectaron dos necesidades opera
 
 La prioridad fue no romper servicios existentes. Por eso las acciones se hicieron con copias previas y sin borrar datos originales hasta validar que los servicios vuelven a levantar correctamente.
 
-## Cron
+## Cron inicial
 
 El cron del usuario quedo desactivado de forma reversible. No se borraron las entradas: se comentaron y se dejo una copia historica en:
 
@@ -30,7 +30,38 @@ Entradas pausadas:
 # 0 9 * * * /home/k1k3/odin/scripts/odin_autorepair.py --daily >> /home/k1k3/odin/logs/autorepair/cron.log 2>&1
 ```
 
-La decision se debe a que la etapa de automatizacion cambia de fase: antes tenia sentido ejecutar ingestas y reportes sobre la estructura actual; ahora conviene esperar a que el almacenamiento definitivo este montado, probado y documentado.
+La decision se debe a que la etapa de automatizacion cambia de fase: antes tenia sentido ejecutar ingestas y reportes sobre la estructura anterior; despues de mover Immich y revisar los scripts, se consolido cron con rutas actuales.
+
+## Cron consolidado
+
+Se detecto que el cron de `root` seguia activo con rutas antiguas:
+
+```cron
+# 0 4 * * * /home/k1k3/backup_diario.sh
+# 0 * * * * /home/k1k3/cron_odin_ingesta.sh >> /home/k1k3/cron_odin.log 2>&1
+```
+
+Esas rutas ya no existian, por lo que generaban errores recurrentes. Se desactivo el cron de `root` y se dejo la automatizacion bajo el usuario `k1k3`, con copias historicas en:
+
+```text
+/home/k1k3/odin/logs/cron/
+```
+
+Cron activo:
+
+```cron
+# Memoria: Nextcloud -> Qdrant. Usa odin_ingesta_master.py (mxbai-embed-large, 1024 dims).
+0 * * * * /home/k1k3/odin/scripts/cron_odin_ingesta.sh >> /home/k1k3/odin/logs/ingesta/cron_odin.log 2>&1
+
+# Salud y autoreparabilidad conservadora.
+*/15 * * * * /home/k1k3/odin/scripts/odin_autorepair.py --repair --alert >> /home/k1k3/odin/logs/autorepair/cron.log 2>&1
+0 9 * * * /home/k1k3/odin/scripts/odin_autorepair.py --daily >> /home/k1k3/odin/logs/autorepair/cron.log 2>&1
+
+# Backup pausado hasta cerrar estrategia NVMe/Raspberry.
+# 0 4 * * * /home/k1k3/odin/scripts/backup_diario.sh >> /home/k1k3/odin/logs/backups/backup_diario.log 2>&1
+```
+
+El script de ingesta se probo manualmente y proceso 35 archivos nuevos o modificados. Qdrant quedo disponible con la coleccion `memoria_ia` en estado `green` y 3554 puntos. Tambien se saco la configuracion de Telegram a `/home/k1k3/odin/scripts/telegram.env`, con permisos restrictivos y sin versionar secretos.
 
 ## Immich
 
