@@ -200,5 +200,124 @@ El inventario también permitió definir una política de limpieza. Se ejecutaro
 
 El objetivo a medio plazo es separar \texttt{odin-master} en dominios más claros: núcleo conversacional, automatización, almacenamiento, ingesta y utilidades. La reorganización ya ha empezado con carpetas específicas dentro de \nolinkurl{/home/k1k3/odin}: \texttt{core}, \texttt{audio}, \texttt{media}, \texttt{automation}, \texttt{monitoring} y \texttt{scripts}. La regla será mover primero la documentación, después separar secretos a \texttt{.env}, luego dividir Compose sin tocar volúmenes y finalmente limpiar carpetas históricas con inventario previo.
 
+\section{Fase 9: herramientas de Open WebUI}
+La parte más diferencial de Odín no es únicamente ejecutar modelos locales, sino conectar la conversación con acciones reales. Para ello se han creado herramientas de Open WebUI. Open WebUI permite ampliar la interfaz mediante \textit{tools} y \textit{functions}, de modo que el modelo pueda invocar código Python con parámetros estructurados y devolver resultados al chat \citep{openwebuiToolsDocs,openwebuiFunctionsDocs}. En Odín estas herramientas convierten el chat en una interfaz operativa sobre Nextcloud, Immich, Home Assistant, Frigate, n8n, Qdrant y el propio servidor.
+
+Durante la revisión se identificaron once herramientas instaladas en la base de datos de Open WebUI. La \cref{tab:openwebui-tools} resume su función. El código se documenta sin incluir credenciales, tokens ni URLs privadas completas.
+
+\begingroup
+\scriptsize
+\setlength{\tabcolsep}{3pt}
+\begin{longtable}{p{0.24\textwidth}p{0.23\textwidth}p{0.45\textwidth}}
+  \caption{Herramientas de Open WebUI integradas en Odín}
+  \label{tab:openwebui-tools}\\
+  \toprule
+  Tool & Funciones principales & Papel en Odín \\
+  \midrule
+  \endfirsthead
+  \toprule
+  Tool & Funciones principales & Papel en Odín \\
+  \midrule
+  \endhead
+  \bottomrule
+  \endfoot
+  Fotos & búsqueda Immich & Busca en Immich a partir de una descripción y devuelve una imagen renderizable en el chat. \\
+  Guardar nota & archivo Nextcloud & Archiva notas, ideas, recetas, artículos o resúmenes en carpetas concretas de Nextcloud mediante n8n. \\
+  Web y vídeo & YouTube transcript, web crawl & Extrae transcripciones de YouTube o contenido web para resumirlo, analizarlo o guardarlo. \\
+  Buscar Nextcloud & búsqueda documental & Consulta la memoria documental privada, descrita en la propia tool como el Pozo de Mimir. \\
+  Salud sistema & diagnóstico y mantenimiento & Solicita informes o acciones de mantenimiento del servidor mediante webhook. \\
+  Vigilancia Frigate & cámaras, captura, evento & Consulta cámaras, obtiene capturas actuales y recupera eventos recientes de Frigate. \\
+  Home Assistant & entidades, acciones, compra, calendario, salud & Capa avanzada para buscar entidades, ejecutar acciones domóticas, gestionar lista de la compra, calendario y sensores de salud. \\
+  HA Assist & lenguaje natural & Envía lenguaje natural al endpoint conversacional de Home Assistant Assist. \\
+  Recordatorio & calendario & Crea eventos de calendario a partir de fechas relativas y horas estructuradas. \\
+  Compra & lista & Gestiona una lista de la compra: añadir, borrar o leer elementos. \\
+  QR & generación QR & Genera códigos QR embebidos directamente en el chat. \\
+\end{longtable}
+\endgroup
+
+\subsection{Flujo: guardar notas y documentos}
+La herramienta \texttt{guardar\_nota} implementa uno de los requisitos del bloque ``Hacer'': guardar ideas, notas y archivos. Recibe tres parámetros: carpeta, título de archivo y contenido en Markdown. La descripción limita las carpetas permitidas, por ejemplo \texttt{Ideas Proyectos}, \texttt{Recetas}, \texttt{Viajes}, \texttt{Documentos Personales} u \texttt{Otros}. Esta restricción evita que el modelo cree rutas arbitrarias y reduce errores de organización.
+
+El flujo es el siguiente. Primero, el usuario pide guardar una idea, resumen, receta o artículo. Después, el modelo estructura el contenido en Markdown y llama a \texttt{guardar\_nota\_nextcloud}. La tool envía un \texttt{POST} a un webhook de n8n con la carpeta, el nombre de archivo y el contenido. Finalmente, n8n escribe la nota en Nextcloud y la tool devuelve confirmación. Esta separación es buena arquitectura: Open WebUI interpreta la intención, n8n ejecuta la integración y Nextcloud almacena el resultado.
+
+\subsection{Flujo: consultar memoria privada}
+\texttt{buscar\_nextcloud} cubre la búsqueda en documentos, notas, apuntes y proyectos. Su propia descripción obliga al modelo a usarla cuando la pregunta pueda estar en información privada almacenada. Esto es una decisión importante: el asistente no debe responder de memoria genérica si existe una fuente personal potencialmente más fiable.
+
+El flujo comienza con una consulta en lenguaje natural. La tool la envía a la capa de búsqueda asociada a Nextcloud y devuelve contexto textual. El modelo debe basar la respuesta en ese contexto, indicar si no hay resultados y no inventar contenido documental. En la memoria se puede presentar como una garantía de trazabilidad: Odín no solo ``recuerda'', sino que diferencia entre conocimiento general, documentos personales y ausencia de evidencia.
+
+\subsection{Flujo: fotos y recuerdos visuales}
+\texttt{buscar\_fotos} conecta el chat con Immich. Recibe una descripción en lenguaje natural, por ejemplo una persona, lugar, objeto, evento o escena, y devuelve una línea Markdown de imagen. La descripción de la herramienta incluye una instrucción crítica: el modelo debe copiar esa línea sin modificarla, porque el formato \texttt{![texto](url)} es lo que permite renderizar la foto directamente en el chat.
+
+Este detalle parece pequeño, pero es importante para la experiencia de usuario. No basta con decir ``he encontrado una foto''; la utilidad real es que la imagen aparezca en la conversación. Esta tool convierte Immich en memoria visual accesible desde lenguaje natural, que era uno de los objetivos del mapa inicial.
+
+\subsection{Flujo: web, vídeos e ingesta de conocimiento}
+La herramienta \texttt{guardar\_transcripcion\_de\_video\_o\_pagina\_web} contiene dos funciones. \texttt{get\_youtube\_transcript} extrae texto de un vídeo de YouTube, mientras que \texttt{search\_and\_crawl\_web} puede leer una URL concreta o buscar contenido en internet mediante Crawl4AI. Internamente usa librerías como \texttt{youtube\_transcript\_api}, \texttt{crawl4ai}, \texttt{aiohttp}, \texttt{tiktoken} y estrategias de generación de Markdown.
+
+Este flujo permite que Odín convierta contenido externo en material procesable. Un vídeo, artículo o página web deja de ser una referencia efímera y pasa a ser texto que puede resumirse, guardarse o incorporarse a la memoria. Esta capacidad encaja con el bloque ``Pensar'': navegar entre ideas, notas y archivos no se limita a buscar dentro de lo ya guardado, sino también a capturar nuevo conocimiento.
+
+\subsection{Flujo: salud del sistema y autoreparabilidad}
+\texttt{salud\_del\_sistema} ofrece la función \texttt{manage\_system\_health}. Acepta una acción y, opcionalmente, un nombre de servicio. Las acciones documentadas son \texttt{gpu\_status}, \texttt{cpu\_status}, \texttt{general}, \texttt{processes}, \texttt{clean} y \texttt{restart}. La tool envía la petición a un webhook de n8n, que actúa como frontera de ejecución.
+
+La descripción impone una regla de seguridad: el modelo no debe inventar métricas, procesos ni servicios. Si Quique pide reiniciar algo, debe indicar el servicio concreto; si no lo indica, la herramienta debe usarse en modo diagnóstico. Este diseño reduce el riesgo de que una conversación provoque una acción destructiva por ambigüedad. La herramienta se complementa con \texttt{odin\_autorepair.py}, los informes de Telegram y el exportador de estado para Home Assistant.
+
+\subsection{Flujo: cámaras y vigilancia}
+\texttt{vigilancia\_frigate} integra Frigate en la conversación. La función \texttt{consultar\_camaras} obtiene las cámaras conectadas. \texttt{ver\_foto\_actual} devuelve la captura más reciente de una cámara concreta. \texttt{ver\_ultimo\_evento} recupera un evento grabado, por ejemplo una detección de persona.
+
+La tool incluye una regla útil: si el usuario no da el nombre exacto de la cámara, primero se deben consultar las cámaras disponibles. Esto evita inventar identificadores internos de Frigate. Igual que en Immich, las funciones visuales devuelven Markdown de imagen y el modelo debe conservarlo para que se renderice en el chat.
+
+\subsection{Flujo: domótica y Home Assistant}
+Odín tiene dos capas para Home Assistant. La primera, \texttt{home\_assistant}, trabaja de forma más estructurada: busca entidades, ejecuta acciones, gestiona calendario, lista de la compra y datos de salud. La segunda, \texttt{home\_assistant\_connector}, delega lenguaje natural directamente en Home Assistant Assist mediante \texttt{/api/conversation/process}. Ambas son útiles, pero tienen filosofías distintas.
+
+La vía estructurada permite controlar mejor la acción: primero \texttt{control\_home\_assistant} busca entidades candidatas y después \texttt{execute\_action} ejecuta el servicio adecuado. Esto evita que el modelo diga que ha encendido algo solo por haber encontrado una entidad. La vía Assist, en cambio, aprovecha el agente conversacional de Home Assistant, sus áreas, alias, frases personalizadas e intents. Es más natural, pero delega más decisión en HA.
+
+Además, \texttt{home\_assistant} incluye funciones para lista de la compra, calendario y salud. \texttt{manage\_shopping\_list} permite añadir, borrar o leer elementos. \texttt{manage\_calendar} crea eventos con fechas y horas estructuradas. \texttt{get\_health\_status} intenta leer datos de salud desde sensores expuestos en Home Assistant. Esto cubre varias ramas del mapa inicial: control domótico, recordatorios, lista de la compra, historial de salud y acciones desde conversación.
+
+\subsection{Cobertura respecto al mapa funcional}
+La \cref{tab:cobertura-mapa-funcional} compara lo que se quería inicialmente con lo que ya existe en Odín. La idea no es vender que todo está terminado al mismo nivel, sino distinguir entre funcionalidad implementada, funcionalidad parcial y funcionalidad que queda fuera de alcance.
+
+\begingroup
+\small
+\setlength{\tabcolsep}{3pt}
+\begin{longtable}{p{0.27\textwidth}p{0.18\textwidth}p{0.47\textwidth}}
+  \caption{Cobertura del mapa funcional inicial}
+  \label{tab:cobertura-mapa-funcional}\\
+  \toprule
+  Objetivo & Estado & Evidencia \\
+  \midrule
+  \endfirsthead
+  \toprule
+  Objetivo & Estado & Evidencia \\
+  \midrule
+  \endhead
+  \bottomrule
+  \endfoot
+  Guardar ideas, notas y archivos & Implementado & \texttt{guardar\_nota}, Nextcloud y n8n. \\
+  Crear recordatorios & Implementado & \texttt{recordatorio} y calendario vía n8n/Home Assistant. \\
+  Consultar estado del sistema & Implementado & \texttt{salud\_del\_sistema}, \texttt{odin\_autorepair.py}, Telegram y JSON para HA. \\
+  Control de domótica & Implementado & \texttt{home\_assistant} y \texttt{home\_assistant\_connector}. \\
+  Crear temporizadores & Parcial & Puede hacerse si Home Assistant Assist lo resuelve, pero no aparece como tool propia específica. \\
+  Reproducir música & Parcial & Depende de entidades/servicios de Home Assistant; no hay tool musical dedicada. \\
+  Buscar en internet & Implementado & \texttt{search\_and\_crawl\_web} con Crawl4AI. \\
+  Navegar entre ideas, notas y archivos & Implementado & \texttt{buscar\_nextcloud}, Qdrant/Nextcloud e ingesta. \\
+  Conversación coherente & Implementado por plataforma & Open WebUI aporta contexto conversacional; la memoria privada añade recuperación documental. \\
+  Revisar grabaciones/cámaras & Implementado & \texttt{vigilancia\_frigate}. \\
+  Historial de salud & Parcial según sensores & \texttt{get\_health\_status}; depende de que Wear OS/Health Connect alimenten HA. \\
+  Buscar fotos en Immich & Implementado & \texttt{buscar\_fotos}. \\
+  Actualizar memoria tras actividad & Implementado & Cron de ingesta y scripts de actualización documentados. \\
+  Avisar vulnerabilidad de contraseña & Fuera de alcance & Se omite porque los gestores/servicios externos ya lo cubren. \\
+  Autoclasificar correos & Fuera de alcance & Se omite por el mismo criterio indicado por el autor. \\
+  Aviso por cámaras de seguridad & Parcial & Frigate detecta eventos; la proactividad depende de automatizaciones de notificación. \\
+  Datos de salud actualizados & Parcial & Existe lectura desde HA, pero depende de sensores móviles y permisos. \\
+  Autoreparabilidad & Implementado & \texttt{odin\_autorepair.py} y \texttt{salud\_del\_sistema}. \\
+  Backup externo/nube & Parcial & Hay política y almacenamiento en \nolinkurl{/mnt/almacen}; falta cerrar plan de copia final. \\
+  Subida automática de fotos & Implementado & Immich con biblioteca migrada a \nolinkurl{/mnt/almacen/immich}. \\
+  Botón limpiar caché & Parcial & Existe acción \texttt{clean} en salud del sistema; falta exponerlo como botón visual en HA/Open WebUI. \\
+  Dashboard de control & Parcial & Netdata y JSON HA cubren monitorización; falta dashboard único de operación total. \\
+  Dar voz a Odín & Parcial & Piper funciona y PocketTTS está en prueba; la voz realista y rápida sigue siendo un reto. \\
+\end{longtable}
+\endgroup
+
+La conclusión de esta matriz es clara: la mayor parte funcional del proyecto ya existe, pero no toda está igualmente cerrada. Lo implementado con más solidez es memoria documental, notas, fotos, domótica, estado del sistema, cámaras, monitorización e ingesta. Lo parcial se concentra en experiencia final de voz, temporizadores/música como herramientas dedicadas, dashboard único y política definitiva de backup. Esta distinción ayuda a definir el alcance entregable sin ocultar trabajo futuro.
+
 \section{Problemas encontrados}
 \placeholder{Documentar incidencias reales: drivers, memoria, latencia, conflictos entre contenedores, permisos, seguridad, backups, integraciones inestables o recortes de alcance.}
