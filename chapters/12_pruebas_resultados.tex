@@ -4,7 +4,27 @@
 La validación se organizará por capas y por casos de uso. Primero se comprobará cada servicio de forma aislada; después se evaluarán flujos completos donde Odín reciba una entrada, la procese, consulte contexto, ejecute una acción y registre el resultado.
 
 \section{Pruebas funcionales}
-\placeholder{Tabla RF vs prueba: interacción natural, inferencia local, ingesta, RAG, domótica, alertas, acceso remoto y copias de seguridad.}
+\begin{table}[H]
+  \centering
+  \caption{Relación entre requisitos funcionales y pruebas}
+  \label{tab:rf-pruebas}
+  \begin{tabularx}{\textwidth}{lXl}
+    \toprule
+    Requisito & Prueba realizada & Resultado \\
+    \midrule
+    Interacción conversacional & Uso de Open WebUI como interfaz principal y tools estructuradas. & Correcto \\
+    Memoria documental & Ingesta de documentos, consulta de Qdrant y búsqueda en Nextcloud. & Correcto \\
+    Guardar notas & Tool \texttt{guardar\_nota} hacia n8n y Nextcloud. & Correcto \\
+    Fotos y recuerdos & Tool \texttt{buscar\_fotos} sobre Immich. & Correcto \\
+    Domótica & Control mediante Home Assistant, HA Assist y HA Voice. & Correcto \\
+    Temporizadores y música & Ejecución desde Home Assistant/HA Voice. & Correcto \\
+    Cámaras y presencia & Frigate y automatización de presencia en Home Assistant. & Correcto \\
+    Monitorización & Netdata, JSON para HA y Telegram. & Correcto \\
+    Autoreparabilidad & \texttt{odin\_autorepair.py} en modo diagnóstico, alerta y reparación conservadora. & Correcto \\
+    Backup físico & Estrategia definida con futuro NVMe externo transportable. & Pendiente de ejecución \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
 
 Como primera prueba de autoreparabilidad se validó el flujo de diagnóstico de Ollama. El servicio se encontraba inicialmente inactivo, se arrancó mediante systemd y se comprobó la disponibilidad de la API local consultando \texttt{/api/tags}. Posteriormente se ejecutó \texttt{odin\_autorepair.py --repair}; al detectar que Ollama estaba activo y la API respondía, la herramienta no realizó ninguna acción destructiva ni reinicios innecesarios.
 
@@ -13,7 +33,30 @@ También se validó el envío de informes a Telegram mediante \texttt{odin\_auto
 La ingesta de memoria se validó ejecutando manualmente el mismo wrapper que utiliza cron. La ejecución cargó el modelo \texttt{mxbai-embed-large}, procesó 35 archivos nuevos o modificados y finalizó con código de salida 0. Después se comprobó Qdrant: la colección \texttt{memoria\_ia} quedó en estado \texttt{green} con 3554 puntos. Esta prueba confirma que la automatización horaria no solo apunta a una ruta válida, sino que ejecuta el flujo real de actualización de memoria. La prueba también permitió detectar y corregir un problema de permisos en la caché de ingesta, creada anteriormente por \texttt{root}.
 
 \section{Pruebas no funcionales}
-\placeholder{Medir latencia, consumo, uso de VRAM/RAM, estabilidad de contenedores, recuperación tras fallo, exposición de puertos, tiempos de backup y experiencia de uso.}
+Las pruebas no funcionales se centraron en estabilidad, mantenibilidad, consumo de recursos y seguridad operativa. No todas las métricas están cerradas con el mismo nivel de precisión: el consumo eléctrico real se medirá posteriormente con un medidor físico, mientras que estado de contenedores, uso de disco, temperatura GPU y salud de endpoints sí se han observado directamente.
+
+\begin{table}[H]
+  \centering
+  \caption{Métricas observadas y pendientes}
+  \label{tab:metricas-observadas}
+  \begin{tabularx}{\textwidth}{lXl}
+    \toprule
+    Métrica & Valor o evidencia & Estado \\
+    \midrule
+    Contenedores activos & 23 contenedores, todos asociados a Docker Compose. & Medido \\
+    Contenedores no sanos & 0 en la validación del exportador. & Medido \\
+    Proyectos Compose & 7 proyectos activos. & Medido \\
+    Qdrant & Colección \texttt{memoria\_ia} en estado operativo con 3554 puntos. & Medido \\
+    Ingesta & 35 archivos nuevos o modificados procesados en una ejecución manual. & Medido \\
+    Immich & Biblioteca migrada con 202 GB y 77.666 ficheros. & Medido \\
+    GPU & Temperaturas observadas en torno a 38--40 grados mediante \texttt{rocm-smi}. & Medido \\
+    Netdata & Endpoint local disponible y contenedor en \texttt{healthy}. & Medido \\
+    Consumo eléctrico & Se medirá con enchufe medidor externo. & Pendiente \\
+    Coste energético & Se calculará a partir del consumo real medido. & Pendiente \\
+    Backup NVMe & Estrategia definida; falta ejecución y prueba de restauración. & Pendiente \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
 
 La prueba también registró señales útiles para evaluar estabilidad: uso de GPU, porcentaje de VRAM asignada, temperaturas, estado de contenedores relevantes y ocupación de disco. En la ejecución observada, \texttt{rocm-smi} informó temperaturas en torno a 38--40 grados y ausencia de procesos KFD activos tras el arranque del servicio, mientras que Docker no presentaba contenedores críticos en estado problemático.
 
@@ -71,7 +114,17 @@ El tercer nivel consistió en generar un estado agregable por Home Assistant med
 Esta prueba enlaza directamente con los requisitos del proyecto: Odín debe ser capaz de hacer, pensar y avisar. Docker Compose aporta reproducibilidad; los healthchecks y endpoints aportan evidencia de funcionamiento; el JSON de estado permite automatización; Netdata aporta supervisión visual; y Telegram cubre avisos proactivos cuando aparece una anomalía. La monitorización no queda como una pieza decorativa, sino como parte del comportamiento del asistente.
 
 \section{Resultados obtenidos}
-\placeholder{Incluir capturas de paneles, logs de flujos, respuestas del modelo, uso de recursos, pruebas de automatización y comparativas entre modelos o configuraciones.}
+Los resultados obtenidos muestran que Odín ha superado la fase de prototipo conceptual. El sistema integra conversación, memoria documental, fotos, domótica, cámaras, monitorización, acceso remoto, alertas y autoreparabilidad. La evidencia principal no es una única prueba aislada, sino la convivencia de múltiples servicios funcionando de forma coordinada.
+
+En la capa de interacción, Open WebUI actúa como interfaz principal y las tools permiten ejecutar acciones reales. En la capa de memoria, Nextcloud y Qdrant permiten guardar y recuperar información. En la capa visual, Immich permite trabajar con fotos y Frigate con cámaras. En la capa domótica, Home Assistant y HA Voice resuelven control de dispositivos, temporizadores, música y presencia. En la capa operativa, Netdata, Telegram y el exportador JSON ofrecen visibilidad sobre el estado del sistema.
+
+Las capturas finales se incorporarán como evidencia visual: panel de Open WebUI, listado o uso de tools, búsqueda de foto en Immich, consulta de memoria, dashboard de Netdata, automatización de Home Assistant, estado Docker y notificación de Telegram/HA. Estas capturas no son necesarias para demostrar que el sistema existe, pero sí ayudan a que la memoria sea más comprensible y verificable para el tribunal.
 
 \section{Discusion}
-\placeholder{Interpretar qué ha funcionado, qué no, qué fue más difícil de lo previsto y qué compromisos se aceptaron entre privacidad, rendimiento, coste y complejidad.}
+El proyecto confirma que un asistente personal privado es viable, pero también muestra que el coste principal no es solo computacional. El reto real está en la integración: cada servicio funciona de una forma distinta, requiere credenciales, puertos, persistencia, logs, actualizaciones y decisiones de seguridad. Odín funciona porque no intenta resolver todo con un único modelo, sino combinando herramientas especializadas.
+
+Lo que mejor ha funcionado es la arquitectura modular. Docker Compose permite aislar servicios, Home Assistant aporta una base domótica estable, Open WebUI ofrece interfaz y extensibilidad, Qdrant habilita memoria semántica, Immich cubre recuerdos visuales y n8n facilita automatizaciones. También ha funcionado bien la idea de monitorización proactiva: Telegram, Netdata y el exportador para Home Assistant convierten el mantenimiento en parte del propio asistente.
+
+Lo más difícil ha sido la voz y la aceleración con AMD. La búsqueda de un TTS realista, rápido y compatible con ROCm consumió mucho esfuerzo y no produjo una solución perfecta. Esta limitación se acepta dentro del alcance: Odín tiene voz funcional mediante HA Voice/Piper, pero no una voz final ideal. Otro compromiso importante es el backup: la decisión de usar un NVMe externo físico es adecuada para soberanía y transporte, pero requiere todavía procedimiento y prueba de restauración.
+
+La discusión final es que Odín no debe evaluarse como una aplicación cerrada, sino como una infraestructura personal integrada. Su valor está en que permite hacer cosas reales: guardar, buscar, recordar, controlar, avisar, monitorizar y mantener. Precisamente por eso la memoria debe mostrar no solo el resultado, sino las decisiones que lo hacen sostenible.

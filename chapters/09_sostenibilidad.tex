@@ -13,4 +13,20 @@ La viabilidad económica se basa en pasar de un modelo OPEX de suscripciones y A
 Socialmente, Odín responde a una preocupación creciente: la pérdida de control sobre información íntima en entornos digitales opacos. Su aportación es demostrar que una parte de la IA personal puede ejecutarse de forma privada y auditable. Al mismo tiempo, se reconocerá la barrera técnica del autoalojamiento, que limita su adopción por usuarios no especializados.
 
 \section{Matriz de sostenibilidad}
-\placeholder{Incluir tabla final con impactos positivos, impactos negativos, métricas observadas y medidas de mejora.}
+\begin{table}[H]
+  \centering
+  \caption{Matriz de sostenibilidad del proyecto}
+  \label{tab:sostenibilidad}
+  \begin{tabularx}{\textwidth}{lXXX}
+    \toprule
+    Dimension & Impactos positivos & Riesgos o impactos negativos & Medidas de mejora \\
+    \midrule
+    Ambiental & Reutilización de hardware, reducción de llamadas a servicios externos y almacenamiento local controlado. & Consumo eléctrico permanente del servidor y uso puntual de GPU para IA o machine learning. & Medir consumo con enchufe medidor, ajustar servicios activos, evitar cargas GPU innecesarias y apagar pruebas no usadas. \\
+    Económica & Menor dependencia de suscripciones, APIs externas y plataformas cerradas. Aprendizaje transferible a administración real de sistemas. & Inversión inicial en hardware, discos, NVMe externo, adaptador USB y futuro medidor de consumo. & Comparar coste mensual equivalente, estimar amortización y documentar coste energético real. \\
+    Social & Mayor privacidad, soberanía digital y trazabilidad de datos personales. & Barrera técnica alta para usuarios no especializados y responsabilidad directa sobre seguridad. & Documentar instalación, separar secretos, usar VPN, restringir exposición y mantener copias verificables. \\
+    Técnica & Sistema modular, ampliable y auditable mediante Docker Compose, logs y documentación. & Riesgo de complejidad excesiva, deuda técnica y dependencia de un único nodo físico. & Separar stacks, limpiar servicios no usados, monitorizar salud y planificar restauración desde backup. \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+Como mejora futura se añadirá medición real de consumo eléctrico mediante un medidor externo. Esto permitirá transformar la estimación económica en datos observados: coste diario, coste mensual, consumo en reposo, consumo durante inferencia y consumo durante tareas de GPU. Con esos datos se podrán generar gráficas y comparar el coste real de Odín con alternativas basadas en nube o suscripciones.

@@ -1,13 +1,25 @@
 \chapter{Desarrollo de la propuesta y trabajo realizado}
 
 \section{Preparacion del entorno}
-Esta sección recogerá la configuración real del entorno: sistema operativo, estructura de repositorios, despliegue mediante contenedores, red interna, almacenamiento, GPU, drivers y herramientas de documentación. Debe incluir comandos relevantes, capturas y decisiones tomadas durante la puesta en marcha.
+El entorno de Odín se construye sobre un servidor doméstico con Ubuntu 24.04.4 LTS, procesador AMD Ryzen 5 5600G, GPU AMD Radeon RX 9070/9070 XT/GRE, 30 GiB de RAM y almacenamiento local dividido entre el disco principal y \nolinkurl{/mnt/almacen}. La elección de un servidor propio responde al objetivo central del proyecto: ejecutar servicios personales y de IA bajo control del usuario, sin depender de una plataforma cerrada.
+
+La estructura operativa se reorganizó bajo \nolinkurl{/home/k1k3/odin}. Dentro de ese árbol se separan dominios: \texttt{core} para el núcleo conversacional y servicios base, \texttt{audio} para voz, \texttt{media} para Immich, \texttt{automation} para Home Assistant/Frigate y automatizaciones, \texttt{monitoring} para Netdata y exportadores, \texttt{scripts} para cron y mantenimiento, y \texttt{data} para persistencia de Open WebUI. Esta estructura no existió desde el primer día; surgió de ordenar un sistema que había crecido mediante pruebas y servicios añadidos progresivamente.
+
+Docker Compose se usa como mecanismo principal de despliegue porque permite describir servicios, redes, volúmenes, reinicios y dependencias en ficheros versionables. En paralelo, algunos componentes se mantienen fuera de Docker por decisión de diseño: Ollama funciona como servicio systemd en el servidor, Tailscale como VPN del sistema y Home Assistant vive en una Raspberry Pi 5 independiente. Esta combinación evita forzar todo dentro de contenedores cuando una pieza ya es más estable o segura fuera de ellos.
 
 \section{Fase 1: infraestructura base}
-\placeholder{Describir instalación del servidor, particionado/almacenamiento, Docker o motor equivalente, redes, volúmenes persistentes, políticas de reinicio y estructura de backups.}
+La infraestructura base parte de un único nodo físico. Sobre él se instalaron Docker, Docker Compose, herramientas de monitorización, ROCm para la GPU AMD, servicios systemd auxiliares y acceso por SSH dentro de la red/VPN. El diseño evita exposición pública directa: el acceso remoto se realiza mediante Tailscale y los servicios se consumen desde LAN o VPN.
+
+El almacenamiento se dividió en dos zonas. El disco raíz aloja sistema, contenedores, configuraciones y servicios. \nolinkurl{/mnt/almacen} se reserva para datos pesados, especialmente la biblioteca de Immich. Esta separación se volvió necesaria al comprobar el crecimiento de fotos y vídeos. Como política de seguridad, no se eliminaron volúmenes Docker ni carpetas históricas sin inventario previo.
+
+La estrategia de backup se define como trabajo operativo inmediato: se usará un NVMe externo conectado físicamente, tratado como una unidad transportable similar a un USB de gran capacidad. Esta decisión encaja con el tipo de datos del proyecto: fotos, documentos, configuraciones y memoria personal. El backup físico reduce dependencia de otra nube, pero exige definir procedimiento de copia, verificación, desconexión y restauración.
 
 \section{Fase 2: inferencia local}
-\placeholder{Profundizar en Ollama, llama.cpp u otras herramientas utilizadas: instalación, modelos probados, cuantización, uso de VRAM, latencia, problemas con AMD/ROCm, fallback y resultados.}
+La inferencia local se apoya principalmente en Ollama como servicio del sistema. Ollama permite servir modelos LLM mediante una API local y simplifica la gestión de modelos respecto a un despliegue manual de \texttt{llama.cpp}. Aun así, la base técnica de ejecución de modelos cuantizados y acelerados por hardware se relaciona con el ecosistema de \texttt{llama.cpp}, que se mantiene como referencia técnica para inferencia local eficiente \citep{ollamaDocs,llamacppRepo}.
+
+El principal condicionante ha sido la GPU AMD. ROCm permite usar aceleración, pero su compatibilidad práctica no siempre es equivalente a CUDA. Durante las pruebas aparecieron avisos de \texttt{rocblaslt}, referencias a \texttt{gfx1200}, runners terminados con \texttt{signal: killed}, prompts truncados por ventana de contexto y eventos de evacuación de colas AMDGPU. Estas incidencias obligaron a tratar la inferencia como una carga que debe monitorizarse, no como un servicio que simplemente se instala y se olvida.
+
+Por ese motivo, Odín combina tres decisiones. Primero, Ollama se mantiene como servicio systemd para poder arrancarlo, comprobarlo y repararlo con herramientas del sistema. Segundo, la autoreparabilidad no reinicia servicios de forma agresiva, sino que diagnostica antes de actuar. Tercero, algunas cargas se desplazan a CPU cuando usar GPU aporta más riesgo que beneficio, como ocurre con Frigate. En cambio, Immich sí usa ROCm porque su servicio de machine learning se beneficia de la aceleración sin saturar el flujo conversacional principal.
 
 \section{Fase 3: orquestación y automatización}
 La orquestación de Odín combina dos niveles. El primero corresponde a servicios de alto nivel, como Open WebUI, n8n, Home Assistant, Nextcloud, Qdrant, Immich, Frigate y los servicios de voz. El segundo corresponde a automatizaciones de sistema: tareas programadas, scripts de ingesta, informes de salud y herramientas de autoreparación. La capa de contenedores se apoya en Docker Compose, que permite describir servicios, redes y volúmenes en ficheros declarativos \citep{dockerComposeFileReference,dockerComposeVolumes}.
@@ -19,7 +31,11 @@ La ingesta activa queda ejecutada por \nolinkurl{cron_odin_ingesta.sh}, que llam
 También se separó la configuración de Telegram en un fichero \texttt{telegram.env} con permisos restrictivos. De esta forma los scripts pueden enviar avisos sin dejar tokens incrustados en el código operativo ni en la memoria del proyecto.
 
 \section{Fase 4: domótica e interacción}
-\placeholder{Describir Home Assistant, dispositivos integrados, satélites de voz, automatizaciones domésticas y casos de interacción natural.}
+Home Assistant es la capa domótica de Odín y se ejecuta en una Raspberry Pi 5 separada del servidor principal. Esta separación es deliberada: la domótica debe seguir funcionando aunque el servidor de IA esté reiniciándose, probando modelos o reorganizando contenedores. Odín se integra con Home Assistant mediante tools de Open WebUI, HA Assist, HA Voice y un proxy local.
+
+La interacción doméstica cubre luces, sensores, presencia, temporizadores, música, calendario, lista de la compra y consultas de estado. Los temporizadores y la música se gestionan desde HA Voice, que ya funciona correctamente y resulta más natural que duplicar esa lógica dentro de Open WebUI. También existe una automatización de Home Assistant que notifica cada vez que alguien llega, usando un sensor de presencia.
+
+Desde el punto de vista del asistente, Home Assistant aporta dos niveles. El primero es estructurado: buscar entidades, elegir la correcta y ejecutar un servicio. El segundo es conversacional: enviar una orden natural a Home Assistant Assist y dejar que HA resuelva entidades, áreas e intents. Esta doble vía permite combinar control fino con experiencia natural.
 
 \section{Fase 4.1: voz, STT y TTS}
 La capa de voz ha sido una de las partes más complejas del proyecto. La entrada de voz requiere convertir audio en texto de forma fiable (STT/ASR), mientras que la salida exige generar una voz suficientemente natural y rápida (TTS). En un asistente cotidiano, la calidad de esta capa determina si el sistema se siente vivo o torpe: una respuesta técnicamente correcta pierde valor si tarda demasiado o si la voz resulta incómoda.
@@ -50,7 +66,11 @@ La síntesis de voz ha sido todavía más problemática. El objetivo era consegu
 Este proceso ilustra una diferencia importante entre una demo y un sistema personal real: no basta con que una herramienta funcione una vez. Debe ser mantenible, rápida, compatible con el hardware disponible y suficientemente robusta para integrarse en rutinas diarias.
 
 \section{Fase 5: nube privada y memoria}
-\placeholder{Explicar servicios de almacenamiento, notas, documentos, calendarios, RAG, embeddings, base vectorial, indexación y recuperación de conocimiento.}
+La memoria de Odín se apoya en tres pilares: Nextcloud, Qdrant e ingesta automatizada. Nextcloud almacena documentos, notas, ideas, archivos personales y contenido que el usuario quiere conservar. Qdrant almacena vectores y metadatos para recuperación semántica. La ingesta convierte documentos en fragmentos, calcula embeddings y actualiza la colección \texttt{memoria\_ia}.
+
+El objetivo no es únicamente guardar ficheros, sino poder preguntar por ellos. La herramienta \texttt{buscar\_nextcloud} obliga al modelo a consultar la memoria privada cuando la pregunta puede estar en notas o documentos. Esto reduce respuestas inventadas y permite distinguir entre conocimiento general y evidencia personal. A su vez, \texttt{guardar\_nota} permite añadir nuevo contenido desde la conversación, cerrando el ciclo entre crear, almacenar, indexar y recuperar.
+
+La parte visual de la memoria se cubre con Immich. Las fotos se suben automáticamente y la tool \texttt{buscar\_fotos} permite pedir recuerdos en lenguaje natural. Así, la memoria de Odín no queda limitada a texto: combina documentos, notas, fotografías, vídeos, estados de sensores y eventos de cámaras.
 
 \section{Fase 6: seguridad, acceso remoto y monitorización}
 Dentro de esta fase se incorpora una primera herramienta de autoreparabilidad para Odín. El objetivo no es reiniciar servicios de forma indiscriminada, sino diagnosticar el estado del ecosistema y actuar solo cuando la reparación es segura. La herramienta \texttt{odin\_autorepair.py} comprueba el estado de \texttt{ollama.service}, la disponibilidad de la API local de Ollama, eventos recientes en \texttt{journalctl}, señales de presión en AMDGPU, estado de contenedores principales, métricas de GPU mediante \texttt{rocm-smi} y uso de disco.
@@ -320,4 +340,10 @@ La \cref{tab:cobertura-mapa-funcional} compara lo que se quería inicialmente co
 La conclusión de esta matriz es clara: la mayor parte funcional del proyecto ya existe. Lo implementado con más solidez es memoria documental, notas, fotos, domótica, estado del sistema, presencia/cámaras, monitorización, ingesta, temporizadores y música mediante Home Assistant. Lo pendiente real se concentra en cerrar un dashboard único de control, formalizar la política definitiva de backup, documentar mejor los datos de salud si los sensores quedan estables y plantear como trabajo futuro un agente de ordenador capaz de actuar sobre el escritorio. La voz queda como una limitación aceptada: funciona, pero no alcanza todavía la naturalidad ideal que se buscaba al inicio.
 
 \section{Problemas encontrados}
-\placeholder{Documentar incidencias reales: drivers, memoria, latencia, conflictos entre contenedores, permisos, seguridad, backups, integraciones inestables o recortes de alcance.}
+El principal problema técnico fue la combinación de IA local y GPU AMD. Aunque ROCm permite ejecutar cargas aceleradas, la compatibilidad práctica de algunas herramientas no fue directa. En TTS se probaron varias alternativas y la búsqueda de una voz realista y rápida se convirtió en uno de los mayores bloqueos. Piper quedó como solución funcional y HA Voice como capa práctica para interacción, mientras que opciones más ambiciosas quedaron limitadas por latencia, compatibilidad o madurez.
+
+Otro problema importante fue la deuda operativa acumulada. Existían scripts, cron antiguos, contenedores históricos, rutas previas y servicios de prueba. Algunos seguían apuntando a ubicaciones anteriores o generaban errores aunque ya no fueran el camino principal. La solución no fue borrar masivamente, sino inventariar, mover con cuidado, mantener enlaces de compatibilidad cuando era necesario y desactivar lo obsoleto de forma reversible.
+
+La gestión de almacenamiento también exigió intervención. Immich creció hasta ocupar una cantidad relevante de espacio, por lo que se migró su biblioteca a \nolinkurl{/mnt/almacen}. Esta operación obligó a detener únicamente el stack afectado, copiar datos, actualizar configuración, levantar servicios y validar healthchecks. El origen antiguo se conservó temporalmente como respaldo.
+
+En seguridad, el reto ha sido equilibrar utilidad y exposición. Odín necesita hablar con muchos servicios: Home Assistant, n8n, Nextcloud, Immich, Frigate, Qdrant, Telegram y Open WebUI. Cada integración aumenta la superficie de riesgo. Por ello se evita publicar secretos en el repositorio, se documentan configuraciones saneadas, se usa Tailscale para acceso remoto y se plantea mover credenciales históricas a ficheros \texttt{.env}.

@@ -1,14 +1,26 @@
 \chapter*{Abstract}
 \addcontentsline{toc}{chapter}{Abstract}
 
-\placeholder{English summary to be written at the end. It should present Odín as a local-first personal assistant that integrates self-hosted services, home automation, local language models, secure remote access and proactive automation while preserving data sovereignty.}
+This thesis presents Odín, a self-hosted, local-first personal assistant designed to reduce dependence on external cloud services and to centralise personal digital workflows around a private infrastructure. The project integrates local language model interaction, document memory, home automation, photo management, video surveillance, voice services, monitoring and proactive maintenance.
+
+The implemented architecture combines Docker Compose services, Open WebUI, Qdrant, Nextcloud, Immich, Home Assistant, Frigate, n8n, Ollama, Tailscale, Telegram alerts and several speech-to-text and text-to-speech experiments. The system is not only a conversational interface: through Open WebUI tools it can save notes, search private documents, retrieve photos, query cameras, control home automation, create reminders and inspect system health. The project also includes a conservative autorepair script, a Home Assistant compatible health exporter and a Netdata dashboard for visual monitoring.
+
+The results show that a personal assistant can be built as a real local infrastructure rather than as a dependency on a single proprietary platform. The main limitations are the operational complexity of self-hosting, the need for a clear backup policy, the difficulty of achieving high-quality low-latency voice on AMD hardware and the need to keep the system secure as its capabilities grow.
 
 \chapter*{Resumen}
 \addcontentsline{toc}{chapter}{Resumen}
 
-\placeholder{Resumen final en castellano. Deberá explicar el problema de la fragmentación digital y la dependencia de la nube, la propuesta de Odín como asistente total local, la arquitectura desplegada, las herramientas empleadas, los resultados obtenidos y las limitaciones encontradas.}
+Esta memoria presenta Odín, un asistente personal autoalojado y \textit{local-first} que busca recuperar control sobre datos, automatizaciones y servicios cotidianos. El proyecto nace de un problema práctico: la vida digital está fragmentada entre notas, fotos, documentos, domótica, recordatorios, búsquedas, cámaras, servicios de IA y plataformas externas. Odín propone reunir esas capacidades en una infraestructura personal, privada y extensible.
+
+La solución desplegada integra Open WebUI como interfaz conversacional, Qdrant como base vectorial, Nextcloud como nube privada, Immich para fotos, Home Assistant para domótica, Frigate para cámaras, n8n para flujos, Ollama para inferencia local, Tailscale para acceso remoto, Telegram para alertas y Netdata para monitorización visual. Además, se han desarrollado herramientas de Open WebUI que permiten guardar notas, buscar documentos, consultar fotos, revisar cámaras, controlar entidades domóticas, crear recordatorios y comprobar el estado del servidor.
+
+El trabajo demuestra que es posible construir un asistente personal funcional sobre infraestructura propia, aunque con límites claros: administrar servicios autoalojados exige mantenimiento, la voz realista y rápida sigue siendo compleja con GPU AMD, la política de copias de seguridad debe formalizarse y el sistema requiere cuidado especial con credenciales, permisos y exposición de servicios. Aun así, Odín consigue convertir un conjunto de herramientas dispersas en una arquitectura coherente de asistente personal soberano.
 
 \chapter*{Resum}
 \addcontentsline{toc}{chapter}{Resum}
 
-\placeholder{Resum en català. Conviene prepararlo al final, cuando el resumen en castellano esté cerrado y validado.}
+Aquesta memòria presenta Odín, un assistent personal autoallotjat i \textit{local-first} orientat a recuperar control sobre les dades, les automatitzacions i els serveis digitals quotidians. El projecte parteix d'un problema pràctic: la informació personal acostuma a quedar fragmentada entre notes, fotografies, documents, domòtica, recordatoris, càmeres, eines d'intel·ligència artificial i plataformes externes.
+
+La solució desplegada integra Open WebUI com a interfície conversacional, Qdrant com a base vectorial, Nextcloud com a núvol privat, Immich per a fotografies, Home Assistant per a domòtica, Frigate per a videovigilància, n8n per a fluxos d'automatització, Ollama per a inferència local, Tailscale per a accés remot, Telegram per a alertes i Netdata per a monitoratge visual. A més, s'han creat eines d'Open WebUI que permeten guardar notes, buscar documents, recuperar fotos, consultar càmeres, controlar dispositius domòtics, crear recordatoris i revisar l'estat del servidor.
+
+Els resultats mostren que és possible construir un assistent personal funcional sobre infraestructura pròpia, tot i que amb limitacions: l'autoallotjament requereix manteniment, la veu natural i ràpida continua sent difícil amb maquinari AMD, cal tancar una política robusta de còpies de seguretat i és necessari gestionar amb cura credencials, permisos i serveis exposats. Odín, però, aconsegueix convertir un conjunt d'eines disperses en una arquitectura coherent d'assistent personal privat i extensible.

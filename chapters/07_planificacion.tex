@@ -19,11 +19,9 @@ Despliegue de infraestructura, instalación de herramientas, integración de ser
 Pruebas funcionales, latencia, estabilidad, uso de VRAM, recuperación ante fallos, seguridad de acceso remoto y validación de casos de uso reales.
 
 \section{Estimacion de tiempos}
-\placeholder{Incluye una tabla con horas estimadas por tarea y fase.}
-
 \begin{table}[H]
   \centering
-  \caption{Plantilla de estimacion de tiempos}
+  \caption{Estimacion de tiempos por fase}
   \label{tab:estimacion-tiempos}
   \begin{tabularx}{\textwidth}{lXr}
     \toprule
@@ -49,7 +47,24 @@ Pruebas funcionales, latencia, estabilidad, uso de VRAM, recuperación ante fall
 \end{itemize}
 
 \section{Diagrama de Gantt}
-\placeholder{Incluir aquí el diagrama de Gantt definitivo, actualizado con la planificación real y las desviaciones producidas durante el desarrollo.}
+La planificación se puede resumir en cinco bloques temporales. En febrero se cerraron alcance, motivación y requisitos iniciales. Entre marzo y abril se concentró la investigación técnica y el despliegue de servicios base: Docker, Open WebUI, Ollama, Nextcloud, Qdrant, Home Assistant, Immich y primeras automatizaciones. Durante abril y mayo se produjo la fase más intensa de integración: tools de Open WebUI, n8n, Frigate, voz, monitorización, ingesta de memoria y reorganización del servidor. A partir de mayo se priorizó estabilizar el sistema, documentar evidencias, revisar contenedores y convertir el trabajo real en memoria. Junio queda reservado para cierre, revisión formal, capturas, defensa y correcciones finales.
+
+\begin{table}[H]
+  \centering
+  \caption{Resumen textual del Gantt}
+  \label{tab:gantt-textual}
+  \begin{tabularx}{\textwidth}{lX}
+    \toprule
+    Periodo & Trabajo principal \\
+    \midrule
+    Febrero 2026 & Definición del problema, objetivos, alcance, requisitos y planificación inicial. \\
+    Marzo 2026 & Investigación de alternativas, diseño de arquitectura, preparación del servidor y primeras pruebas de IA local. \\
+    Abril 2026 & Despliegue e integración de servicios: Open WebUI, Qdrant, Nextcloud, Immich, Home Assistant, n8n, Frigate y voz. \\
+    Mayo 2026 & Reorganización Docker, monitorización, autoreparabilidad, Telegram, Netdata, documentación de tools y validaciones. \\
+    Junio 2026 & Cierre de memoria, capturas, métricas finales, revisión de bibliografía, anexos y preparación de defensa. \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
 
 \section{Gestion del riesgo}
 Los riesgos principales se concentran en la compatibilidad del stack AMD/ROCm, la saturación de VRAM al combinar LLM, RAG, voz y visión, la dependencia de un único nodo físico, la seguridad del acceso remoto y el crecimiento incontrolado del alcance. La mitigación combina fallback a CPU, carga bajo demanda de modelos, snapshots, copias de seguridad, segmentación de red y poda de funcionalidades secundarias si el calendario lo exige.

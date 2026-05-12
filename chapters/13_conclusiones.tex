@@ -1,13 +1,21 @@
 \chapter{Conclusiones}
 
 \section{Resumen del trabajo realizado}
-\placeholder{Sintetizar Odín como una arquitectura de asistente personal local, autoalojada y ampliable, explicando qué subsistemas quedaron implementados y cómo se conectan.}
+Este Trabajo de Fin de Grado ha desarrollado Odín, una arquitectura de asistente personal local, autoalojada y extensible. El resultado no es una aplicación aislada, sino un ecosistema de servicios conectados: Open WebUI como interfaz conversacional, Ollama como inferencia local, Qdrant como memoria vectorial, Nextcloud como nube privada, Immich como biblioteca fotográfica, Home Assistant como capa domótica, Frigate como videovigilancia, n8n como orquestador, Tailscale como acceso remoto, Telegram como canal de alerta y Netdata como monitorización visual.
+
+El sistema permite ejecutar casos de uso reales: guardar notas, buscar documentos privados, consultar fotos, controlar domótica, gestionar recordatorios, usar temporizadores y música mediante HA Voice, revisar cámaras, recibir notificaciones de presencia, comprobar el estado del servidor y generar alertas proactivas. Además, se han documentado los contenedores, herramientas, decisiones de diseño, problemas encontrados y validaciones realizadas.
 
 \section{Cumplimiento de objetivos}
-\placeholder{Revisar objetivo principal y secundarios con evidencias: servicios desplegados, flujos funcionando, métricas, capturas, pruebas y limitaciones.}
+El objetivo principal se considera cumplido: se ha construido un asistente personal integrado que prioriza privacidad, control local y capacidad de actuar sobre servicios reales. Los objetivos secundarios también quedan cubiertos en distinto grado.
+
+La soberanía de datos se aborda mediante Nextcloud, Immich, Qdrant y almacenamiento local. La interacción natural se cubre mediante Open WebUI, HA Voice y herramientas conversacionales. La domótica funciona sobre Home Assistant, manteniendo la Raspberry Pi 5 como centro estable. La memoria documental se apoya en ingesta, embeddings y Qdrant. La monitorización queda cubierta por Netdata, Telegram, exportador JSON para Home Assistant y autoreparabilidad conservadora. El acceso remoto se resuelve con Tailscale, evitando depender de DNS dinámico y reduciendo exposición pública.
+
+No todo queda cerrado al mismo nivel. La voz realista y rápida se acepta como limitación técnica; el dashboard único de control queda como mejora inmediata; la política de backup con NVMe externo debe ejecutarse y probarse; y la medición de consumo eléctrico queda pendiente hasta disponer del medidor. Estas limitaciones no invalidan el resultado, sino que delimitan honestamente el alcance alcanzado.
 
 \section{Adecuacion a los conocimientos de la carrera}
-\placeholder{Relacionar el trabajo con sistemas operativos, redes, bases de datos, ingeniería de software, seguridad, administración de sistemas, proyectos y tecnologías de la información.}
+Odín encaja de forma transversal con los conocimientos del Grado en Ingeniería Informática. Desde sistemas operativos y administración de sistemas, el proyecto exige gestionar servicios systemd, permisos, logs, cron, almacenamiento y procesos. Desde redes, incluye VPN, puertos, túneles, LAN, acceso remoto y reducción de exposición. Desde bases de datos, utiliza PostgreSQL, MariaDB, Redis/Valkey, SQLite y Qdrant como base vectorial.
+
+Desde ingeniería del software, el trabajo requiere diseñar una arquitectura modular, documentar decisiones, versionar configuraciones, separar responsabilidades y validar flujos. Desde seguridad, obliga a tratar credenciales, exposición de servicios, copias de seguridad, permisos y aislamiento. Desde inteligencia artificial, integra modelos locales, embeddings, RAG, STT, TTS y limitaciones de aceleración GPU. Finalmente, desde gestión de proyectos, obliga a controlar alcance, priorizar funcionalidades, aceptar límites y convertir un sistema real en una memoria evaluable.
 
 \section{Trabajo futuro}
 El trabajo futuro no debe entenderse como una lista de carencias, sino como la evolución natural de una infraestructura personal que ya funciona. La primera línea de mejora es crear un dashboard único de control en Home Assistant. Actualmente existen piezas separadas: Netdata para monitorización visual, el JSON de estado de Odín para sensores, automatizaciones de presencia, herramientas de Open WebUI, Frigate, Immich y Home Assistant. El siguiente paso lógico es reunirlas en una vista operativa clara: estado general, avisos activos, servicios principales, cámaras, almacenamiento, GPU, ingesta de memoria y accesos rápidos.
@@ -21,4 +29,8 @@ La cuarta línea es mejorar la evaluación longitudinal. Odín ya tiene funcione
 Finalmente, la voz queda como una limitación aceptada del proyecto. Se han probado varias alternativas y se mantiene una solución funcional mediante Piper/HA Voice y servicios experimentales de TTS, pero no se perseguirá dentro del alcance una voz más realista y rápida. En este caso, cerrar el alcance es parte de la decisión técnica: el sistema debe entregarse funcionando, no quedarse indefinidamente bloqueado por una mejora de experiencia que depende mucho del soporte de hardware AMD y de la madurez de las herramientas disponibles.
 
 \section{Opinion personal}
-\placeholder{Reflexión personal sobre construir una infraestructura propia, convivir con sus límites, aprender administrando sistemas reales y recuperar control sobre la vida digital.}
+La construcción de Odín ha sido mucho más que instalar herramientas. Ha sido una forma de comprobar qué significa realmente tener control sobre la propia vida digital. Al principio, muchas piezas parecían independientes: notas, fotos, domótica, modelos, cámaras, recordatorios, servidores y automatizaciones. El reto fue conseguir que todas hablaran entre sí sin perder privacidad ni convertir el sistema en algo imposible de mantener.
+
+También ha sido un aprendizaje práctico sobre los límites de la tecnología local. Ejecutar servicios propios da libertad, pero también responsabilidad. Cada contenedor, token, volumen, puerto y cron puede convertirse en una fuente de problemas. La parte más valiosa del proyecto no ha sido que todo funcionara a la primera, sino aprender a diagnosticar, ordenar, documentar y tomar decisiones cuando algo no funcionaba.
+
+Odín queda como una infraestructura viva. No es perfecto, pero sí real: guarda información, busca memoria, controla dispositivos, avisa, monitoriza y se puede ampliar. Para mí, esa es la aportación principal del trabajo: demostrar que un asistente personal no tiene por qué ser una caja negra en la nube. Puede ser una arquitectura propia, comprensible, imperfecta y mejorable, pero bajo control del usuario.

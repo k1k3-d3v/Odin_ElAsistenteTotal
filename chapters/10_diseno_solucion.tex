@@ -4,7 +4,29 @@
 Odín se diseña como una arquitectura por capas. La capa física proporciona cómputo, almacenamiento y aceleración. La capa de virtualización y contenedores aísla servicios. La capa de datos almacena documentos, configuraciones, embeddings y registros. La capa cognitiva ejecuta modelos locales y recuperación semántica. La capa de orquestación conecta eventos con acciones. Finalmente, la capa de interacción permite usar el sistema desde voz, móvil, panel web o automatizaciones.
 
 \section{Arquitectura del sistema}
-\placeholder{Incluir diagrama de arquitectura general: servidor, GPU, contenedores, red interna, VPN, Home Assistant, n8n, Ollama/llama.cpp, Open WebUI si aplica, almacenamiento, base vectorial, nube privada, Immich, dashboard y clientes.}
+La arquitectura de Odín se organiza alrededor de un servidor principal y una Raspberry Pi 5 dedicada a Home Assistant. El servidor aloja los servicios de IA, memoria, fotos, automatización, monitorización y herramientas auxiliares. Home Assistant permanece fuera de Docker en la Raspberry Pi, porque ya funciona como centro domótico estable; Odín se conecta a él mediante herramientas, proxy local y HA Voice.
+
+\begin{table}[H]
+  \centering
+  \caption{Capas de arquitectura de Odín}
+  \label{tab:arquitectura-capas}
+  \begin{tabularx}{\textwidth}{lX}
+    \toprule
+    Capa & Componentes principales \\
+    \midrule
+    Interacción & Open WebUI, HA Voice, Telegram, futuro dashboard de Home Assistant. \\
+    IA e inferencia & Ollama, Open WebUI, servicios STT/TTS, Piper, faster-whisper, Wyoming Whisper y ASR propio. \\
+    Memoria y conocimiento & Nextcloud, Qdrant, ingesta de documentos, Crawl4AI y herramientas de búsqueda. \\
+    Domótica y mundo físico & Home Assistant en Raspberry Pi 5, sensores, luces, música, temporizadores, presencia y Frigate. \\
+    Automatización & n8n, webhooks, cron, herramientas de Open WebUI y scripts de mantenimiento. \\
+    Observabilidad & Netdata, exportador JSON para Home Assistant, Telegram, smartmontools, sensores y logs. \\
+    Acceso remoto & Tailscale como VPN principal y Cloudflared como pieza histórica de transición. \\
+    Almacenamiento & Disco raíz, \nolinkurl{/mnt/almacen}, biblioteca Immich y futuro NVMe externo para backup físico. \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+El flujo normal parte de una entrada del usuario, ya sea desde chat, voz o automatización. Open WebUI interpreta la intención y, cuando corresponde, invoca una tool. Esa tool puede consultar Nextcloud, Qdrant, Immich, Frigate, Home Assistant o n8n. Los resultados vuelven al modelo, que responde al usuario con texto, imagen, confirmación o alerta. La arquitectura separa deliberadamente interfaz, ejecución y almacenamiento: el modelo decide qué herramienta usar, pero la acción real se delega en servicios especializados.
 
 \section{Modelo de datos}
 El modelo de datos debe distinguir entre datos personales persistentes, configuraciones de servicios, logs de automatización, embeddings para búsqueda semántica y estados temporales de conversación. Esta separación es importante para definir copias de seguridad, políticas de retención y aislamiento entre servicios.
