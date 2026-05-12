@@ -114,6 +114,8 @@ El despliegue de Odín se apoya principalmente en Docker Compose. En el estado a
 
 La revisión mostró que todos los contenedores activos estaban levantados y que los servicios con \textit{healthcheck} aparecían como \texttt{healthy}. Como parte de la reorganización, el stack principal se movió desde \nolinkurl{/home/k1k3/odin-master} a \nolinkurl{/home/k1k3/odin/core/odin-master}, se actualizó el montaje de datos de Open WebUI a \nolinkurl{/home/k1k3/odin/data/openweb_ui_data} y \texttt{ha-proxy} pasó de ser un contenedor manual a formar parte de un stack Compose propio. Home Assistant no se ejecuta en Docker dentro de Odín, sino en la Raspberry Pi 5; el proxy únicamente facilita el acceso local desde el servidor. Para la observabilidad visual se añadió Netdata, accesible desde la red local y embebible en Home Assistant mediante una tarjeta Webpage/iframe \citep{netdataDockerInstall,homeAssistantIframeCard}. Esta organización facilita documentar cada herramienta con sus fuentes oficiales: Open WebUI para interfaz y extensibilidad \citep{openwebuiDocs,openwebuiToolsDocs,openwebuiFunctionsDocs}, Immich para fotos \citep{immichDockerInstall}, Qdrant para almacenamiento vectorial \citep{qdrantDocs,qdrantStorageDocs}, n8n para automatización \citep{n8nDocs,n8nDockerDocs} y Frigate para videovigilancia \citep{frigateInstallDocs}. Quedan tareas de orden: separar responsabilidades dentro de \texttt{odin-master}, mover secretos históricos a ficheros \texttt{.env} y revisar volúmenes procedentes de pruebas antiguas antes de eliminarlos.
 
+\pendingfigure{Estado de los stacks Docker de Odín agrupados por dominio funcional}{fig:docker-stacks-visual}
+
 \subsection{Inventario completo de contenedores}
 La \cref{tab:contenedores-docker-completos} recoge el inventario operativo completo observado el 11 de mayo de 2026. Esta tabla es importante para la memoria porque transforma el despliegue real en una evidencia verificable: no se describe una arquitectura ideal, sino el sistema que está funcionando en el servidor. Para evitar exponer secretos, se documentan nombres de contenedor, imagen, stack, función y fuente técnica, pero no variables de entorno sensibles ni credenciales.
 
@@ -225,6 +227,8 @@ La parte más diferencial de Odín no es únicamente ejecutar modelos locales, s
 
 Durante la revisión se identificaron once herramientas instaladas en la base de datos de Open WebUI. La \cref{tab:openwebui-tools} resume su función. El código se documenta sin incluir credenciales, tokens ni URLs privadas completas.
 
+\pendingfigure{Panel de Open WebUI con las herramientas de Odín disponibles para el modelo}{fig:openwebui-tools-panel}
+
 \begingroup
 \scriptsize
 \setlength{\tabcolsep}{3pt}
@@ -270,6 +274,8 @@ El flujo comienza con una consulta en lenguaje natural. La tool la envía a la c
 
 Este detalle parece pequeño, pero es importante para la experiencia de usuario. No basta con decir ``he encontrado una foto''; la utilidad real es que la imagen aparezca en la conversación. Esta tool convierte Immich en memoria visual accesible desde lenguaje natural, que era uno de los objetivos del mapa inicial.
 
+\pendingfigure{Búsqueda de recuerdos visuales en Immich desde una conversación de Open WebUI}{fig:immich-busqueda-chat}
+
 \subsection{Flujo: web, vídeos e ingesta de conocimiento}
 La herramienta \texttt{guardar\_transcripcion\_de\_video\_o\_pagina\_web} contiene dos funciones. \texttt{get\_youtube\_transcript} extrae texto de un vídeo de YouTube, mientras que \texttt{search\_and\_crawl\_web} puede leer una URL concreta o buscar contenido en internet mediante Crawl4AI. Internamente usa librerías como \texttt{youtube\_transcript\_api}, \texttt{crawl4ai}, \texttt{aiohttp}, \texttt{tiktoken} y estrategias de generación de Markdown.
 
@@ -284,6 +290,8 @@ La descripción impone una regla de seguridad: el modelo no debe inventar métri
 \texttt{vigilancia\_frigate} integra Frigate en la conversación. La función \texttt{consultar\_camaras} obtiene las cámaras conectadas. \texttt{ver\_foto\_actual} devuelve la captura más reciente de una cámara concreta. \texttt{ver\_ultimo\_evento} recupera un evento grabado, por ejemplo una detección de persona.
 
 La tool incluye una regla útil: si el usuario no da el nombre exacto de la cámara, primero se deben consultar las cámaras disponibles. Esto evita inventar identificadores internos de Frigate. Igual que en Immich, las funciones visuales devuelven Markdown de imagen y el modelo debe conservarlo para que se renderice en el chat.
+
+\pendingfigure{Consulta de cámaras y eventos de Frigate desde Odín}{fig:frigate-openwebui}
 
 \subsection{Flujo: domótica y Home Assistant}
 Odín tiene dos capas para Home Assistant. La primera, \texttt{home\_assistant}, trabaja de forma más estructurada: busca entidades, ejecuta acciones, gestiona calendario, lista de la compra y datos de salud. La segunda, \texttt{home\_assistant\_connector}, delega lenguaje natural directamente en Home Assistant Assist mediante \texttt{/api/conversation/process}. Ambas son útiles, pero tienen filosofías distintas.

@@ -28,6 +28,8 @@ La arquitectura de Odín se organiza alrededor de un servidor principal y una Ra
 
 El flujo normal parte de una entrada del usuario, ya sea desde chat, voz o automatización. Open WebUI interpreta la intención y, cuando corresponde, invoca una tool. Esa tool puede consultar Nextcloud, Qdrant, Immich, Frigate, Home Assistant o n8n. Los resultados vuelven al modelo, que responde al usuario con texto, imagen, confirmación o alerta. La arquitectura separa deliberadamente interfaz, ejecución y almacenamiento: el modelo decide qué herramienta usar, pero la acción real se delega en servicios especializados.
 
+\pendingfigure{Arquitectura general de Odín y relación entre servidor, Raspberry Pi 5, Home Assistant, Open WebUI, Qdrant, Nextcloud, Immich, Frigate, n8n, Netdata y clientes}{fig:arquitectura-general}
+
 \section{Modelo de datos}
 El modelo de datos debe distinguir entre datos personales persistentes, configuraciones de servicios, logs de automatización, embeddings para búsqueda semántica y estados temporales de conversación. Esta separación es importante para definir copias de seguridad, políticas de retención y aislamiento entre servicios.
 

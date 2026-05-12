@@ -113,12 +113,20 @@ El tercer nivel consistió en generar un estado agregable por Home Assistant med
 
 Esta prueba enlaza directamente con los requisitos del proyecto: Odín debe ser capaz de hacer, pensar y avisar. Docker Compose aporta reproducibilidad; los healthchecks y endpoints aportan evidencia de funcionamiento; el JSON de estado permite automatización; Netdata aporta supervisión visual; y Telegram cubre avisos proactivos cuando aparece una anomalía. La monitorización no queda como una pieza decorativa, sino como parte del comportamiento del asistente.
 
+\pendingfigure{Dashboard de Netdata mostrando métricas del servidor Odín}{fig:netdata-dashboard}
+
+\pendingfigure{Sensor o panel de Home Assistant con el estado agregado de Odín}{fig:home-assistant-odin-status}
+
+\pendingfigure{Alerta proactiva enviada por Telegram o Home Assistant ante un evento relevante}{fig:alerta-proactiva}
+
 \section{Resultados obtenidos}
 Los resultados obtenidos muestran que Odín ha superado la fase de prototipo conceptual. El sistema integra conversación, memoria documental, fotos, domótica, cámaras, monitorización, acceso remoto, alertas y autoreparabilidad. La evidencia principal no es una única prueba aislada, sino la convivencia de múltiples servicios funcionando de forma coordinada.
 
 En la capa de interacción, Open WebUI actúa como interfaz principal y las tools permiten ejecutar acciones reales. En la capa de memoria, Nextcloud y Qdrant permiten guardar y recuperar información. En la capa visual, Immich permite trabajar con fotos y Frigate con cámaras. En la capa domótica, Home Assistant y HA Voice resuelven control de dispositivos, temporizadores, música y presencia. En la capa operativa, Netdata, Telegram y el exportador JSON ofrecen visibilidad sobre el estado del sistema.
 
 Las capturas finales se incorporarán como evidencia visual: panel de Open WebUI, listado o uso de tools, búsqueda de foto en Immich, consulta de memoria, dashboard de Netdata, automatización de Home Assistant, estado Docker y notificación de Telegram/HA. Estas capturas no son necesarias para demostrar que el sistema existe, pero sí ayudan a que la memoria sea más comprensible y verificable para el tribunal.
+
+\pendingfigure{Ejemplo de consulta de memoria privada con resultados procedentes de Nextcloud y Qdrant}{fig:consulta-memoria}
 
 \section{Discusion}
 El proyecto confirma que un asistente personal privado es viable, pero también muestra que el coste principal no es solo computacional. El reto real está en la integración: cada servicio funciona de una forma distinta, requiere credenciales, puertos, persistencia, logs, actualizaciones y decisiones de seguridad. Odín funciona porque no intenta resolver todo con un único modelo, sino combinando herramientas especializadas.
