@@ -24,6 +24,26 @@ La segunda línea es consolidar la política de copias de seguridad. Ya existe s
 
 La tercera línea es convertir Odín en un asistente también del ordenador. Actualmente el sistema actúa sobre servicios del hogar y del servidor: Home Assistant, Nextcloud, Immich, Frigate, n8n, Open WebUI, Qdrant y herramientas de monitorización. Una ampliación natural sería añadir capacidades de asistente de escritorio: abrir aplicaciones, organizar archivos locales, resumir ventanas o documentos, preparar comandos, controlar determinadas tareas del sistema operativo y actuar con confirmación sobre el ordenador personal. Esta línea debe diseñarse con especial cuidado, porque aumenta mucho el riesgo: un agente de escritorio necesita permisos, límites claros, confirmaciones y trazabilidad.
 
+\begin{table}[H]
+  \centering
+  \caption{Trabajo futuro: Odín como asistente del ordenador}
+  \label{tab:futuro-asistente-ordenador}
+  \begin{tabularx}{\textwidth}{lX}
+    \toprule
+    Capacidad futura & Descripción \\
+    \midrule
+    Gestión de archivos & Buscar, mover, renombrar, clasificar y resumir documentos locales con confirmación previa. \\
+    Control de aplicaciones & Abrir aplicaciones, preparar entornos de trabajo y automatizar tareas repetitivas del escritorio. \\
+    Lectura contextual & Resumir documentos abiertos, páginas, logs o ventanas seleccionadas sin enviar contenido sensible fuera del equipo. \\
+    Ejecución asistida & Proponer comandos o acciones del sistema, pero pedir autorización antes de ejecutarlos. \\
+    Memoria de trabajo & Relacionar lo que ocurre en el ordenador con la memoria documental de Odín, Nextcloud y Qdrant. \\
+    Seguridad & Definir permisos mínimos, listas de acciones permitidas, registro de acciones y modo solo lectura por defecto. \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+Esta ampliación permitiría que Odín pasara de ser un asistente de servicios a ser un asistente de entorno de trabajo. El objetivo no sería sustituir al usuario ni ejecutar acciones opacas, sino reducir fricción: preparar contexto, recuperar archivos, ordenar información y ayudar a operar el ordenador de forma auditable.
+
 La cuarta línea es mejorar la evaluación longitudinal. Odín ya tiene funciones reales: guarda notas, busca memoria, controla domótica, gestiona recordatorios, consulta fotos, notifica presencia, revisa estado del sistema y permite monitorización. El siguiente paso académico sería medir su uso durante varias semanas: número de interacciones, tipos de acciones, errores, latencia percibida, utilidad real y tareas que el usuario sigue prefiriendo hacer manualmente.
 
 Finalmente, la voz queda como una limitación aceptada del proyecto. Se han probado varias alternativas y se mantiene una solución funcional mediante Piper/HA Voice y servicios experimentales de TTS, pero no se perseguirá dentro del alcance una voz más realista y rápida. En este caso, cerrar el alcance es parte de la decisión técnica: el sistema debe entregarse funcionando, no quedarse indefinidamente bloqueado por una mejora de experiencia que depende mucho del soporte de hardware AMD y de la madurez de las herramientas disponibles.

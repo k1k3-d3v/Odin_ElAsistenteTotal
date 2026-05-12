@@ -4,3 +4,21 @@
 Este anexo queda reservado para material complementario que no debe interrumpir la lectura principal de la memoria. En la versión final puede incluir capturas de Open WebUI, Home Assistant, Netdata, Immich, Frigate y Telegram; fragmentos saneados de ficheros Docker Compose; salidas de validación; ejemplos de respuestas de las herramientas; y tablas completas de métricas.
 
 El criterio para incorporar material al anexo será doble. Primero, debe aportar evidencia real del sistema desplegado. Segundo, no debe contener secretos, tokens, contraseñas, dominios sensibles ni rutas que comprometan la seguridad del entorno. Las configuraciones se incluirán, cuando sea necesario, en versión saneada.
+
+Como parte de este criterio, el repositorio incluye copias saneadas de los stacks Docker activos en \nolinkurl{server-compose/} y de las herramientas de Open WebUI en \nolinkurl{tools/openwebui-tools/}. Estos ficheros no contienen credenciales reales: los valores sensibles se han sustituido por variables de entorno o placeholders. Su objetivo es documentar la arquitectura, no desplegar directamente el servidor sin revisión previa.
+
+\begin{table}[H]
+  \centering
+  \caption{Material técnico versionado en el repositorio}
+  \label{tab:material-versionado}
+  \begin{tabularx}{\textwidth}{lX}
+    \toprule
+    Ruta & Contenido \\
+    \midrule
+    \nolinkurl{server-compose/} & Versiones saneadas de los stacks Docker activos: núcleo, Immich, audio, Frigate, proxy de Home Assistant, Netdata y PocketTTS. \\
+    \nolinkurl{tools/openwebui-tools/} & Export saneado de las tools de Open WebUI: código Python, especificaciones funcionales e índice. \\
+    \nolinkurl{tools/odin_autorepair.py} & Herramienta propia de diagnóstico, alertas y reparación conservadora. \\
+    \nolinkurl{tools/odin_ha_status.py} & Exportador de estado compatible con Home Assistant. \\
+    \bottomrule
+  \end{tabularx}
+\end{table}

@@ -1,0 +1,25 @@
+{
+  "id": "qr_code_generator_for_open_webui",
+  "name": "QR Code Generator for Open WebUI",
+  "created_at": 1777637348,
+  "updated_at": 1778521924,
+  "specs": [
+    {
+      "name": "generate_qr_code",
+      "description": "Creates a QR code for the given text, URL, or data and embeds it directly in the chat.",
+      "parameters": {
+        "properties": {
+          "content": {
+            "description": "The text, link, or data to encode in the QR code",
+            "type": "string"
+          }
+        },
+        "required": [
+          "content"
+        ],
+        "type": "object"
+      }
+    }
+  ],
+  "note": "Export saneado desde Open WebUI. No incluye valves ni credenciales reales."
+}

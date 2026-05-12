@@ -1,0 +1,35 @@
+{
+  "id": "guardar_nota",
+  "name": "Guardar nota en Nextcloud",
+  "created_at": 1777037087,
+  "updated_at": 1778521924,
+  "specs": [
+    {
+      "name": "guardar_nota_nextcloud",
+      "description": "[USO OBLIGATORIO PARA ARCHIVAR] Guarda una nota en Nextcloud.\nÚsalo cuando Quique te pida guardar un resumen, artículo, receta o idea.",
+      "parameters": {
+        "properties": {
+          "carpeta": {
+            "description": "Debe ser una de estas: \"Curiosidades\", \"Documentos Personales\", \"Garantías\", \"Ideas Proyectos\", \"Libros\", \"Otros\", \"Photos\", \"Procesados\", \"Recetas\", \"Viajes\".",
+            "type": "string"
+          },
+          "titulo_archivo": {
+            "description": "Nombre limpio acabado en .md (ej: \"resumen-metal-slug.md\").",
+            "type": "string"
+          },
+          "contenido_markdown": {
+            "description": "Contenido redactado en formato Markdown.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "carpeta",
+          "titulo_archivo",
+          "contenido_markdown"
+        ],
+        "type": "object"
+      }
+    }
+  ],
+  "note": "Export saneado desde Open WebUI. No incluye valves ni credenciales reales."
+}

@@ -1,0 +1,74 @@
+# Docker Compose for PocketTTS OpenAI-Compatible Server
+#
+# Usage:
+#   docker compose up -d          # Start the server
+#   docker compose logs -f        # View logs
+#   docker compose down           # Stop the server
+#
+# Custom voices:
+#   Mount your own voices directory to /app/voices
+
+services:
+  pockettts:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: pockettts-openai-server:latest
+    container_name: pockettts-server
+
+    ports:
+      - '${POCKET_TTS_PORT:-49112}:49112'
+
+    environment:
+      - POCKET_TTS_HOST=0.0.0.0
+      - POCKET_TTS_PORT=49112
+      - POCKET_TTS_VOICES_DIR=/app/voices
+      - POCKET_TTS_LOG_LEVEL=${POCKET_TTS_LOG_LEVEL:-INFO}
+      - POCKET_TTS_STREAM_DEFAULT=${POCKET_TTS_STREAM_DEFAULT:-true}
+      # Model language (e.g., english, french_24l, german_24l, portuguese, italian, spanish_24l)
+      # Mutually exclusive with POCKET_TTS_MODEL_PATH. Requires pocket-tts>=2.0.0.
+      - POCKET_TTS_LANGUAGE=${POCKET_TTS_LANGUAGE:-}
+      # Enable int8 quantization for lower memory usage and improved speed
+      - POCKET_TTS_QUANTIZE=${POCKET_TTS_QUANTIZE:-false}
+      - POCKET_TTS_VOICE_CACHE_DIR=/app/voice_cache
+      # Hugging Face token for voice cloning (optional)
+      - HF_TOKEN=${HF_TOKEN:-}
+
+    volumes:
+      # Mount custom voices (optional - overrides bundled voices)
+      - ${POCKET_TTS_VOICES_DIR:-./voices}:/app/voices:ro
+      # Persist logs
+      - ./logs:/app/logs
+      # Cache HuggingFace models to avoid re-downloading
+      - pockettts-cache:/home/pockettts/.cache/huggingface
+      # Writable cache for per-model cloned voice safetensors
+      - pockettts-voice-cache:/app/voice_cache
+
+    restart: unless-stopped
+
+    # Resource limits (adjust based on your hardware)
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+        reservations:
+          memory: 2G
+
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'python',
+          '-c',
+          "import urllib.request; urllib.request.urlopen('http://localhost:49112/health')",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 120s # Model loading takes time
+
+volumes:
+  pockettts-cache:
+    name: pockettts-huggingface-cache
+  pockettts-voice-cache:
+    name: pockettts-voice-cache

@@ -1,0 +1,130 @@
+name: odin-master
+services:
+  # --- EL CEREBRO ---
+  webui-odin:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: webui-odin
+    restart: always
+    network_mode: host 
+    volumes:
+      - /home/k1k3/odin/data/openweb_ui_data:/app/backend/data
+      - ./data/nextcloud/data:/app/nextcloud_data:ro
+    environment:
+      - PORT=3000 
+      - OLLAMA_BASE_URL=http://127.0.0.1:11434 
+      - WEBUI_AUTH=True
+      - WEBUI_NAME=Odín
+      - WEBUI_SECRET_KEY=${WEBUI_SECRET_KEY:?set in .env}
+      - ENABLE_SIGNUP=True
+      - HF_HUB_OFFLINE=1
+      - VECTOR_DB=qdrant
+      - QDRANT_URI=http://127.0.0.1:6333 
+    depends_on:
+      - qdrant-odin
+
+  # --- LA MEMORIA VECTORIAL ---
+  qdrant-odin:
+    image: qdrant/qdrant:latest
+    container_name: qdrant-odin
+    restart: always
+    ports:
+      - "6333:6333"
+    volumes:
+      - ./data/qdrant:/qdrant/storage
+
+  # --- NEXTCLOUD ---
+  db-nextcloud:
+    image: mariadb:10.11
+    container_name: nextcloud-db
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=${NEXTCLOUD_DB_ROOT_PASSWORD:?set in .env}
+      - MYSQL_PASSWORD=${NEXTCLOUD_DB_PASSWORD:?set in .env}
+      - MYSQL_DATABASE=nextcloud
+      - MYSQL_USER=nextcloud
+    volumes:
+      - ./data/nextcloud_db:/var/lib/mysql
+
+  nextcloud-odin:
+    image: nextcloud:latest
+    container_name: nextcloud-odin
+    restart: always
+    ports:
+      - "8082:80"
+    volumes:
+      - ./data/nextcloud:/var/www/html
+    depends_on:
+      - db-nextcloud
+
+  # --- WHATSAPP Y AUTOMATIZACIÓN ---
+  db-evolution:
+    image: postgres:15-alpine
+    container_name: evolution-db
+    restart: always
+    environment:
+      - POSTGRES_USER=odin
+      - POSTGRES_PASSWORD=${EVOLUTION_DB_PASSWORD:?set in .env}
+      - POSTGRES_DB=evolution
+    volumes:
+      - ./data/evolution_db:/var/lib/postgresql/data
+
+  redis-odin:
+    image: redis:alpine
+    container_name: redis-odin
+    restart: always
+
+  evolution-odin:
+    image: atendai/evolution-api:latest
+    container_name: evolution-odin
+    restart: always
+    environment:
+      - DATABASE_ENABLED=true
+      - DATABASE_PROVIDER=postgresql
+      - DATABASE_CONNECTION_URI=postgresql://odin:${EVOLUTION_DB_PASSWORD:?set in .env}@db-evolution:5432/evolution?sslmode=disable
+      - AUTHENTICATION_API_KEY=${EVOLUTION_API_KEY:?set in .env}
+    ports:
+      - "8085:8080"
+    depends_on:
+      - db-evolution
+
+  # --- FLUJOS DE TRABAJO ---
+  n8n-odin:
+    image: n8nio/n8n
+    container_name: n8n-odin
+    restart: always
+    ports:
+      - "5679:5678"
+    environment:
+      - WEBHOOK_URL=${N8N_PUBLIC_URL:?set in .env}
+      - N8N_SECURE_COOKIE=false
+      - N8N_TRUST_PROXY=true
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./data/n8n:/home/node/.n8n
+
+  cloudflared-odin:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflared-odin
+    restart: always
+    command: tunnel --no-autoupdate run --token ${CLOUDFLARED_TUNNEL_TOKEN:?set in .env}
+
+
+  crawl4ai:
+    image: unclecode/crawl4ai:latest # Verifica la imagen correcta
+    container_name: crawl4ai
+    ports:
+      - "11235:11235"
+    restart: unless-stopped
+#info pdf
+  stirling-pdf:
+    container_name: stirling-pdf
+    environment:
+      - DOCKER_ENABLE_SECURITY=false
+      - INSTALL_EXTRA_LANGS=spa,eng
+      - OCR_DEFAULT_LANGUAGE=spa
+    working_dir: /app
+    ports:
+      - 8080:8080
+    restart: unless-stopped
+    image: stirlingtools/stirling-pdf:latest

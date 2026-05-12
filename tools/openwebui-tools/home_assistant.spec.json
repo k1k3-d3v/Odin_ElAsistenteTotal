@@ -1,0 +1,104 @@
+{
+  "id": "home_assistant",
+  "name": "Home Assistant",
+  "created_at": 1777638117,
+  "updated_at": 1778521924,
+  "specs": [
+    {
+      "name": "control_home_assistant",
+      "description": "NOMBRE DE LA HERRAMIENTA:\ncontrol_home_assistant.\n\nCUÁNDO USAR ESTA HERRAMIENTA:\nUsa esta herramienta cuando Quique quiera buscar, consultar o controlar dispositivos\nde Home Assistant como luces, sensores, enchufes, interruptores, clima, temperatura,\npersianas, habitaciones, aparatos o entidades domóticas.\n\nEsta herramienta sirve para encontrar la entidad adecuada antes de ejecutar una acción.\n\nQUÉ HACE:\nConsulta los estados de Home Assistant y busca entidades cuyo nombre coincida con\nla petición de Quique.\n\nREGLA CRÍTICA PARA EL MODELO:\nAntes de usar esta herramienta, lee a fondo esta descripción.\nEsta herramienta solo busca entidades candidatas.\nPara ejecutar una acción real sobre una entidad, después debes usar execute_action.\nNo digas que has encendido, apagado o cambiado algo si solo has usado esta herramienta.\nNo inventes entity_id.\nUsa los resultados devueltos para elegir la entidad correcta.\n\nPROHIBICIÓN ABSOLUTA:\nNo uses esta herramienta para la lista de la compra.\nSi Quique menciona comprar, lista de la compra, alimentos, supermercado o productos\ndel súper, usa manage_shopping_list, no control_home_assistant.\n\nPARÁMETROS:\nuser_request: petición natural de Quique, por ejemplo \"enciende la luz del salón\".\n\nEJEMPLOS:\nQuique dice: enciende la luz del salón.\nPrimero usa control_home_assistant con user_request \"enciende la luz del salón\".\nDespués usa execute_action con la entidad correcta y el servicio adecuado.\n\nQuique dice: apaga el enchufe del escritorio.\nPrimero usa control_home_assistant.\nDespués usa execute_action.\n\nQuique dice: qué temperatura hay en casa.\nUsa control_home_assistant para buscar el sensor adecuado.\nSi solo es consulta, responde con el estado si está disponible en los resultados o usa la información de la entidad encontrada.\n\nCUÁNDO NO USARLA:\nNo la uses para compra.\nNo la uses para calendario.\nNo la uses para salud si Quique pide métricas de salud generales. Para eso usa get_health_status.\nNo la uses para cámaras.\nNo la uses para notas.",
+      "parameters": {
+        "properties": {
+          "user_request": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "user_request"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "execute_action",
+      "description": "NOMBRE DE LA HERRAMIENTA:\nexecute_action.\n\nCUÁNDO USAR ESTA HERRAMIENTA:\nUsa esta herramienta para ejecutar una acción real sobre una entidad de Home Assistant\ndespués de haber identificado la entidad correcta.\n\nDebes usarla para acciones como:\nencender una luz.\napagar una luz.\ncambiar brillo.\ncambiar color.\nencender un enchufe.\napagar un enchufe.\nactivar un interruptor.\ndesactivar un interruptor.\najustar clima.\nejecutar un servicio de Home Assistant sobre una entidad.\n\nQUÉ HACE:\nLlama a un servicio de Home Assistant sobre un entity_id concreto.\n\nREGLA CRÍTICA PARA EL MODELO:\nAntes de usar esta herramienta, lee a fondo esta descripción.\nNo uses execute_action si no tienes claro el entity_id.\nNo inventes entity_id.\nNo inventes servicios.\nNormalmente debes usar control_home_assistant antes para encontrar la entidad.\nDespués usa execute_action para ejecutar la acción.\n\nPARÁMETROS:\nentity_id: entidad exacta de Home Assistant, por ejemplo light.salon.\nservice: servicio que se quiere ejecutar, por ejemplo turn_on, turn_off, light.turn_on o switch.turn_off.\nmetadata: JSON opcional en texto para parámetros adicionales, como brillo, color o temperatura.\n\nEJEMPLOS:\nPara encender una luz:\nentity_id \"light.salon\".\nservice \"turn_on\".\n\nPara apagar una luz:\nentity_id \"light.salon\".\nservice \"turn_off\".\n\nPara cambiar brillo:\nentity_id \"light.salon\".\nservice \"turn_on\".\nmetadata \"{\"brightness_pct\": 50}\".\n\nPara cambiar temperatura de color:\nentity_id \"light.salon\".\nservice \"turn_on\".\nmetadata \"{\"color_temp_kelvin\": 3000}\".\n\nCUÁNDO NO USARLA:\nNo la uses para lista de la compra.\nNo la uses para calendario.\nNo la uses para guardar notas.\nNo la uses para buscar documentos.\nNo la uses para cámaras.",
+      "parameters": {
+        "properties": {
+          "entity_id": {
+            "type": "string"
+          },
+          "service": {
+            "type": "string"
+          },
+          "metadata": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "entity_id",
+          "service"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_health_status",
+      "description": "NOMBRE DE LA HERRAMIENTA:\nget_health_status.\n\nCUÁNDO USAR ESTA HERRAMIENTA:\nUsa esta herramienta siempre que Quique pregunte por su salud, estado físico,\ndescanso, sueño, pasos, actividad, ritmo cardíaco, frecuencia cardíaca, calorías,\npeso, SpO2, métricas corporales o datos recogidos desde Wear OS, Health Connect\no sensores de salud en Home Assistant.\n\nTambién debes usarla cuando Quique diga cosas como:\ncómo estoy hoy.\ncómo he dormido.\ncuántos pasos llevo.\nmira mi salud.\nmira mis datos de salud.\ncómo voy de actividad.\nqué tal mi descanso.\nrevisa mi sueño.\nrevisa mi frecuencia cardíaca.\nrevisa mis calorías.\nqué datos de salud tienes.\n\nQUÉ HACE:\nConsulta todos los estados de Home Assistant y filtra sensores relacionados con\nsalud, pasos, sueño, frecuencia cardíaca, calorías, peso, actividad y métricas\nsimilares.\n\nREGLA CRÍTICA PARA EL MODELO:\nAntes de usar esta herramienta, lee a fondo esta descripción.\nNo inventes datos de salud.\nNo des consejos médicos como diagnóstico.\nUsa únicamente los datos devueltos por la herramienta.\nSi la herramienta devuelve datos en crudo, interprétalos de forma natural para Quique.\nSi no hay datos, dilo claramente.\nSi hay error, informa del error.\n\nCUÁNDO NO USARLA:\nNo la uses para controlar luces, sensores normales, clima o enchufes.\nNo la uses para calendario.\nNo la uses para lista de la compra.\nNo la uses para cámaras.\nNo la uses para notas.\n\nPARÁMETROS:\nNo necesita parámetros.\n\nRESPUESTA ESPERADA:\nDevuelve una lista de sensores de salud encontrados.\nEl modelo debe convertir esos datos en un resumen breve y humano.",
+      "parameters": {
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "manage_calendar",
+      "description": "NOMBRE DE LA HERRAMIENTA:\nmanage_calendar.\n\nCUÁNDO USAR ESTA HERRAMIENTA:\nUsa esta herramienta cuando Quique pida crear un evento, añadir una cita,\napuntar algo en el calendario, recordar algo, poner un recordatorio,\nguardar una fecha, agendar una tarea o crear una entrada temporal.\n\nTambién debes usarla cuando Quique diga cosas como:\nrecuérdame.\napunta.\npon en el calendario.\ncrea un evento.\nañade una cita.\navísame de.\nagenda.\nguarda esto para mañana.\nacuérdate de.\n\nQUÉ HACE:\nCrea un evento en el calendario de Home Assistant.\n\nREGLA CRÍTICA PARA EL MODELO:\nAntes de usar esta herramienta, lee a fondo esta descripción.\nDebes calcular correctamente fecha, hora de inicio y hora de fin.\nNunca pongas la misma hora de inicio y hora de fin.\nSi Quique no indica hora de fin, calcula una hora de fin razonable posterior.\nPara recordatorios simples, usa una duración breve pero válida.\nNo digas que has creado un evento si no has usado esta herramienta.\n\nPARÁMETROS:\ntitulo: nombre claro del evento.\nfecha: debe ser una sola palabra. Valores válidos:\nhoy.\nmañana.\nmanana.\nlunes.\nmartes.\nmiércoles.\nmiercoles.\njueves.\nviernes.\nsábado.\nsabado.\ndomingo.\n\nhora_inicio: hora de inicio en formato HH:MM.\nhora_fin: hora de fin en formato HH:MM.\ndescripcion: texto opcional con detalles del evento.\n\nIMPORTANTE SOBRE FECHAS:\nEsta herramienta no acepta fechas completas como 2026-05-06.\nEl parámetro fecha debe ser una palabra válida como hoy, mañana o un día de la semana.\nEl sistema calcula la fecha real automáticamente usando la zona horaria de España.\n\nIMPORTANTE SOBRE HORAS:\nhora_inicio y hora_fin deben estar en formato HH:MM.\nhora_fin debe ser posterior a hora_inicio.\nNo uses la misma hora para inicio y fin.\n\nEJEMPLOS:\nQuique dice: recuérdame mañana a las 20 comprar pan.\nUsa titulo \"Comprar pan\", fecha \"mañana\", hora_inicio \"20:00\", hora_fin \"20:15\".\n\nQuique dice: crea un evento el viernes de 18 a 20, dentista.\nUsa titulo \"Dentista\", fecha \"viernes\", hora_inicio \"18:00\", hora_fin \"20:00\".\n\nQuique dice: apunta hoy a las 21 llamar a Ivet.\nUsa titulo \"Llamar a Ivet\", fecha \"hoy\", hora_inicio \"21:00\", hora_fin \"21:15\".\n\nCUÁNDO NO USARLA:\nNo la uses para lista de la compra.\nNo la uses para controlar casa.\nNo la uses para notas.\nNo la uses para cámaras.",
+      "parameters": {
+        "properties": {
+          "titulo": {
+            "type": "string"
+          },
+          "fecha": {
+            "type": "string"
+          },
+          "hora_inicio": {
+            "type": "string"
+          },
+          "hora_fin": {
+            "type": "string"
+          },
+          "descripcion": {
+            "default": "",
+            "type": "string"
+          }
+        },
+        "required": [
+          "titulo",
+          "fecha",
+          "hora_inicio",
+          "hora_fin"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "manage_shopping_list",
+      "description": "NOMBRE DE LA HERRAMIENTA:\nmanage_shopping_list.\n\nCUÁNDO USAR ESTA HERRAMIENTA:\nUsa esta herramienta obligatoriamente cuando Quique mencione la lista de la compra,\ncomprar, adquirir, añadir, borrar, quitar, eliminar, leer, consultar, supermercado,\nsúper, alimentos, despensa o productos que haya que comprar.\n\nEsta es la única herramienta permitida para la lista de la compra.\n\nREGLA CRÍTICA PARA EL MODELO:\nAntes de usar esta herramienta, lee a fondo esta descripción.\nEstá total y estrictamente prohibido usar control_home_assistant para cualquier cosa\nrelacionada con la lista de la compra.\nNo uses otra herramienta para compra.\nNo simules haber añadido, borrado o leído la lista si no has llamado a esta herramienta.\n\nACCIONES DISPONIBLES:\naction igual a \"add\":\nAñade un producto a la lista.\nDebes rellenar item con el producto exacto que Quique quiere añadir.\n\naction igual a \"delete\":\nBorra un producto de la lista.\nDebes rellenar item con el producto exacto que Quique quiere borrar.\n\naction igual a \"read\":\nLee los productos pendientes de la lista.\nEn este caso item puede quedar vacío.\n\nCUÁNDO USAR CADA ACCIÓN:\nSi Quique pide añadir algo, usa action \"add\".\nSi Quique pide borrar, quitar o eliminar algo, usa action \"delete\".\nSi Quique pregunta qué hay que comprar, qué hay en la lista o quiere consultar la lista, usa action \"read\".\n\nPARÁMETROS:\naction: debe ser exactamente \"add\", \"delete\" o \"read\".\nitem: producto que se añade o borra. Solo es necesario para add y delete.\n\nEJEMPLOS:\nQuique dice: añade leche a la lista.\nUsa action \"add\" e item \"leche\".\n\nQuique dice: borra pan de la lista.\nUsa action \"delete\" e item \"pan\".\n\nQuique dice: qué hay en la lista de la compra.\nUsa action \"read\" e item vacío.\n\nRESPUESTA ESPERADA:\nSi añade, confirma que el producto se ha añadido.\nSi borra, confirma que el producto se ha borrado.\nSi lee, interpreta los datos crudos y responde con naturalidad.\nSi la lista está vacía, di que está vacía.",
+      "parameters": {
+        "properties": {
+          "action": {
+            "type": "string"
+          },
+          "item": {
+            "default": "",
+            "type": "string"
+          }
+        },
+        "required": [
+          "action"
+        ],
+        "type": "object"
+      }
+    }
+  ],
+  "note": "Export saneado desde Open WebUI. No incluye valves ni credenciales reales."
+}

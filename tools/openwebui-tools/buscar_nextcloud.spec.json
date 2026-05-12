@@ -1,0 +1,24 @@
+{
+  "id": "buscar_nextcloud",
+  "name": "Buscar Nextcloud",
+  "created_at": 1777134726,
+  "updated_at": 1778521924,
+  "specs": [
+    {
+      "name": "buscar_en_nextcloud",
+      "description": "NOMBRE DE LA HERRAMIENTA:\nbuscar_en_nextcloud.\n\nIDENTIDAD:\nEsta herramienta es el Pozo de Mimir.\nEs la fuente principal de conocimiento privado de Quique.\nBusca en sus documentos, notas, apuntes, proyectos e información guardada en Nextcloud.\n\nCUÁNDO USAR ESTA HERRAMIENTA:\nUsa esta herramienta obligatoriamente cuando Quique pregunte por información que pueda estar en sus notas,\ndocumentos personales, proyectos, apuntes o memoria privada.\n\nDebes usarla especialmente cuando Quique pregunte por:\nnotas.\ndocumentos.\napuntes.\nproyectos.\nideas guardadas.\ninformación académica.\nuniversidad.\ntemas de Controladora Aérea.\nOACI.\nIvet.\nhacking.\nciberseguridad.\nplanes personales.\ndatos que Odín deba saber.\nrecuerdos escritos.\ncontenido guardado en Nextcloud.\ncualquier cosa que suene a información privada ya almacenada.\n\nTambién debes usarla cuando Quique diga cosas como:\nbusca en mis notas.\nmira en Nextcloud.\nconsulta el Pozo de Mimir.\nqué tengo sobre esto.\nqué sabes de esto en mis archivos.\nrecuérdame lo que apunté.\nbusca mis apuntes de.\ntengo algo guardado sobre.\n\nCUÁNDO NO USAR ESTA HERRAMIENTA:\nNo la uses para la lista de la compra.\nNo la uses para controlar dispositivos de casa.\nNo la uses para cámaras.\nNo la uses para buscar fotos.\nNo la uses para crear eventos o recordatorios.\nNo la uses para guardar notas nuevas.\nEsta herramienta solo consulta información existente.\n\nREGLA CRÍTICA PARA EL MODELO:\nNo respondas con conocimiento genérico cuando esta herramienta sea aplicable.\nSi Quique pregunta por algo que puede estar en sus documentos, usa esta herramienta antes de responder.\nNo inventes contenido de documentos.\nNo digas que algo está en sus archivos si esta herramienta no lo ha devuelto.\nNo digas que has consultado Nextcloud si no has usado esta herramienta.\nBasa tu respuesta únicamente en los resultados devueltos.\n\nCÓMO RESPONDER DESPUÉS DE USARLA:\nSi hay resultados, resume lo encontrado de forma clara.\nPuedes mencionar la fuente si aparece en el resultado.\nSi no hay resultados, di que has consultado el Pozo de Mimir y no hay registros sobre eso.\nSi hay error técnico, informa del error sin inventar una respuesta alternativa.\n\nPARÁMETROS:\nconsulta: pregunta o descripción en lenguaje natural de lo que Quique quiere buscar.\n\nEJEMPLOS DE USO:\nQuique dice: busca mis apuntes sobre OACI.\nUsa buscar_en_nextcloud con consulta igual a \"apuntes sobre OACI\".\n\nQuique dice: qué tengo sobre Ivet.\nUsa buscar_en_nextcloud con consulta igual a \"Ivet\".\n\nQuique dice: mira en mis notas lo de hacking.\nUsa buscar_en_nextcloud con consulta igual a \"hacking\".\n\nQuique dice: qué sabe Odín sobre la universidad.\nUsa buscar_en_nextcloud con consulta igual a \"universidad\".\n\nQuique dice: consulta el Pozo de Mimir sobre controladora aérea.\nUsa buscar_en_nextcloud con consulta igual a \"controladora aérea\".\n\nFORMATO DEL RESULTADO:\nLa herramienta devuelve fragmentos encontrados en documentos, con su fuente cuando está disponible.\nEl modelo debe leer esos fragmentos y responder a Quique basándose en ellos.\n\nPRIORIDAD:\nEsta herramienta tiene prioridad sobre una respuesta genérica siempre que la petición pueda referirse\na conocimiento privado, notas, documentos o memoria guardada.",
+      "parameters": {
+        "properties": {
+          "consulta": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "consulta"
+        ],
+        "type": "object"
+      }
+    }
+  ],
+  "note": "Export saneado desde Open WebUI. No incluye valves ni credenciales reales."
+}

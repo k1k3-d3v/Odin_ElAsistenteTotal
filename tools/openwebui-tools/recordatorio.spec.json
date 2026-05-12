@@ -1,0 +1,45 @@
+{
+  "id": "recordatorio",
+  "name": "Recordatorio",
+  "created_at": 1777037286,
+  "updated_at": 1777641702,
+  "specs": [
+    {
+      "name": "anadir_evento_calendario",
+      "description": "Crea un evento en el calendario.\nNO INTENTES CALCULAR LA FECHA EXACTA.",
+      "parameters": {
+        "properties": {
+          "titulo": {
+            "description": "Título del evento (ej: \"Cena Sant Jordi\").",
+            "type": "string"
+          },
+          "descripcion": {
+            "description": "Breve descripción.",
+            "type": "string"
+          },
+          "dia_relativo": {
+            "description": "Solo puedes usar una de estas opciones exactas: \"hoy\", \"mañana\", \"pasado mañana\", o el nombre de un día de la semana si es para la semana que viene (ej: \"lunes\", \"martes\", etc).",
+            "type": "string"
+          },
+          "hora_inicio_HH_MM": {
+            "description": "Hora de inicio en formato 'HH:MM' (ej: '21:00').",
+            "type": "string"
+          },
+          "hora_fin_HH_MM": {
+            "description": "Hora de fin en formato 'HH:MM' (ej: '22:00').",
+            "type": "string"
+          }
+        },
+        "required": [
+          "titulo",
+          "descripcion",
+          "dia_relativo",
+          "hora_inicio_HH_MM",
+          "hora_fin_HH_MM"
+        ],
+        "type": "object"
+      }
+    }
+  ],
+  "note": "Export saneado desde Open WebUI. No incluye valves ni credenciales reales."
+}

@@ -1,0 +1,32 @@
+{
+  "id": "home_assistant_connector",
+  "name": "Home assistant connector ",
+  "created_at": 1778098203,
+  "updated_at": 1778098536,
+  "specs": [
+    {
+      "name": "ask_home_assistant_assist",
+      "description": "NOMBRE DE LA HERRAMIENTA:\nask_home_assistant_assist.\n\nIDENTIDAD:\nEsta herramienta conecta directamente con el asistente conversacional de Home Assistant Assist.\nEs el puente entre Odín y el cerebro domótico que ya existe dentro de Home Assistant.\n\nCUÁNDO USAR ESTA HERRAMIENTA:\nUsa esta herramienta cuando Quique quiera controlar o consultar dispositivos, áreas,\nsensores, luces, enchufes, clima, persianas, interruptores, escenas o automatizaciones\nusando lenguaje natural.\n\nTambién debes usarla cuando Quique diga cosas como:\nenciende la luz del salón.\napaga la cocina.\nsube la temperatura.\nbaja la persiana.\nactiva la escena cine.\nqué temperatura hay en el salón.\nhay alguna ventana abierta.\napaga todas las luces.\npon el despacho en modo trabajo.\ndile a Home Assistant que.\npregunta a Home Assistant.\n\nQUÉ HACE:\nEnvía el texto natural de Quique al endpoint /api/conversation/process de Home Assistant.\nHome Assistant Assist interpreta la orden y ejecuta o responde según su propio agente,\nsus áreas, entidades, alias, frases personalizadas e intents.\n\nREGLA CRÍTICA PARA EL MODELO:\nAntes de usar esta herramienta, lee a fondo esta descripción.\nNo intentes adivinar entity_id si puedes enviar la orden natural a Assist.\nNo inventes estados de sensores.\nNo digas que algo se ha ejecutado si Home Assistant no lo confirma.\nBasa tu respuesta en el texto devuelto por Home Assistant.\nSi la respuesta de Home Assistant contiene error, comunica el error.\nSi Home Assistant pide aclaración, traslada esa aclaración a Quique.\n\nCUÁNDO NO USAR ESTA HERRAMIENTA:\nNo la uses para lista de la compra, salvo que Quique pida explícitamente que lo gestione Home Assistant Assist.\nNo la uses para calendario si ya existe una herramienta específica manage_calendar.\nNo la uses para salud de Quique si existe get_health_status.\nNo la uses para cámaras de Frigate.\nNo la uses para buscar fotos.\nNo la uses para buscar notas en Nextcloud.\nNo la uses para guardar notas.\n\nPARÁMETROS:\ntext:\nOrden o pregunta en lenguaje natural que se enviará a Home Assistant Assist.\n\nconversation_id:\nOpcional. Identificador para mantener el contexto de conversación.\nSi queda vacío, se usa una conversación fija llamada odin_owui_midgard.\n\nagent_id:\nOpcional. ID del agente conversacional de Home Assistant.\nSi queda vacío, se usa el valor configurado en ASSIST_AGENT_ID.\nPor defecto es conversation.odin_ha.\n\nRESPUESTA ESPERADA:\nLa herramienta devuelve la respuesta hablada de Home Assistant si existe.\nSi no hay respuesta hablada, devuelve el JSON crudo para diagnóstico.",
+      "parameters": {
+        "properties": {
+          "text": {
+            "type": "string"
+          },
+          "conversation_id": {
+            "default": "",
+            "type": "string"
+          },
+          "agent_id": {
+            "default": "",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "type": "object"
+      }
+    }
+  ],
+  "note": "Export saneado desde Open WebUI. No incluye valves ni credenciales reales."
+}

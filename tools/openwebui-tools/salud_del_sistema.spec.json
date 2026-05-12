@@ -1,0 +1,28 @@
+{
+  "id": "salud_del_sistema",
+  "name": "salud del sistema",
+  "created_at": 1777232491,
+  "updated_at": 1778521924,
+  "specs": [
+    {
+      "name": "manage_system_health",
+      "description": "NOMBRE DE LA HERRAMIENTA:\nmanage_system_health.\n\nIDENTIDAD:\nEsta herramienta es el vigía del núcleo de Midgard.\nSirve para consultar el estado del servidor, revisar recursos, detectar problemas\ny ejecutar tareas básicas de mantenimiento o reparación.\n\nCUÁNDO USAR ESTA HERRAMIENTA:\nUsa esta herramienta cuando Quique pregunte por el estado del servidor, el estado\ndel sistema, la GPU, la CPU, la memoria, los procesos, los servicios, el rendimiento,\nerrores del servidor, lentitud, temperatura, carga del sistema o mantenimiento.\n\nTambién debes usarla cuando Quique diga cosas como:\ncómo está el servidor.\nrevisa el servidor.\nmira la GPU.\nmira la CPU.\nqué procesos hay.\nlimpia el servidor.\nhaz limpieza.\nreinicia un servicio.\nreinicia ollama.\nreinicia n8n.\nreinicia open webui.\ncomprueba si algo va mal.\nrevisa Midgard.\nestado del núcleo.\nvigila el sistema.\n\nQUÉ HACE:\nEnvía una acción a un webhook de n8n que consulta o repara el servidor.\nLa herramienta puede pedir informes de estado o ejecutar acciones de mantenimiento.\n\nREGLA CRÍTICA PARA EL MODELO:\nAntes de usar esta herramienta, lee a fondo esta descripción.\nNo inventes métricas del servidor.\nNo digas que la GPU, CPU, memoria o procesos están bien si esta herramienta no lo ha devuelto.\nNo digas que has limpiado o reiniciado algo si no has usado esta herramienta.\nNo inventes nombres de servicios.\nUsa solo las acciones permitidas.\nSi Quique pide reiniciar un servicio, debes pasar el nombre del servicio en service_name.\nSi Quique no especifica qué servicio reiniciar, no inventes uno. Pide el nombre del servicio o usa una acción de diagnóstico como general si la intención es revisar.\n\nACCIONES DISPONIBLES:\naction igual a \"gpu_status\":\nConsulta el estado de la GPU.\nÚsalo cuando Quique pregunte por la GPU, VRAM, uso gráfico, CUDA, NVIDIA o carga de la gráfica.\n\naction igual a \"cpu_status\":\nConsulta el estado de la CPU.\nÚsalo cuando Quique pregunte por CPU, procesador, carga, temperatura o rendimiento general del procesador.\n\naction igual a \"general\":\nConsulta el estado general del sistema.\nÚsalo cuando Quique pregunte cómo está el servidor, si todo va bien, estado de Midgard, salud del sistema o revisión general.\n\naction igual a \"processes\":\nConsulta procesos activos.\nÚsalo cuando Quique pregunte qué procesos hay, qué está consumiendo recursos o qué se está ejecutando.\n\naction igual a \"clean\":\nEjecuta una limpieza o mantenimiento básico del servidor.\nÚsalo cuando Quique pida limpiar el servidor, liberar recursos, hacer limpieza o mantenimiento.\n\naction igual a \"restart\":\nReinicia un servicio concreto.\nÚsalo solo cuando Quique pida reiniciar un servicio específico.\nDebes rellenar service_name con el nombre del servicio indicado por Quique.\n\nPARÁMETROS:\naction:\nDebe ser exactamente una de estas acciones:\ngpu_status.\ncpu_status.\ngeneral.\nprocesses.\nclean.\nrestart.\n\nservice_name:\nNombre del servicio que se quiere reiniciar.\nSolo es necesario cuando action es \"restart\".\nPara el resto de acciones puede quedar vacío.\n\nEJEMPLOS DE USO:\nQuique dice: cómo está el servidor.\nUsa action \"general\" y service_name vacío.\n\nQuique dice: mira la GPU.\nUsa action \"gpu_status\" y service_name vacío.\n\nQuique dice: mira la CPU.\nUsa action \"cpu_status\" y service_name vacío.\n\nQuique dice: qué procesos están consumiendo recursos.\nUsa action \"processes\" y service_name vacío.\n\nQuique dice: limpia el servidor.\nUsa action \"clean\" y service_name vacío.\n\nQuique dice: reinicia ollama.\nUsa action \"restart\" y service_name \"ollama\".\n\nQuique dice: reinicia n8n.\nUsa action \"restart\" y service_name \"n8n\".\n\nCUÁNDO NO USAR ESTA HERRAMIENTA:\nNo la uses para controlar luces, sensores, enchufes o clima.\nNo la uses para lista de la compra.\nNo la uses para calendario.\nNo la uses para cámaras.\nNo la uses para buscar fotos.\nNo la uses para buscar notas.\nNo la uses para guardar notas.\n\nRESPUESTA ESPERADA:\nSi la herramienta devuelve un informe, resume el informe para Quique con claridad.\nSi el resultado ya es claro, puedes mostrarlo directamente.\nSi hay error de conexión, informa de que no se ha podido conectar con el servidor.\nSi el webhook devuelve un código de error, informa del código sin inventar detalles.\n\nPRIORIDAD:\nEsta herramienta tiene prioridad para cualquier petición relacionada con la salud,\nmantenimiento o reparación del servidor.\nNo debe confundirse con get_health_status, que sirve para la salud física de Quique.\nmanage_system_health es para la salud del servidor.\nget_health_status es para la salud de Quique.",
+      "parameters": {
+        "properties": {
+          "action": {
+            "type": "string"
+          },
+          "service_name": {
+            "default": "",
+            "type": "string"
+          }
+        },
+        "required": [
+          "action"
+        ],
+        "type": "object"
+      }
+    }
+  ],
+  "note": "Export saneado desde Open WebUI. No incluye valves ni credenciales reales."
+}

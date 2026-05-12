@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  faster-whisper-server:
+    container_name: faster-whisper-server
+    image: fedirz/faster-whisper-server:latest-cpu
+    restart: unless-stopped
+    environment:
+      - WHISPER_MODEL=base
+    ports:
+      - "10301:8000"
+    command: uv run uvicorn --factory faster_whisper_server.main:create_app
+
+  wyoming-whisper:
+    container_name: wyoming-whisper
+    image: rhasspy/wyoming-whisper
+    restart: unless-stopped
+    volumes:
+      - /home/k1k3/wyoming-data:/data
+    ports:
+      - "10300:10300"
+    command: --model small --language es
+
+  piper:
+    container_name: piper
+    image: lscr.io/linuxserver/piper:latest
+    restart: unless-stopped
+    environment:
+      - TZ=Europe/Madrid
+      - PIPER_VOICE=es_ES-sharvard-medium
+    volumes:
+      - /home/k1k3/piper-data:/config
+    ports:
+      - "10200:10200"
+
+  odin-asr:
+    container_name: odin-asr
+    image: odin-onnx-asr
+    restart: unless-stopped
+    volumes:
+      - /home/k1k3/odin-asr-models:/root/.cache/huggingface
+    ports:
+      - "5002:8000"
+    command: uvicorn main:app --host 0.0.0.0 --port 8000

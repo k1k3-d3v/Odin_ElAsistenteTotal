@@ -1,0 +1,47 @@
+{
+  "id": "vigilancia_frigate",
+  "name": "vigilancia_frigate",
+  "created_at": 1777485085,
+  "updated_at": 1778521924,
+  "specs": [
+    {
+      "name": "consultar_camaras",
+      "description": "CUÁNDO USAR ESTA HERRAMIENTA:\nUsa esta función cuando Quique pregunte qué cámaras hay, qué cámaras están disponibles,\nqué cámaras están conectadas o cuando quiera ver una cámara pero no haya dado el nombre\nexacto de la cámara.\n\nTambién debes usarla si Quique pide ver una cámara con un nombre ambiguo y no sabes\nqué nombre interno tiene en Frigate.\n\nQUÉ HACE:\nConsulta Frigate y devuelve la lista de cámaras conectadas.\n\nINSTRUCCIÓN PARA EL MODELO:\nAntes de usar cualquier función de Frigate, lee a fondo su descripción.\nSi no sabes el nombre exacto de la cámara, usa primero consultar_camaras.\nNo inventes nombres de cámaras.\nNo expliques lo que vas a hacer.\nMuestra directamente el resultado.\n\nPARÁMETROS:\nNo necesita parámetros.\n\nRESPUESTA ESPERADA:\nDevuelve una frase con las cámaras conectadas.\n\nEJEMPLOS DE USO:\nQuique dice: qué cámaras hay.\nUsa consultar_camaras.\n\nQuique dice: dime las cámaras conectadas.\nUsa consultar_camaras.\n\nQuique dice: quiero ver una cámara pero no sé cómo se llama.\nUsa consultar_camaras.",
+      "parameters": {
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "ver_foto_actual",
+      "description": "CUÁNDO USAR ESTA HERRAMIENTA:\nUsa esta función cuando Quique pida ver una cámara ahora mismo, ver qué está pasando,\nmostrar la imagen actual, ver la vista en directo, revisar una estancia en tiempo real\no mirar una cámara concreta.\n\nQUÉ HACE:\nDevuelve la imagen más reciente de una cámara de Frigate.\nEs una captura actual, no un evento antiguo.\n\nINSTRUCCIÓN CRÍTICA PARA EL MODELO:\nEsta función devuelve una imagen en formato markdown.\nSiempre debes mostrar la línea de imagen exactamente tal cual aparece en el resultado.\n\nEl formato será parecido a este:\n![camara](url)\n\nNo cambies ese formato.\nNo lo conviertas en enlace normal.\nNo lo resumas.\nNo lo metas entre comillas.\nNo elimines el signo de exclamación.\nNo elimines los corchetes.\nNo elimines los paréntesis.\nNo leas la URL en voz alta.\nNo digas solo que la imagen está disponible.\nDebes incluir el markdown de imagen para que se renderice en el chat.\n\nPARÁMETROS:\ncamara: nombre exacto de la cámara en Frigate.\n\nIMPORTANTE:\nSi Quique no da el nombre exacto de la cámara, o el nombre es ambiguo,\nusa primero consultar_camaras.\nNo inventes el nombre de la cámara.\n\nRESPUESTA OBLIGATORIA:\nSi el resultado contiene ![texto](url), envíalo exactamente tal cual.\n\nEJEMPLOS DE USO:\nQuique dice: enséñame el salón ahora.\nUsa ver_foto_actual si sabes que la cámara del salón se llama tapo_salon.\nSi no lo sabes, usa primero consultar_camaras.\n\nQuique dice: mira la cámara tapo_salon.\nUsa ver_foto_actual con camara igual a \"tapo_salon\".\n\nQuique dice: qué pasa ahora en la entrada.\nUsa ver_foto_actual si conoces el nombre exacto de la cámara de entrada.\nSi no lo conoces, usa consultar_camaras.",
+      "parameters": {
+        "properties": {
+          "camara": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "camara"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "ver_ultimo_evento",
+      "description": "CUÁNDO USAR ESTA HERRAMIENTA:\nUsa esta función cuando Quique pida ver el último evento, la última detección,\nel último movimiento, la última persona detectada, la última captura grabada\no qué ha pasado recientemente en una cámara concreta.\n\nQUÉ HACE:\nConsulta Frigate y devuelve la imagen del último evento detectado en la cámara indicada.\nEsto no es una imagen en vivo. Es el último evento grabado.\n\nINSTRUCCIÓN CRÍTICA PARA EL MODELO:\nEsta función puede devolver una imagen en formato markdown.\nSiempre debes mostrar la línea de imagen exactamente tal cual aparece en el resultado.\n\nEl formato será parecido a este:\n![Evento](url)\n\nNo cambies ese formato.\nNo lo conviertas en enlace normal.\nNo lo resumas.\nNo lo metas entre comillas.\nNo elimines el signo de exclamación.\nNo elimines los corchetes.\nNo elimines los paréntesis.\nNo leas la URL en voz alta.\nNo digas solo que hay una detección.\nDebes incluir el markdown de imagen para que se renderice en el chat.\n\nPARÁMETROS:\ncamara: nombre exacto de la cámara en Frigate.\n\nIMPORTANTE:\nSi Quique no da el nombre exacto de la cámara, o el nombre es ambiguo,\nusa primero consultar_camaras.\nNo inventes el nombre de la cámara.\n\nRESPUESTA OBLIGATORIA:\nSi el resultado contiene ![texto](url), envíalo exactamente tal cual.\n\nEJEMPLOS DE USO:\nQuique dice: enséñame el último movimiento del salón.\nUsa ver_ultimo_evento si sabes que la cámara del salón se llama tapo_salon.\nSi no lo sabes, usa primero consultar_camaras.\n\nQuique dice: última detección de tapo_salon.\nUsa ver_ultimo_evento con camara igual a \"tapo_salon\".\n\nQuique dice: ha pasado algo en la entrada.\nUsa ver_ultimo_evento si la intención es revisar una detección reciente.\nSi quiere ver el directo, usa ver_foto_actual.",
+      "parameters": {
+        "properties": {
+          "camara": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "camara"
+        ],
+        "type": "object"
+      }
+    }
+  ],
+  "note": "Export saneado desde Open WebUI. No incluye valves ni credenciales reales."
+}

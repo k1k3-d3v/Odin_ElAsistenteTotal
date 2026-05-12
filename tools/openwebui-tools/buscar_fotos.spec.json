@@ -1,0 +1,24 @@
+{
+  "id": "buscar_fotos",
+  "name": "buscar fotos",
+  "created_at": 1777023173,
+  "updated_at": 1778521924,
+  "specs": [
+    {
+      "name": "buscar_foto",
+      "description": "CUÁNDO USAR ESTA HERRAMIENTA:\nUsa esta herramienta cuando Quique pida buscar, ver, localizar o mostrar una foto,\nimagen, recuerdo visual, persona, lugar, objeto, animal, evento o escena que pueda\nestar guardada en Immich.\n\nQUÉ HACE:\nBusca en Immich una foto relacionada con la descripción indicada.\nDevuelve una imagen incrustada en formato markdown para que se vea directamente\nen el chat.\n\nINSTRUCCIÓN CRÍTICA PARA EL MODELO:\nSiempre que esta herramienta devuelva una imagen en formato markdown, debes mostrarla\nexactamente tal cual aparece en el resultado.\n\nEl formato de imagen será parecido a este:\n![foto](url)\n\nNo cambies ese formato.\nNo lo metas entre comillas.\nNo lo conviertas en enlace normal.\nNo lo resumas.\nNo digas solo que has encontrado la foto.\nNo leas la URL en voz alta.\nNo elimines los paréntesis.\nNo elimines los corchetes.\nNo cambies el signo de exclamación inicial.\n\nRESPUESTA OBLIGATORIA:\nSi la herramienta devuelve una línea con ![texto](url), tu respuesta debe incluir\nesa línea completa y sin modificar, porque así la imagen se renderiza en el chat.\n\nPARÁMETROS:\ndescripcion: texto natural que describe la foto que Quique quiere encontrar.\n\nEJEMPLOS DE USO:\nQuique dice: busca una foto de Thor.\nUsa esta herramienta con descripcion igual a \"Thor\".\n\nQuique dice: enséñame una foto de la playa.\nUsa esta herramienta con descripcion igual a \"playa\".\n\nQuique dice: busca recuerdos de Navidad.\nUsa esta herramienta con descripcion igual a \"Navidad\".\n\nSI NO HAY RESULTADOS:\nInforma de que no se ha encontrado ninguna foto relacionada.\n\nSI HAY ERROR:\nInforma del error devuelto por la herramienta.",
+      "parameters": {
+        "properties": {
+          "descripcion": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "descripcion"
+        ],
+        "type": "object"
+      }
+    }
+  ],
+  "note": "Export saneado desde Open WebUI. No incluye valves ni credenciales reales."
+}

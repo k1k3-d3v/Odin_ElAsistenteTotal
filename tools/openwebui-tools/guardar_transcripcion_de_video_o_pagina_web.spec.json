@@ -1,0 +1,44 @@
+{
+  "id": "guardar_transcripcion_de_video_o_pagina_web",
+  "name": "Guardar transcripción de video o página web",
+  "created_at": 1777661989,
+  "updated_at": 1778521923,
+  "specs": [
+    {
+      "name": "get_youtube_transcript",
+      "description": "Extrae todo el texto de un video de YouTube.\nÚsalo SIEMPRE que Quique te pase un enlace de YouTube y pida un resumen o analizar el video.",
+      "parameters": {
+        "properties": {
+          "url": {
+            "description": "URL completa del video de YouTube.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "url"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "search_and_crawl_web",
+      "description": "Lee el contenido de páginas web o busca información en internet.\nÚsalo cuando Quique te pase un enlace web (que no sea YouTube) para leer, resumir, o cuando necesites investigar en internet.",
+      "parameters": {
+        "properties": {
+          "query": {
+            "default": "",
+            "description": "Término de búsqueda (si necesitas buscar algo en internet). Déjalo vacío si pasas una URL.",
+            "type": "string"
+          },
+          "url_especifica": {
+            "default": "",
+            "description": "URL exacta de la página que quieres leer. Déjalo vacío si estás haciendo una búsqueda por query.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    }
+  ],
+  "note": "Export saneado desde Open WebUI. No incluye valves ni credenciales reales."
+}

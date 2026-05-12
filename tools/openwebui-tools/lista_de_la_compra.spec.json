@@ -1,0 +1,28 @@
+{
+  "id": "lista_de_la_compra",
+  "name": "Lista de la compra",
+  "created_at": 1777037358,
+  "updated_at": 1777641702,
+  "specs": [
+    {
+      "name": "manage_shopping_list",
+      "description": "Manages the shopping list (todo entity).\nActions: 'add', 'delete', or 'read'.",
+      "parameters": {
+        "properties": {
+          "action": {
+            "type": "string"
+          },
+          "item": {
+            "default": "",
+            "type": "string"
+          }
+        },
+        "required": [
+          "action"
+        ],
+        "type": "object"
+      }
+    }
+  ],
+  "note": "Export saneado desde Open WebUI. No incluye valves ni credenciales reales."
+}
