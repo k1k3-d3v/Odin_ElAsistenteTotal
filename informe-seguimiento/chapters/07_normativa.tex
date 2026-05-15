@@ -1,0 +1,33 @@
+\chapter{Identificación de leyes y regulaciones}
+
+\section{Normativa relevante}
+Odín trabaja con información personal, documentos privados, fotografías, sensores domésticos y cámaras. Por ello, aunque sea un proyecto académico y de uso personal, conviene identificar el marco regulatorio aplicable:
+\begin{itemize}
+  \item el Reglamento General de Protección de Datos (RGPD), aplicable al tratamiento de datos personales en la Unión Europea;
+  \item la Ley Orgánica 3/2018 de Protección de Datos Personales y garantía de los derechos digitales (LOPDGDD), que adapta y completa el RGPD en España;
+  \item las orientaciones de la Agencia Española de Protección de Datos sobre videovigilancia, relevantes cuando las cámaras puedan captar a terceros \citep{gdprOfficial,lopdgddOfficial,aepdVideovigilancia}.
+\end{itemize}
+
+\section{Aplicación al proyecto}
+La filosofía \textit{local-first} favorece el cumplimiento por diseño: los datos se conservan en infraestructura propia, se reduce la transferencia a terceros y se limita la exposición pública. Sin embargo, autoalojar no elimina responsabilidades. El proyecto debe seguir prestando atención a:
+\begin{itemize}
+  \item minimización de datos almacenados;
+  \item control de accesos y protección de credenciales;
+  \item conservación limitada de imágenes o eventos cuando intervengan terceros;
+  \item información y señalización adecuadas si la videovigilancia sale del ámbito puramente doméstico;
+  \item copias de seguridad protegidas y posibilidad de supresión cuando proceda.
+\end{itemize}
+
+\section{Cumplimiento y decisiones técnicas}
+Varias decisiones de Odín se alinean con estas obligaciones:
+\begin{itemize}
+  \item evitar publicar secretos en repositorios;
+  \item preferir VPN frente a exposición pública innecesaria;
+  \item separar credenciales en ficheros de entorno;
+  \item documentar configuraciones saneadas;
+  \item mantener cámaras y servicios bajo control del usuario;
+  \item tratar las funcionalidades de vigilancia como un caso sensible, no como un mero experimento técnico.
+\end{itemize}
+
+\section{Límites}
+Este informe no sustituye un análisis jurídico profesional. Su objetivo es demostrar que el proyecto identifica las normas relevantes y adopta decisiones técnicas coherentes con ellas. Si el sistema se extendiera a usuarios externos, espacios compartidos o servicios ofrecidos a terceros, sería necesario revisar con mayor profundidad bases legitimadoras, deberes de información, contratos y responsabilidades adicionales.

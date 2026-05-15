@@ -1,0 +1,50 @@
+\chapter{Análisis de alternativas}
+
+\section{Criterio general}
+Odín no parte de una única decisión tecnológica, sino de varias comparativas sucesivas. El criterio seguido ha sido elegir la opción que mejor equilibrara privacidad, mantenibilidad, coste, compatibilidad con el hardware disponible y utilidad real para el usuario.
+
+\section{Acceso remoto: OpenVPN, WireGuard y Tailscale}
+\begin{table}[H]
+  \centering
+  \caption{Comparativa resumida de alternativas de acceso remoto}
+  \label{tab:comparativa-vpn}
+  \begin{tabularx}{\textwidth}{lXXX}
+    \toprule
+    Alternativa & Ventajas & Limitaciones & Decisión \\
+    \midrule
+    OpenVPN & Muy extendido, maduro y configurable. & Más complejo, mayor sobrecarga y gestión manual. & No adoptado. \\
+    WireGuard & Ligero, moderno y eficiente. & Requiere gestionar conectividad, DNS dinámico y puertos. & Probado inicialmente. \\
+    Tailscale & Basado en WireGuard, sencillo, NAT traversal y buena experiencia con IP dinámica. & Dependencia parcial del plano de control de Tailscale. & Adoptado. \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+La elección de Tailscale se justifica por el contexto concreto del proyecto: el acceso remoto no necesita exposición pública directa y la experiencia previa con DuckDNS introducía fragilidad operativa. Tailscale conserva el rendimiento de WireGuard y reduce la carga de administración en redes domésticas con IP cambiante \citep{openvpnHowTo,wireguardDocs,tailscaleConnectivity,tailscaleDynamicIp}.
+
+\section{Voz: alternativas TTS y STT}
+La voz ha sido una de las áreas más exploradas. Se probaron motores como Piper, Kokoro, Chatterbox y Pocket TTS, además de soluciones de reconocimiento como faster-whisper y servicios Wyoming. La comparación no se resolvió solo por calidad acústica, sino por latencia, compatibilidad con AMD, uso de GPU, facilidad de integración y estabilidad.
+
+\begin{table}[H]
+  \centering
+  \caption{Criterios usados en la comparación de soluciones de voz}
+  \label{tab:comparativa-voz}
+  \begin{tabularx}{\textwidth}{lX}
+    \toprule
+    Criterio & Motivo \\
+    \midrule
+    Calidad percibida & La voz debe resultar natural para uso cotidiano. \\
+    Latencia & Una voz excelente pero lenta rompe la interacción conversacional. \\
+    Compatibilidad AMD & El hardware disponible condiciona la viabilidad real. \\
+    Consumo de GPU & El sistema comparte recursos con Ollama e Immich. \\
+    Integración & La solución debe convivir con HA Voice y servicios ya desplegados. \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+El resultado ha sido pragmático: se mantiene una solución funcional y se acepta que la voz no alcanzará en esta fase la naturalidad ideal prevista inicialmente. La alternativa técnicamente más atractiva no siempre es la mejor cuando multiplica la complejidad o compite con recursos críticos del sistema.
+
+\section{Arquitectura: servicios especializados frente a plataforma única}
+También se evaluó implícitamente una alternativa arquitectónica: construir una aplicación monolítica o integrar herramientas maduras especializadas. Se optó por la segunda. Home Assistant resuelve domótica mejor que una implementación propia; Immich gestiona fotos mejor que una biblioteca ad hoc; Qdrant proporciona búsqueda vectorial especializada; Open WebUI ofrece una interfaz extensible ya útil. La aportación del proyecto está en la coordinación, no en reimplementar piezas maduras.
+
+\section{Conclusión del análisis}
+La opción adoptada se justifica porque reduce riesgo y maximiza valor académico: obliga a integrar, comparar, documentar y tomar decisiones reales. El proyecto demuestra criterio de ingeniería al no confundir originalidad con construirlo todo desde cero.

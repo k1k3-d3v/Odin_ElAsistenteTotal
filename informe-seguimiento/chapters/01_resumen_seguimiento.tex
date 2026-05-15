@@ -1,0 +1,30 @@
+\chapter{Resumen del seguimiento}
+
+Este informe presenta el estado intermedio del Proyecto Odín, un asistente personal autoalojado y \textit{local-first} que busca integrar memoria documental, domótica, fotos, automatización, voz, monitorización y modelos de lenguaje locales dentro de una infraestructura privada. A diferencia de la memoria final, este documento no pretende cerrar el proyecto ni demostrar todos sus resultados, sino justificar su evolución, las decisiones tomadas y el grado de madurez alcanzado hasta el momento.
+
+El proyecto ha avanzado desde una idea inicial de ``asistente total'' hacia una arquitectura real compuesta por un servidor doméstico, una Raspberry Pi 5 con Home Assistant y varios servicios coordinados: Open WebUI, Ollama, Nextcloud, Qdrant, Immich, Frigate, n8n, Tailscale, Telegram y Netdata. Durante el desarrollo se han producido cambios relevantes respecto al planteamiento inicial: la migración de WireGuard a Tailscale, la aceptación de límites técnicos en voz realista sobre GPU AMD, la reorganización de contenedores Docker y la priorización de herramientas conversacionales que ya aportan valor de uso real.
+
+La \cref{tab:rubrica-seguimiento} resume cómo responde este documento a los indicadores evaluables del seguimiento.
+
+\begin{table}[H]
+  \centering
+  \caption{Cobertura de los indicadores del informe de seguimiento}
+  \label{tab:rubrica-seguimiento}
+  \begin{tabularx}{\textwidth}{lX}
+    \toprule
+    Indicador & Evidencia incluida en el informe \\
+    \midrule
+    Contextualización del proyecto & Problema, situación actual, productos relacionados y justificación tecnológica. \\
+    Planificación & Cambios respecto a la planificación inicial, efecto sobre objetivos, costes y estado actual. \\
+    Metodología y rigor & Metodología iterativa, razones de ajuste y mecanismos de control técnico. \\
+    Análisis de alternativas & Comparativas de VPN, voz, despliegue y arquitectura de datos. \\
+    Integración de conocimientos & Convergencia de sistemas, redes, IA, seguridad, bases de datos y domótica. \\
+    Leyes y regulaciones & RGPD, LOPDGDD y consideraciones sobre videovigilancia. \\
+    Implicación profesional & Gestión responsable de credenciales, documentación y alcance. \\
+    Iniciativa y decisiones & Resolución de incidencias reales y justificación de cambios técnicos. \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\section{Situación global del proyecto}
+En el momento del seguimiento, Odín ya no es solo una planificación. Existen servicios desplegados, herramientas propias conectadas a Open WebUI, memoria documental basada en búsqueda semántica, integración con Home Assistant, control de fotos mediante Immich, monitorización visual y mecanismos iniciales de autoreparabilidad. El trabajo pendiente se concentra en consolidar pruebas, completar la política de copias de seguridad, terminar el panel único de control y convertir toda la experiencia técnica acumulada en una memoria final bien argumentada.

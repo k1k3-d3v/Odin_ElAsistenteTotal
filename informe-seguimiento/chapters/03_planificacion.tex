@@ -1,0 +1,50 @@
+\chapter{Planificación y evolución}
+
+\section{Planificación inicial}
+La planificación inicial estimó aproximadamente 545 horas de trabajo distribuidas en gestión, investigación, diseño, implementación, validación y documentación. El proyecto se planteó de forma incremental para permitir que cada fase aportara valor por sí misma: primero la infraestructura, después la inferencia local, luego la memoria, la domótica, la voz y finalmente la monitorización y la documentación.
+
+\section{Cambios producidos}
+Durante el desarrollo se han producido varios cambios relevantes respecto al planteamiento inicial:
+\begin{itemize}
+  \item \textbf{Acceso remoto}: se pasó de WireGuard con DNS dinámico a Tailscale por mayor estabilidad operativa y menor dependencia de DuckDNS.
+  \item \textbf{Voz}: se invirtió más tiempo del previsto en comparar motores TTS y STT debido a incompatibilidades y bajo rendimiento sobre GPU AMD.
+  \item \textbf{Infraestructura}: fue necesario dedicar trabajo no previsto a reorganizar contenedores Docker y separar mejor dominios funcionales del servidor.
+  \item \textbf{Monitorización}: se incorporó Netdata y una capa de estado exportable a Home Assistant para disponer de observabilidad visual.
+  \item \textbf{Autorreparabilidad}: se añadió una línea de trabajo nueva tras fallos reales de Ollama y necesidad de avisos proactivos por Telegram.
+\end{itemize}
+
+\section{Justificación de los cambios}
+Los cambios no modifican el objetivo principal del proyecto; lo hacen más realista. Mantener WireGuard habría sido válido técnicamente, pero peor para el contexto concreto del despliegue. Insistir indefinidamente en una voz ideal habría consumido recursos sin garantizar mejora proporcional. Reorganizar Docker y añadir observabilidad no eran adornos, sino condiciones para operar un sistema real sin convertirlo en una colección frágil de pruebas.
+
+\section{Impacto en objetivos y costes}
+El impacto principal ha sido una redistribución del esfuerzo, no una pérdida de dirección. La funcionalidad central se conserva: memoria, conversación, domótica, fotos, monitorización y acceso remoto. Algunas metas se han redefinido:
+\begin{itemize}
+  \item la voz realista pasa de objetivo de excelencia a limitación técnica aceptada;
+  \item el panel único de control queda como mejora inmediata todavía pendiente;
+  \item la política de backup se concreta en un NVMe externo transportable, pendiente de ejecución y prueba.
+\end{itemize}
+
+En costes, la desviación más importante no proviene de licencias sino de tiempo de ingeniería: pruebas de motores de voz, depuración de GPU AMD, reorganización de servicios y documentación. El proyecto mantiene una estrategia de software libre, por lo que el coste monetario directo sigue concentrado en hardware y almacenamiento.
+
+\section{Planificación definitiva y punto actual}
+\begin{table}[H]
+  \centering
+  \caption{Estado resumido de la planificación}
+  \label{tab:estado-planificacion}
+  \begin{tabularx}{\textwidth}{lXl}
+    \toprule
+    Bloque & Estado actual & Situación \\
+    \midrule
+    Infraestructura base & Servidor, Docker, Tailscale y almacenamiento operativos. & Avanzado \\
+    Inferencia local & Ollama desplegado y usado; incidencias diagnosticadas. & Avanzado \\
+    Memoria documental & Nextcloud, Qdrant e ingesta funcionales. & Avanzado \\
+    Domótica & Integración con Home Assistant y HA Voice operativa. & Avanzado \\
+    Voz & Múltiples TTS/STT evaluados; solución útil pero no ideal. & Parcial \\
+    Monitorización & Netdata, Telegram y exportador HA disponibles. & Avanzado \\
+    Backup & Estrategia definida con NVMe externo. & Pendiente de validación \\
+    Documentación final & Base amplia redactada; quedan capturas y revisión final. & En curso \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+El proyecto se encuentra en una fase de consolidación: la mayor parte del sistema ya existe y el esfuerzo restante debe orientarse a validarlo, documentarlo y cerrar de forma honesta las limitaciones que no conviene perseguir más allá del alcance del TFG.

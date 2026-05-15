@@ -1,0 +1,74 @@
+\documentclass[12pt,a4paper,oneside]{report}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish,es-tabla]{babel}
+\usepackage{csquotes}
+\usepackage{geometry}
+\geometry{left=3cm,right=2.5cm,top=3cm,bottom=3cm}
+\usepackage{setspace}
+\onehalfspacing
+\usepackage{parskip}
+\usepackage{microtype}
+\setlength{\emergencystretch}{2em}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{float}
+\usepackage{enumitem}
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage[hidelinks]{hyperref}
+\usepackage[nameinlink,noabbrev]{cleveref}
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\setlength{\headheight}{15pt}
+\fancyhf{}
+\lhead{\nouppercase{\leftmark}}
+\rhead{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\usepackage{titlesec}
+\titleformat{\chapter}[hang]
+  {\normalfont\huge\bfseries}
+  {\thechapter.}{0.75em}{}
+\titlespacing*{\chapter}{0pt}{-10pt}{24pt}
+
+\newcommand{\tfgtitle}{Proyecto Odín: el asistente total}
+\newcommand{\tfgsubtitle}{Informe de seguimiento}
+\newcommand{\tfgauthor}{Enrique de Vicente-Tutor Castillo}
+\newcommand{\tfgdirector}{Jordi Fornés}
+\newcommand{\tfgdegree}{Grado en Ingeniería Informática}
+\newcommand{\tfgspeciality}{Tecnologías de la Información}
+\newcommand{\tfgfaculty}{Facultat d'Informàtica de Barcelona (FIB)}
+\newcommand{\tfguniversity}{Universitat Politècnica de Catalunya (UPC) - BarcelonaTech}
+\newcommand{\tfgdate}{Curso 2025--2026}
+\newcommand{\tfgtype}{Informe de seguimiento del Trabajo de Fin de Grado}
+
+\setlist[itemize]{leftmargin=1.2cm}
+\setlist[enumerate]{leftmargin=1.2cm}
+
+\begin{document}
+
+\pagenumbering{gobble}
+\input{chapters/00_portada}
+
+\cleardoublepage
+\pagenumbering{roman}
+\tableofcontents
+\cleardoublepage
+\listoftables
+
+\cleardoublepage
+\pagenumbering{arabic}
+\input{chapters/01_resumen_seguimiento}
+\input{chapters/02_contextualizacion}
+\input{chapters/03_planificacion}
+\input{chapters/04_metodologia}
+\input{chapters/05_alternativas}
+\input{chapters/06_integracion}
+\input{chapters/07_normativa}
+\input{chapters/08_actitud}
+\input{chapters/09_estado_actual}
+\input{chapters/10_referencias}
+
+\end{document}

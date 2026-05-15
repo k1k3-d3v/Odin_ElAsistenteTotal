@@ -1,0 +1,36 @@
+\chapter{Contextualización del proyecto}
+
+\section{Contexto y problema}
+La vida digital personal se encuentra cada vez más fragmentada. Fotografías, documentos, recordatorios, domótica, conversaciones con asistentes y servicios de inteligencia artificial suelen residir en plataformas diferentes, gestionadas por terceros y con escasa interoperabilidad. Esta fragmentación obliga al usuario a recordar dónde está cada dato y a aceptar que muchas acciones cotidianas dependan de servicios externos.
+
+Odín nace para explorar una alternativa: construir un asistente personal capaz de reunir esos flujos en una infraestructura propia, manteniendo control sobre los datos y evitando depender de un único proveedor. La propuesta combina la filosofía \textit{local-first}, que prioriza la propiedad de los datos por parte del usuario, con ideas de computación ubicua y computación proactiva: el sistema no solo responde, sino que aspira a recordar, observar y actuar cuando tiene contexto suficiente \citep{kleppmann2019localfirst,weiser1991computer,tennenhouse2000proactive}.
+
+\section{Gestión actual del problema}
+La gestión habitual del problema está repartida entre varias categorías de herramientas:
+\begin{itemize}
+  \item asistentes comerciales, cómodos pero dependientes de la nube;
+  \item nubes privadas, útiles para almacenar pero no para razonar;
+  \item plataformas domóticas, capaces de automatizar pero no de integrar toda la vida digital;
+  \item aplicaciones de IA conversacional, potentes pero normalmente desconectadas de los datos personales reales.
+\end{itemize}
+
+El usuario acaba componiendo manualmente su propio ecosistema: una aplicación para fotos, otra para archivos, otra para la casa, otra para notas y otra para hablar con modelos. El problema no es la ausencia de herramientas, sino la falta de una capa común que convierta servicios dispersos en una experiencia coherente.
+
+\section{Productos y soluciones relacionadas}
+Odín se sitúa entre varias familias de productos ya existentes. Los asistentes comerciales como Alexa, Siri o Google Assistant ofrecen una experiencia pulida, pero se apoyan en ecosistemas cerrados y procesamiento remoto. Home Assistant destaca en domótica local y extensibilidad, Nextcloud en nube privada, Immich en gestión de fotos, Ollama en inferencia local y Open WebUI en interfaz conversacional extensible \citep{homeAssistantDocs,immichDocs,ollamaDocs,openwebuiDocs}.
+
+La diferencia del proyecto no consiste en reemplazar cada pieza, sino en integrarlas. Odín usa herramientas especializadas allí donde ya existe software maduro y añade una capa de coordinación conversacional y proactiva mediante flujos, herramientas y memoria privada.
+
+\section{Justificación tecnológica}
+Las tecnologías elegidas responden a criterios técnicos concretos:
+\begin{itemize}
+  \item \textbf{Docker Compose}: facilita reproducibilidad, aislamiento y documentación de servicios \citep{dockerComposeDocs}.
+  \item \textbf{Open WebUI}: permite convertir el chat en una interfaz operativa mediante tools personalizadas \citep{openwebuiDocs}.
+  \item \textbf{Ollama}: simplifica la ejecución local de modelos y evita depender de APIs externas para la inferencia principal \citep{ollamaDocs}.
+  \item \textbf{Qdrant y RAG}: hacen posible consultar conocimiento personal sin depender solo del modelo preentrenado \citep{lewis2020rag,qdrantDocs}.
+  \item \textbf{Home Assistant}: aporta una base robusta para domótica, sensores y automatizaciones locales \citep{homeAssistantDocs}.
+  \item \textbf{Tailscale}: ofrece acceso remoto seguro con menor carga operativa que mantener una VPN manual en un entorno doméstico con IP dinámica \citep{tailscaleConnectivity,tailscaleDynamicIp}.
+\end{itemize}
+
+\section{Adecuación del contexto}
+El proyecto queda adecuadamente contextualizado porque parte de una necesidad real, analiza cómo se resuelve hoy con productos parciales y justifica por qué se adopta una solución integradora. La hipótesis de trabajo no es que no existan herramientas, sino que todavía falta una arquitectura personal que combine privacidad, memoria, automatización y capacidad de acción bajo control del usuario.

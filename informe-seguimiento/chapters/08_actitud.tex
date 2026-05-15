@@ -1,0 +1,47 @@
+\chapter{Implicación, iniciativa y toma de decisiones}
+
+\section{Implicación profesional y ética}
+El desarrollo del proyecto ha requerido un comportamiento profesional en varios sentidos. Se ha evitado publicar credenciales reales, se han versionado configuraciones saneadas, se han mantenido separados los servicios críticos y se ha documentado con honestidad tanto lo conseguido como lo que todavía no está cerrado. En lugar de maquillar limitaciones, se han tratado como parte de la evaluación técnica.
+
+La dimensión ética es especialmente importante porque Odín opera sobre datos íntimos: fotos, notas, documentos, sensores y cámaras. Por ello se prioriza el control local, la reducción de exposición y la seguridad operativa frente a soluciones más vistosas pero menos responsables.
+
+\section{Iniciativa}
+El proyecto muestra iniciativa en varios frentes:
+\begin{itemize}
+  \item se ha pasado de una idea amplia a un sistema realmente desplegado;
+  \item se han investigado múltiples motores de voz hasta comprender dónde estaba el cuello de botella real;
+  \item se sustituyó la estrategia de acceso remoto cuando dejó de ser la mejor opción;
+  \item se añadió monitorización visual y autoreparabilidad tras detectar necesidades operativas;
+  \item se reorganizó una infraestructura que había crecido de forma experimental para convertirla en algo mantenible.
+\end{itemize}
+
+\section{Decisiones justificadas}
+\begin{table}[H]
+  \centering
+  \caption{Ejemplos de decisiones justificadas}
+  \label{tab:decisiones-justificadas}
+  \begin{tabularx}{\textwidth}{lX}
+    \toprule
+    Decisión & Justificación \\
+    \midrule
+    Migrar a Tailscale & Menor carga operativa y mejor encaje con red doméstica y VPN privada. \\
+    Mantener Home Assistant en Raspberry Pi 5 & Ya era una pieza estable y especializada; moverla a Docker no aportaba valor. \\
+    Usar CPU en Frigate para detección & Rendimiento suficiente y menor competencia por la GPU AMD. \\
+    Usar GPU en Immich y Ollama & Son cargas donde la aceleración aporta valor claro. \\
+    Aceptar límite de voz & Evita consumir el proyecto en una optimización con retorno decreciente. \\
+    Reorganizar Docker antes de seguir creciendo & Mejora mantenibilidad y prepara la documentación final. \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\section{Respuesta ante obstáculos}
+Los obstáculos no se han resuelto escondiéndolos, sino estudiándolos:
+\begin{itemize}
+  \item problemas de compatibilidad de TTS con AMD;
+  \item fallos de Ollama investigados mediante logs;
+  \item automatizaciones que requerían revisión;
+  \item crecimiento desordenado de contenedores;
+  \item necesidad de avisos útiles y no meramente cosméticos.
+\end{itemize}
+
+La actitud seguida ha sido coherente con un trabajo de ingeniería: diagnosticar, comparar, decidir, documentar y continuar. Esa secuencia es tan evaluable como el resultado técnico final.
