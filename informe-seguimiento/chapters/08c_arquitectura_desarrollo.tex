@@ -1,0 +1,91 @@
+\chapter{Arquitectura y trabajo técnico realizado}
+
+\section{Arquitectura general}
+Odín se organiza como una arquitectura distribuida de dos nodos. El servidor principal concentra cómputo, almacenamiento, IA, fotos, memoria, automatizaciones y monitorización. La Raspberry Pi 5 mantiene Home Assistant de forma independiente para preservar la disponibilidad de la domótica aunque el servidor principal se reinicie o esté sometido a pruebas.
+
+\begin{table}[H]
+  \centering
+  \caption{Distribución de responsabilidades}
+  \label{tab:distribucion-responsabilidades}
+  \begin{tabularx}{\textwidth}{lX}
+    \toprule
+    Nodo & Responsabilidades \\
+    \midrule
+    Servidor principal & Docker Compose, Open WebUI, Ollama, Qdrant, Nextcloud, Immich, Frigate, n8n, Netdata, scripts y almacenamiento. \\
+    Raspberry Pi 5 & Home Assistant, HA Voice, automatizaciones domésticas y exposición de entidades del mundo físico. \\
+    Clientes & Navegador, móvil, Telegram y acceso remoto por Tailscale. \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\section{Capa de interacción}
+Open WebUI funciona como interfaz conversacional principal. Su valor no reside únicamente en presentar un chat, sino en permitir herramientas personalizadas que convierten intenciones lingüísticas en operaciones estructuradas. HA Voice cubre los casos donde la interacción oral ya funciona bien, especialmente temporizadores y música. Telegram actúa como canal proactivo de salida cuando Odín necesita informar sin que el usuario abra la interfaz.
+
+\section{Capa de inteligencia y memoria}
+Ollama sirve modelos locales y evita depender de APIs externas para la inferencia principal. La memoria documental se apoya en Nextcloud para persistencia de archivos, Qdrant para recuperación vectorial e ingesta periódica para mantener el índice actualizado. Esta combinación permite que el asistente responda sobre documentos personales en lugar de limitarse al conocimiento preentrenado del modelo.
+
+\section{Capa de datos personales}
+Nextcloud almacena notas, archivos y documentos. Immich cubre la biblioteca fotográfica, incluida la búsqueda semántica de imágenes. La separación entre documentos y fotos no es accidental: cada dominio usa una herramienta especializada, pero ambas quedan accesibles desde la conversación. Esta decisión evita construir un repositorio universal mediocre y aprovecha software maduro para cada tipo de dato.
+
+\section{Capa física y domótica}
+Home Assistant actúa como plano de control sobre la habitación inteligente. El sistema ya puede operar con luces, presencia, lista de la compra, calendario, música, temporizadores y otros dispositivos expuestos como entidades. Los dispositivos no necesitan haber sido diseñados para Odín: al registrar su nombre, área y servicios disponibles en Home Assistant, el asistente puede razonar sobre ellos y ejecutar acciones.
+
+Esta capacidad es especialmente interesante para dispositivos opcionales reutilizados. Un sensor de presencia ya disponible puede alimentar una automatización de llegada; un enchufe inteligente puede servir para apagar un equipo o medir consumo; una cámara compatible puede incorporarse a Frigate. Ninguno de ellos invalida el sistema si falta, pero todos amplían el abanico de acciones posibles.
+
+\section{Herramientas de Open WebUI}
+\begin{longtable}{p{0.23\textwidth}p{0.26\textwidth}p{0.43\textwidth}}
+  \caption{Herramientas conversacionales desplegadas}
+  \label{tab:tools-seguimiento}\\
+  \toprule
+  Herramienta & Funciones & Valor aportado \\
+  \midrule
+  \endfirsthead
+  \toprule
+  Herramienta & Funciones & Valor aportado \\
+  \midrule
+  \endhead
+  \bottomrule
+  \endfoot
+  Buscar fotos & Consulta Immich & Recupera recuerdos visuales por descripción natural. \\
+  Guardar nota & Webhook a n8n/Nextcloud & Convierte ideas o resúmenes en documentos persistentes. \\
+  Buscar Nextcloud & Búsqueda privada & Consulta la memoria personal antes de responder. \\
+  Web y vídeo & Crawl y transcripción & Captura conocimiento externo reutilizable. \\
+  Salud del sistema & Diagnóstico y acciones & Permite revisar operación del servidor. \\
+  Vigilancia Frigate & Cámaras y eventos & Integra seguridad visual en el chat. \\
+  Home Assistant & Entidades y acciones & Control estructurado del hogar. \\
+  HA connector & Assist conversacional & Aprovecha intents naturales de Home Assistant. \\
+  Recordatorio & Calendario & Crea compromisos desde lenguaje natural. \\
+  Lista de compra & Lista HA & Añade o consulta elementos cotidianos. \\
+  QR & Generación visual & Produce códigos embebidos en la conversación. \\
+\end{longtable}
+
+\section{Flujos de extremo a extremo}
+\subsection{Guardar una nota}
+El usuario envía una idea; el modelo estructura el contenido; la tool limita la carpeta de destino y llama a n8n; n8n escribe el archivo en Nextcloud; la respuesta confirma la operación. El flujo ilustra separación de responsabilidades entre interpretación, integración y persistencia.
+
+\subsection{Consultar memoria privada}
+Ante una pregunta que puede depender de documentos personales, la tool de búsqueda consulta la capa documental y devuelve contexto. El asistente debe responder sobre ese contexto o reconocer ausencia de resultados. Este patrón reduce alucinaciones y añade trazabilidad.
+
+\subsection{Buscar una foto}
+El usuario describe una escena; Immich resuelve la búsqueda; la tool devuelve Markdown de imagen para renderizar el resultado directamente en el chat. La experiencia final no es una lista técnica, sino la aparición del recuerdo visual buscado.
+
+\subsection{Controlar domótica}
+El asistente recibe una orden, identifica entidades candidatas de Home Assistant y ejecuta el servicio correcto. El diseño evita afirmar que una acción se ha realizado solo por haber encontrado una entidad. La confirmación depende de la operación real.
+
+\subsection{Diagnosticar el sistema}
+La tool de salud y \texttt{odin\_autorepair.py} revisan estado de Ollama, GPU, Docker y disco. La autoreparabilidad es conservadora: diagnostica por defecto y solo repara cuando se invoca explícitamente. Así se evita que la proactividad se convierta en automatismo peligroso.
+
+\section{Trabajo técnico realizado hasta el seguimiento}
+\begin{itemize}
+  \item reorganización del árbol Docker por dominios funcionales;
+  \item saneamiento de configuraciones para subirlas al repositorio privado;
+  \item migración de almacenamiento pesado de Immich;
+  \item integración de alertas diarias y reactivas por Telegram;
+  \item despliegue de Netdata y exportación de estado compatible con HA;
+  \item diagnóstico de incidencias de Ollama;
+  \item catalogación y versionado de las herramientas de Open WebUI;
+  \item análisis comparativo de VPN y de alternativas de voz.
+\end{itemize}
+
+\section{Límites técnicos observados}
+La principal limitación se concentra en la voz realista sobre GPU AMD. La combinación de naturalidad, baja latencia y compatibilidad ROCm todavía no ofrece una solución plenamente satisfactoria dentro del tiempo del TFG. También quedan por cerrar el dashboard único y la prueba completa de restauración desde backup físico. Estos límites se documentan porque forman parte del valor ingenieril del trabajo: muestran decisiones tomadas bajo restricciones reales.

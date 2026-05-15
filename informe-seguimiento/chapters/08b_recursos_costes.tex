@@ -1,0 +1,107 @@
+\chapter{Recursos y análisis económico revisado}
+
+\section{Criterio económico}
+El presupuesto del GEP no debe interpretarse como el dinero efectivamente desembolsado durante el TFG, sino como la valoración profesional del esfuerzo y de los recursos necesarios para construir un sistema equivalente. Esta distinción es importante en Odín porque parte del hardware y de los dispositivos domóticos ya existían antes del seguimiento, mientras que el trabajo intelectual sigue teniendo un coste imputable aunque lo realice el propio estudiante.
+
+\section{Costes de personal}
+Se conserva el modelo del GEP porque es consistente con la planificación por actividades. El coste de personal representa la mayor parte del presupuesto y refleja el carácter intensivo en integración del proyecto.
+
+\begin{table}[H]
+  \centering
+  \caption{Costes de personal heredados del GEP}
+  \label{tab:costes-personal-seguimiento}
+  \begin{tabularx}{\textwidth}{lXrr}
+    \toprule
+    Rol & Actividades principales & Horas & Coste imputado \\
+    \midrule
+    Project manager & Planificación, alcance, economía y seguimiento. & 70 & 1.799,70 \texteuro \\
+    Analista de sistemas & Requisitos, hardware, seguridad y arquitectura. & 105 & 2.024,40 \texteuro \\
+    Desarrollador & Implementación e integración. & 220 & 3.768,60 \texteuro \\
+    Tester & Pruebas de VRAM y seguridad. & 50 & 780,00 \texteuro \\
+    Equipo mixto & Memoria y defensa. & 100 & 1.932,97 \texteuro \\
+    \midrule
+    Total & & 545 & 10.305,67 \texteuro \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\section{Infraestructura material}
+La arquitectura material se mantiene alineada con el GEP, pero se describe con más precisión:
+\begin{itemize}
+  \item \textbf{servidor anfitrión}: nodo principal para contenedores, almacenamiento y servicios;
+  \item \textbf{GPU AMD de 16 GB}: aceleración de inferencia local, Immich y pruebas de voz;
+  \item \textbf{Raspberry Pi 5}: nodo estable y de bajo consumo para Home Assistant;
+  \item \textbf{almacenamiento}: disco principal, \nolinkurl{/mnt/almacen} y futuro NVMe externo de backup;
+  \item \textbf{dispositivos opcionales ya existentes}: sensores, luces, enchufes y cámaras integrables a través de Home Assistant.
+\end{itemize}
+
+\begin{table}[H]
+  \centering
+  \caption{Clasificación económica de recursos físicos}
+  \label{tab:clasificacion-recursos-fisicos}
+  \begin{tabularx}{\textwidth}{lXl}
+    \toprule
+    Recurso & Función & Clasificación \\
+    \midrule
+    Servidor y GPU & Núcleo computacional del proyecto. & Necesario \\
+    Raspberry Pi 5 & Domótica estable y servicio 24/7. & Necesario para la arquitectura adoptada \\
+    Almacenamiento interno & Persistencia de datos y servicios. & Necesario \\
+    NVMe externo futuro & Backup físico transportable. & Ampliación pendiente \\
+    Sensor de presencia & Automatizaciones contextuales. & Opcional reutilizado \\
+    Enchufe inteligente & Medición/control y futuras gráficas de consumo. & Opcional reutilizado \\
+    Luces/cámaras & Casos de uso físicos. & Opcional reutilizado \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+Los dispositivos opcionales no deben inflar artificialmente el presupuesto. Si ya estaban en casa, su coste incremental para el TFG es cero; si se compraran expresamente para replicar el sistema completo, podrían valorarse en un escenario ampliado, pero no son condición de entrada para que Odín funcione.
+
+\section{Costes genéricos y amortización}
+El GEP estimó 1.488,44 euros de costes genéricos, compuestos por amortización de hardware, conectividad, espacio de trabajo y energía. La lógica de cálculo sigue siendo válida, pero el seguimiento permite matizar dos puntos:
+\begin{itemize}
+  \item la energía real todavía no se ha medido con instrumentación dedicada, por lo que las cifras del GEP deben tratarse como estimación hasta disponer del enchufe medidor;
+  \item los recursos ya existentes deben amortizarse por uso imputado al proyecto, no contabilizarse como una nueva compra completa.
+\end{itemize}
+
+\begin{table}[H]
+  \centering
+  \caption{Presupuesto de referencia del GEP}
+  \label{tab:presupuesto-gep-referencia}
+  \begin{tabularx}{\textwidth}{lXr}
+    \toprule
+    Concepto & Justificación & Importe \\
+    \midrule
+    Costes de personal & 545 horas valoradas por rol. & 10.305,67 \texteuro \\
+    Costes genéricos & Hardware amortizado, conectividad, espacio y energía. & 1.488,44 \texteuro \\
+    Costes base & Suma de personal y costes genéricos. & 11.794,11 \texteuro \\
+    Contingencia & 15\% para riesgos no identificados. & 1.769,12 \texteuro \\
+    Imprevistos & Riesgos específicos ponderados. & 1.045,11 \texteuro \\
+    \midrule
+    Total & Presupuesto global de referencia. & 14.608,34 \texteuro \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\section{Impacto real de los cambios sobre el presupuesto}
+El seguimiento confirma que no se ha producido una desviación que obligue a rehacer el presupuesto global. Los cambios principales afectan a la distribución del esfuerzo:
+\begin{itemize}
+  \item las horas adicionales de voz consumen margen técnico ya previsto por el riesgo AMD/ROCm;
+  \item Tailscale reduce complejidad de red respecto a una operación manual de WireGuard;
+  \item la reorganización Docker y la monitorización añaden horas, pero evitan costes futuros de mantenimiento y reducen riesgo de fallo;
+  \item los dispositivos físicos opcionales no alteran el presupuesto base si se reutilizan;
+  \item el NVMe externo se registra como mejora pendiente hasta que se adquiera y pruebe.
+\end{itemize}
+
+\section{Control de gestión}
+Se mantiene el modelo de control económico del GEP, basado en comparar horas estimadas y reales al cierre de cada iteración. En el seguimiento se proponen tres métricas sencillas:
+\[
+\text{Desvío de tarifa} = (\text{Tarifa estimada} - \text{Tarifa real}) \times \text{Horas reales}
+\]
+\[
+\text{Desvío de eficiencia} = (\text{Horas estimadas} - \text{Horas reales}) \times \text{Tarifa estimada}
+\]
+\[
+\text{Varianza total} = \text{Desvío de tarifa} + \text{Desvío de eficiencia}
+\]
+
+La utilidad de estas métricas no está en generar falsa precisión, sino en decidir qué hacer cuando aparece una desviación: si corresponde a un riesgo ya identificado, se consume imprevisto; si no, se absorbe con contingencia; y si compromete el calendario, se recorta alcance secundario antes que degradar el núcleo funcional.

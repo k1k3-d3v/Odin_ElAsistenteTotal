@@ -1,34 +1,95 @@
 \chapter{Planificación y evolución}
 
-\section{Planificación inicial}
-La planificación inicial estimó aproximadamente 545 horas de trabajo distribuidas en gestión, investigación, diseño, implementación, validación y documentación. El proyecto se planteó de forma incremental para permitir que cada fase aportara valor por sí misma: primero la infraestructura, después la inferencia local, luego la memoria, la domótica, la voz y finalmente la monitorización y la documentación.
+\section{Planificación inicial heredada del GEP}
+El GEP definió una planificación de 545 horas entre el 9 de febrero y la última semana de junio de 2026. La estructura era adecuada y se mantiene como base de seguimiento porque separaba seis bloques bien delimitados: gestión y planificación, análisis y requisitos, diseño de arquitectura, implementación e integración, pruebas y calidad, y documentación final.
+
+\begin{table}[H]
+  \centering
+  \caption{Planificación inicial del GEP}
+  \label{tab:planificacion-inicial-gep}
+  \begin{tabularx}{\textwidth}{lXr}
+    \toprule
+    Código & Bloque & Horas \\
+    \midrule
+    GP & Gestión y planificación & 70 \\
+    AN & Análisis y requisitos & 45 \\
+    DS & Diseño de arquitectura & 60 \\
+    IM & Implementación e integración & 220 \\
+    QA & Pruebas y control de calidad & 50 \\
+    DO & Documentación final y defensa & 100 \\
+    \midrule
+    TOT & Total previsto & 545 \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\section{Desglose de tareas revisado}
+\begin{longtable}{p{0.09\textwidth}p{0.27\textwidth}p{0.13\textwidth}p{0.43\textwidth}}
+  \caption{Desglose revisado de tareas respecto al GEP}
+  \label{tab:tareas-revisadas}\\
+  \toprule
+  ID & Tarea & Estado & Revisión durante el seguimiento \\
+  \midrule
+  \endfirsthead
+  \toprule
+  ID & Tarea & Estado & Revisión durante el seguimiento \\
+  \midrule
+  \endhead
+  \bottomrule
+  \endfoot
+  GP1 & Contextualización y alcance & Cerrada & Se concreta mejor el alcance real y se excluyen correos y contraseñas. \\
+  GP2 & Planificación temporal & Revisada & Se incorporan las desviaciones reales de voz, observabilidad y reorganización. \\
+  GP3 & Gestión económica y sostenibilidad & Revisada & Se distinguen presupuesto de referencia y coste incremental real. \\
+  AN1 & Estudio hardware y viabilidad & Avanzada & La GPU AMD y ROCm han exigido más análisis del previsto, especialmente en TTS. \\
+  AN2 & Análisis modelos LLM & Avanzada & Ollama queda consolidado como servidor de inferencia local. \\
+  AN3 & Diseño seguridad perimetral & Reorientada & Tailscale sustituye a WireGuard manual por razones operativas. \\
+  DS1 & Topología de contenedores & Revisada & La arquitectura real se reorganiza por dominios funcionales. \\
+  DS2 & Diseño orquestador y RAG & Avanzada & n8n, Nextcloud, Qdrant e ingesta ya forman memoria documental funcional. \\
+  DS3 & Diseño sensórico y accesos & Avanzada & Home Assistant se mantiene en Raspberry Pi 5 y se integran dispositivos ya disponibles. \\
+  IM1 & Sprint 1 - Infraestructura & Avanzada & Servidor, Compose, almacenamiento, Tailscale y servicios base desplegados. \\
+  IM2 & Sprint 2 - Cognitivo & Avanzada & Ollama funcional y herramientas de memoria conectadas. \\
+  IM3 & Sprint 3 - Orquestación & Avanzada & Tools de Open WebUI y webhooks de n8n convierten conversación en acciones. \\
+  IM4 & Sprint 4 - Sensorial & Avanzada & Domótica, cámaras, HA Voice y presencia ya disponibles. \\
+  IM5 & Sprint 5+ - Expansión & Parcial & Fotos, monitorización y autoreparabilidad implementadas; dashboard único y backup final pendientes. \\
+  QA1 & Estrés y límites VRAM & Parcial & Límites prácticos identificados; faltan métricas finales normalizadas. \\
+  QA2 & Auditoría de seguridad & Parcial & Acceso remoto y secretos revisados; falta cierre formal. \\
+  DO1 & Memoria técnica & En curso & Ya existe base extensa, bibliografía real y documentación de herramientas. \\
+  DO2 & Defensa & Pendiente & Reservada al cierre formal del TFG. \\
+\end{longtable}
 
 \section{Cambios producidos}
-Durante el desarrollo se han producido varios cambios relevantes respecto al planteamiento inicial:
 \begin{itemize}
-  \item \textbf{Acceso remoto}: se pasó de WireGuard con DNS dinámico a Tailscale por mayor estabilidad operativa y menor dependencia de DuckDNS.
-  \item \textbf{Voz}: se invirtió más tiempo del previsto en comparar motores TTS y STT debido a incompatibilidades y bajo rendimiento sobre GPU AMD.
-  \item \textbf{Infraestructura}: fue necesario dedicar trabajo no previsto a reorganizar contenedores Docker y separar mejor dominios funcionales del servidor.
-  \item \textbf{Monitorización}: se incorporó Netdata y una capa de estado exportable a Home Assistant para disponer de observabilidad visual.
-  \item \textbf{Autorreparabilidad}: se añadió una línea de trabajo nueva tras fallos reales de Ollama y necesidad de avisos proactivos por Telegram.
+  \item \textbf{Acceso remoto}: Tailscale sustituye a WireGuard manual y DuckDNS.
+  \item \textbf{Voz}: el esfuerzo en TTS/STT se alarga por compatibilidad AMD y latencia.
+  \item \textbf{Infraestructura}: se añade reorganización de Docker y saneamiento del repositorio.
+  \item \textbf{Monitorización}: se incorporan Netdata, Telegram y exportación a Home Assistant.
+  \item \textbf{Autorreparabilidad}: aparece una línea nueva a partir de incidencias reales de Ollama.
 \end{itemize}
-
-\section{Justificación de los cambios}
-Los cambios no modifican el objetivo principal del proyecto; lo hacen más realista. Mantener WireGuard habría sido válido técnicamente, pero peor para el contexto concreto del despliegue. Insistir indefinidamente en una voz ideal habría consumido recursos sin garantizar mejora proporcional. Reorganizar Docker y añadir observabilidad no eran adornos, sino condiciones para operar un sistema real sin convertirlo en una colección frágil de pruebas.
 
 \section{Impacto en objetivos y costes}
-El impacto principal ha sido una redistribución del esfuerzo, no una pérdida de dirección. La funcionalidad central se conserva: memoria, conversación, domótica, fotos, monitorización y acceso remoto. Algunas metas se han redefinido:
-\begin{itemize}
-  \item la voz realista pasa de objetivo de excelencia a limitación técnica aceptada;
-  \item el panel único de control queda como mejora inmediata todavía pendiente;
-  \item la política de backup se concreta en un NVMe externo transportable, pendiente de ejecución y prueba.
-\end{itemize}
+El análisis de impacto sigue el mismo criterio del GEP: una desviación debe relacionarse con objetivos, esfuerzo y presupuesto. El objetivo general no cambia. La evolución real confirma que los riesgos iniciales estaban bien elegidos, especialmente la incompatibilidad AMD/ROCm y el crecimiento del alcance. Por eso, el mayor sobreesfuerzo no exige redefinir el proyecto, sino consumir parte de la reserva técnica ya prevista.
 
-En costes, la desviación más importante no proviene de licencias sino de tiempo de ingeniería: pruebas de motores de voz, depuración de GPU AMD, reorganización de servicios y documentación. El proyecto mantiene una estrategia de software libre, por lo que el coste monetario directo sigue concentrado en hardware y almacenamiento.
+\begin{table}[H]
+  \centering
+  \caption{Impacto de los cambios sobre objetivos y costes}
+  \label{tab:impacto-objetivos-costes}
+  \begin{tabularx}{\textwidth}{lXX}
+    \toprule
+    Cambio & Impacto en objetivos & Impacto económico \\
+    \midrule
+    Tailscale en lugar de WireGuard manual & Mantiene el acceso remoto seguro con mejor estabilidad. & Sin licencia adicional y con menos mantenimiento. \\
+    Mayor esfuerzo en voz & Conserva voz funcional; la excelencia sonora pasa a límite aceptado. & Consume margen asociado a AMD/ROCm. \\
+    Reorganización Docker & Mejora mantenibilidad y reproducibilidad. & Añade horas ahora, reduce riesgo futuro. \\
+    Monitorización y autoreparabilidad & Refuerza proactividad y operación real. & Reasigna tiempo desde expansión secundaria hacia calidad. \\
+    Dashboard y backup final pendientes & No afectan al núcleo funcional alcanzado. & El NVMe externo queda como ampliación pendiente. \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
 
-\section{Planificación definitiva y punto actual}
-\subsection{Diagrama de Gantt actualizado}
-La \cref{fig:gantt-seguimiento} representa la planificación revisada a partir del trabajo realmente realizado hasta el seguimiento. Frente a una planificación lineal, el proyecto ha evolucionado con solapamientos claros: la investigación no terminó antes de implementar, porque la voz, la GPU AMD y el acceso remoto obligaron a seguir comparando alternativas mientras el sistema ya crecía. Del mismo modo, la documentación dejó de ser una fase exclusivamente final y pasó a acompañar la reorganización técnica del servidor.
+El presupuesto inicial del GEP se mantiene como referencia: 10.305,67 euros de costes de personal, 1.488,44 euros de costes genéricos, 1.769,12 euros de contingencia y 1.045,11 euros de imprevistos, hasta un total de 14.608,34 euros. El seguimiento no obliga a elevar esa cifra porque no se han incorporado licencias ni compras obligatorias nuevas; se ha redistribuido esfuerzo dentro del mismo marco.
+
+\section{Gantt revisado}
+El diagrama inicial era válido como hoja de ruta, pero demasiado esquemático para un seguimiento. La \cref{fig:gantt-seguimiento} conserva los códigos originales y muestra la convivencia real entre fases a lo largo de veinte semanas.
 
 \begin{figure}[H]
   \centering
@@ -36,68 +97,58 @@ La \cref{fig:gantt-seguimiento} representa la planificación revisada a partir d
     \begin{ganttchart}[
       hgrid,
       vgrid,
-      x unit=1.35cm,
-      y unit chart=0.62cm,
-      bar height=0.55,
-      group height=0.3,
-      group peaks height=0.2,
+      x unit=0.52cm,
+      y unit chart=0.54cm,
+      bar height=0.46,
+      group height=0.28,
+      group peaks height=0.18,
       title height=1,
-      bar label font=\small,
-      group label font=\small\bfseries,
-      milestone label font=\small,
-      title label font=\small\bfseries
-    ]{1}{5}
-      \gantttitle{2026}{5} \\
-      \gantttitle{Febrero}{1}
-      \gantttitle{Marzo}{1}
-      \gantttitle{Abril}{1}
-      \gantttitle{Mayo}{1}
-      \gantttitle{Junio}{1} \\
-
-      \ganttgroup{Definición}{1}{2} \\
-      \ganttbar{Contexto, alcance y requisitos}{1}{1} \\
-      \ganttbar{Investigación inicial y arquitectura}{1}{2} \\
-
-      \ganttgroup{Construcción}{2}{4} \\
-      \ganttbar{Infraestructura base y contenedores}{2}{3} \\
-      \ganttbar{Inferencia local y memoria documental}{2}{4} \\
-      \ganttbar{Domótica, fotos y cámaras}{3}{4} \\
-      \ganttbar{Voz: pruebas TTS/STT}{3}{4} \\
-
-      \ganttgroup{Consolidación}{4}{5} \\
-      \ganttbar{Reorganización Docker y seguridad}{4}{4} \\
-      \ganttbar{Monitorización y autoreparabilidad}{4}{4} \\
-      \ganttbar{Validación de casos de uso}{4}{5} \\
-      \ganttbar{Memoria, capturas y defensa}{4}{5} \\
-
-      \ganttmilestone{Seguimiento}{4} \\
-      \ganttmilestone{Entrega final}{5}
+      bar label font=\scriptsize,
+      group label font=\scriptsize\bfseries,
+      milestone label font=\scriptsize,
+      title label font=\scriptsize\bfseries
+    ]{1}{20}
+      \gantttitle{Febrero}{3}
+      \gantttitle{Marzo}{4}
+      \gantttitle{Abril}{5}
+      \gantttitle{Mayo}{4}
+      \gantttitle{Junio}{4} \\
+      \gantttitlelist{1,...,20}{1} \\
+      \ganttgroup{GP Gestión y planificación}{1}{20} \\
+      \ganttbar{GP1 Contexto y alcance}{1}{3} \\
+      \ganttbar{GP2 Planificación temporal}{2}{4} \\
+      \ganttbar{GP3 Economía y sostenibilidad}{3}{5} \\
+      \ganttgroup{AN Análisis y requisitos}{2}{9} \\
+      \ganttbar{AN1 Hardware y viabilidad}{2}{7} \\
+      \ganttbar{AN2 Modelos LLM}{3}{8} \\
+      \ganttbar{AN3 Seguridad perimetral}{4}{9} \\
+      \ganttgroup{DS Diseño de arquitectura}{4}{10} \\
+      \ganttbar{DS1 Topología contenedores}{4}{8} \\
+      \ganttbar{DS2 Orquestación y RAG}{5}{9} \\
+      \ganttbar{DS3 Sensorial y accesos}{6}{10} \\
+      \ganttgroup{IM Implementación e integración}{6}{17} \\
+      \ganttbar{IM1 Infraestructura}{6}{9} \\
+      \ganttbar{IM2 Despliegue cognitivo}{7}{11} \\
+      \ganttbar{IM3 Orquestación}{9}{13} \\
+      \ganttbar{IM4 Sensorial / PMV}{10}{14} \\
+      \ganttbar{IM5 Expansión asistente}{12}{17} \\
+      \ganttgroup{QA Pruebas y calidad}{10}{19} \\
+      \ganttbar{QA1 Estrés y VRAM}{10}{16} \\
+      \ganttbar{QA2 Seguridad y operación}{12}{19} \\
+      \ganttgroup{DO Documentación final}{1}{20} \\
+      \ganttbar{DO1 Memoria técnica}{1}{20} \\
+      \ganttbar{DO2 Defensa}{18}{20} \\
+      \ganttmilestone{M1 Inicio}{3} \\
+      \ganttmilestone{M2 Infraestructura}{9} \\
+      \ganttmilestone{M3 Inteligencia}{11} \\
+      \ganttmilestone{M4 PMV}{14} \\
+      \ganttmilestone{Seguimiento}{14} \\
+      \ganttmilestone{M5 Entrega}{20}
     \end{ganttchart}
   }
-  \caption{Diagrama de Gantt actualizado del proyecto}
+  \caption{Diagrama de Gantt revisado del proyecto}
   \label{fig:gantt-seguimiento}
 \end{figure}
 
-El diagrama muestra dos desviaciones importantes respecto al esquema inicial. Primero, la línea de voz se prolonga más de lo previsto por la dificultad de alcanzar buena calidad, baja latencia y compatibilidad con AMD. Segundo, durante mayo aparece una fase de consolidación no prevista con tanto peso al comienzo: reorganizar Docker, añadir observabilidad y crear mecanismos de aviso resultó necesario para que Odín dejara de ser solo un conjunto de pruebas y pudiera defenderse como sistema operable.
-
-\begin{table}[H]
-  \centering
-  \caption{Estado resumido de la planificación}
-  \label{tab:estado-planificacion}
-  \begin{tabularx}{\textwidth}{lXl}
-    \toprule
-    Bloque & Estado actual & Situación \\
-    \midrule
-    Infraestructura base & Servidor, Docker, Tailscale y almacenamiento operativos. & Avanzado \\
-    Inferencia local & Ollama desplegado y usado; incidencias diagnosticadas. & Avanzado \\
-    Memoria documental & Nextcloud, Qdrant e ingesta funcionales. & Avanzado \\
-    Domótica & Integración con Home Assistant y HA Voice operativa. & Avanzado \\
-    Voz & Múltiples TTS/STT evaluados; solución útil pero no ideal. & Parcial \\
-    Monitorización & Netdata, Telegram y exportador HA disponibles. & Avanzado \\
-    Backup & Estrategia definida con NVMe externo. & Pendiente de validación \\
-    Documentación final & Base amplia redactada; quedan capturas y revisión final. & En curso \\
-    \bottomrule
-  \end{tabularx}
-\end{table}
-
-El proyecto se encuentra en una fase de consolidación: la mayor parte del sistema ya existe y el esfuerzo restante debe orientarse a validarlo, documentarlo y cerrar de forma honesta las limitaciones que no conviene perseguir más allá del alcance del TFG.
+\section{Punto actual}
+El seguimiento se sitúa tras alcanzar el PMV funcional. Infraestructura, inferencia, memoria, domótica y monitorización están avanzadas; voz, backup, métricas finales y documentación permanecen como frentes de cierre. El calendario restante debe concentrarse en consolidación, no en abrir nuevas ramas funcionales.

@@ -1,0 +1,60 @@
+\chapter{Riesgos, continuidad y sostenibilidad}
+
+\section{Revisión de riesgos del GEP}
+El GEP identificó cuatro riesgos principales y el seguimiento confirma que la mayoría eran pertinentes. La tabla siguiente actualiza su estado a partir de lo observado durante el desarrollo.
+
+\begin{table}[H]
+  \centering
+  \caption{Revisión de riesgos}
+  \label{tab:revision-riesgos}
+  \begin{tabularx}{\textwidth}{lXXX}
+    \toprule
+    Riesgo & Previsión inicial & Evidencia observada & Respuesta actual \\
+    \midrule
+    AMD/ROCm & Alta probabilidad & Problemas reales en TTS y compatibilidad. & Priorización, pruebas y aceptación de límite. \\
+    Saturación VRAM & Alta probabilidad & Necesidad de reservar GPU para cargas con retorno claro. & Frigate en CPU; GPU para Ollama e Immich. \\
+    Fallo físico & Baja probabilidad, alto impacto & No materializado. & Backup físico con NVMe pendiente de validación. \\
+    Scope creep & Media probabilidad & Riesgo real por amplitud funcional. & Recorte de correos/contraseñas y priorización de núcleo. \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\section{Riesgos nuevos o reformulados}
+\subsection{Deuda operativa}
+El crecimiento experimental generó carpetas históricas, scripts antiguos y rutas de cron desactualizadas. No era un riesgo descrito con suficiente claridad en el GEP, pero ha resultado central. La respuesta ha sido inventariar antes de borrar, mover de forma reversible y documentar la estructura definitiva.
+
+\subsection{Dependencia de automatizaciones}
+Un asistente proactivo depende de que las automatizaciones no solo existan, sino que sean comprensibles y mantenibles. Por ello se han cancelado cron obsoletos, se han revisado informes diarios y se ha favorecido una estrategia de alertas con contexto y fuentes visitadas.
+
+\subsection{Exposición de secretos}
+La integración con muchos servicios incrementa el riesgo de dejar credenciales en configuraciones. El seguimiento ya ha corregido parte de ese problema mediante versiones saneadas y plantea mover secretos históricos a ficheros \texttt{.env}.
+
+\section{Continuidad del servicio}
+La continuidad de Odín no se basa en alta disponibilidad empresarial, sino en decisiones proporcionadas al contexto doméstico:
+\begin{itemize}
+  \item Home Assistant separado del servidor principal;
+  \item Tailscale para acceso remoto sin exposición directa;
+  \item Netdata y Telegram para detectar problemas;
+  \item scripts de diagnóstico conservadores;
+  \item almacenamiento separado para datos pesados;
+  \item futura copia física en NVMe desconectable.
+\end{itemize}
+
+\section{Sostenibilidad económica}
+El proyecto mantiene la intuición del GEP: sustituir suscripciones por infraestructura propia desplaza el gasto desde OPEX recurrente hacia CAPEX inicial. La sostenibilidad económica no depende solo de ahorrar cuotas, sino de reutilizar herramientas libres, prolongar la vida útil del hardware y aprovechar dispositivos ya disponibles en casa cuando aportan valor.
+
+\section{Sostenibilidad ambiental}
+El seguimiento evita exagerar cifras energéticas todavía no medidas con instrumentación específica. La arquitectura sí incorpora decisiones favorables:
+\begin{itemize}
+  \item uso de Raspberry Pi 5 para domótica 24/7;
+  \item reserva de GPU para cargas donde aporta valor real;
+  \item Frigate en CPU al ser suficiente para el caso de uso;
+  \item posible incorporación de enchufe medidor para cuantificar consumo real;
+  \item reutilización futura del hardware como NAS o servidor doméstico.
+\end{itemize}
+
+\section{Sostenibilidad social}
+Odín responde a una preocupación social clara: la pérdida de control sobre datos personales íntimos. Al mismo tiempo, no se presenta como una solución universal para cualquier usuario, porque el autoalojamiento exige conocimientos técnicos. Su valor social más honesto es demostrar que existe una alternativa posible y auditable para quienes desean recuperar soberanía digital.
+
+\section{Balance}
+La revisión de riesgos y sostenibilidad muestra una evolución positiva respecto al GEP. El proyecto conserva sus principios iniciales, pero ha sustituido varias formulaciones maximalistas por decisiones más maduras: no todo debe ejecutarse en GPU, no toda función imaginada debe entrar en alcance y no toda automatización debe repararse sola. Esa sobriedad mejora la calidad del sistema.
