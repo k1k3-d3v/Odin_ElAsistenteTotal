@@ -14,6 +14,47 @@ En el punto actual del proyecto ya se dispone de:
   \item repositorio privado con configuraciones saneadas y herramientas versionadas.
 \end{itemize}
 
+\section{Inventario resumido de capacidades}
+\begin{table}[H]
+  \centering
+  \caption{Capacidades ya disponibles en Odín}
+  \label{tab:capacidades-odin-seguimiento}
+  \begin{tabularx}{\textwidth}{lX}
+    \toprule
+    Área & Evidencia funcional \\
+    \midrule
+    Memoria & Búsqueda en Nextcloud, ingesta documental y Qdrant. \\
+    Captura de conocimiento & Guardado de notas, extracción de transcripciones y lectura de páginas web. \\
+    Recuerdos visuales & Búsqueda de fotos en Immich desde lenguaje natural. \\
+    Domótica & Control de entidades, calendario, compra, temporizadores y música a través de Home Assistant. \\
+    Seguridad física & Consulta de cámaras y eventos mediante Frigate. \\
+    Proactividad & Alertas por Telegram y notificaciones de presencia desde automatizaciones de Home Assistant. \\
+    Operación & Netdata, exportador de salud para HA y herramienta de autoreparabilidad conservadora. \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\section{Herramientas conversacionales}
+Una de las partes más distintivas del proyecto es la capa de herramientas de Open WebUI. En el momento del seguimiento se han identificado once tools funcionales o integradas en el entorno:
+\begin{itemize}
+  \item búsqueda de fotos en Immich;
+  \item guardado de notas en Nextcloud;
+  \item recordatorios;
+  \item lista de la compra;
+  \item búsqueda documental en Nextcloud;
+  \item salud del sistema;
+  \item vigilancia Frigate;
+  \item control avanzado de Home Assistant;
+  \item puente directo con Home Assistant Assist;
+  \item generación de códigos QR;
+  \item lectura de páginas web y transcripciones de vídeo.
+\end{itemize}
+
+Estas herramientas son la mejor evidencia de que el proyecto ya ha pasado de infraestructura a producto funcional. La interfaz conversacional no solo responde, sino que puede ejecutar acciones sobre servicios privados con parámetros estructurados y resultados verificables.
+
+\section{Datos operativos relevantes}
+La infraestructura se encuentra en una fase experimental avanzada. El servidor ya se ha reorganizado bajo carpetas funcionales, los contenedores activos se han inventariado, la biblioteca de Immich se ha movido a almacenamiento dedicado y se han creado scripts para diagnosticar incidencias reales como la caída de Ollama. El sistema dispone además de informes diarios y alertas reactivas por Telegram, junto con salida compatible con Home Assistant para su futura integración en un panel único.
+
 \section{Trabajo pendiente}
 Antes de cerrar el TFG quedan varios frentes:
 \begin{enumerate}

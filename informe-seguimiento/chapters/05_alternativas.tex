@@ -21,6 +21,8 @@ Odín no parte de una única decisión tecnológica, sino de varias comparativas
 
 La elección de Tailscale se justifica por el contexto concreto del proyecto: el acceso remoto no necesita exposición pública directa y la experiencia previa con DuckDNS introducía fragilidad operativa. Tailscale conserva el rendimiento de WireGuard y reduce la carga de administración en redes domésticas con IP cambiante \citep{openvpnHowTo,wireguardDocs,tailscaleConnectivity,tailscaleDynamicIp}.
 
+La decisión no responde a que WireGuard sea técnicamente peor, sino a que Tailscale resulta mejor para este caso de uso. El proyecto no necesitaba demostrar capacidad para administrar manualmente una VPN, sino garantizar acceso remoto estable a un sistema que ya acumula muchas piezas. Al apoyarse en WireGuard, Tailscale conserva una base criptográfica moderna, pero evita dedicar tiempo del TFG a puertos, DNS dinámico, descubrimiento de nodos y problemas de conectividad que no aportan valor central al objetivo del asistente.
+
 \section{Voz: alternativas TTS y STT}
 La voz ha sido una de las áreas más exploradas. Se probaron motores como Piper, Kokoro, Chatterbox y Pocket TTS, además de soluciones de reconocimiento como faster-whisper y servicios Wyoming. La comparación no se resolvió solo por calidad acústica, sino por latencia, compatibilidad con AMD, uso de GPU, facilidad de integración y estabilidad.
 
@@ -43,8 +45,18 @@ La voz ha sido una de las áreas más exploradas. Se probaron motores como Piper
 
 El resultado ha sido pragmático: se mantiene una solución funcional y se acepta que la voz no alcanzará en esta fase la naturalidad ideal prevista inicialmente. La alternativa técnicamente más atractiva no siempre es la mejor cuando multiplica la complejidad o compite con recursos críticos del sistema.
 
+La elección actual también tiene una justificación de producto. Piper no ofrece la voz más humana de todas las alternativas exploradas, pero sí cumple una propiedad esencial: responde con rapidez y de forma estable. Chatterbox consiguió funcionar sobre GPU, pero su latencia lo hacía poco adecuado para conversación. Pocket TTS queda como línea de evaluación más reciente. La decisión adoptada prioriza una interacción usable frente a una demostración vistosa pero lenta.
+
 \section{Arquitectura: servicios especializados frente a plataforma única}
 También se evaluó implícitamente una alternativa arquitectónica: construir una aplicación monolítica o integrar herramientas maduras especializadas. Se optó por la segunda. Home Assistant resuelve domótica mejor que una implementación propia; Immich gestiona fotos mejor que una biblioteca ad hoc; Qdrant proporciona búsqueda vectorial especializada; Open WebUI ofrece una interfaz extensible ya útil. La aportación del proyecto está en la coordinación, no en reimplementar piezas maduras.
+
+Esta decisión tiene tres ventajas. Primero, reduce riesgo técnico: cada subsistema parte de una base mantenida por comunidades activas. Segundo, mejora la calidad funcional: la subida automática de fotos, la automatización domótica o la búsqueda vectorial ya están resueltas por herramientas dedicadas. Tercero, aumenta el valor académico del proyecto, porque obliga a diseñar contratos, flujos, límites de seguridad y mecanismos de integración entre servicios heterogéneos.
+
+\section{Distribución de cargas: CPU frente a GPU}
+También se han tomado decisiones de asignación de recursos. Frigate realiza la detección de personas en CPU porque el rendimiento obtenido resulta suficiente y evita saturar la GPU AMD con una carga que no necesita prioridad máxima. En cambio, Immich y Ollama sí aprovechan la GPU, porque la aceleración aporta un beneficio directo en análisis de fotografías e inferencia de modelos. Esta distribución muestra que la mejor arquitectura no es la que usa GPU en todo, sino la que reserva recursos escasos para las tareas donde realmente cambian la experiencia de usuario.
+
+\section{Home Assistant separado del servidor principal}
+Home Assistant se mantiene en una Raspberry Pi 5 y no se ha migrado a Docker en el servidor de Odín. La razón es deliberada: ya actúa como centro estable de la habitación inteligente, funciona bien de forma autónoma y debe seguir disponible aunque se reinicie o reconfigure el servidor principal. Odín no reemplaza a Home Assistant; lo amplía mediante herramientas conversacionales y lo usa como plano de control del mundo físico.
 
 \section{Conclusión del análisis}
 La opción adoptada se justifica porque reduce riesgo y maximiza valor académico: obliga a integrar, comparar, documentar y tomar decisiones reales. El proyecto demuestra criterio de ingeniería al no confundir originalidad con construirlo todo desde cero.
