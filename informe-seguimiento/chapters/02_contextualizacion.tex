@@ -3,20 +3,20 @@
 \section{Contexto y problema}
 La vida digital personal se encuentra cada vez más fragmentada. Fotografías, documentos, recordatorios, domótica, conversaciones con asistentes y servicios de inteligencia artificial suelen residir en plataformas diferentes, gestionadas por terceros y con escasa interoperabilidad. Esta fragmentación obliga al usuario a recordar dónde está cada dato y a aceptar que muchas acciones cotidianas dependan de servicios externos.
 
-Odín nace para explorar una alternativa: construir un asistente personal capaz de reunir esos flujos en una infraestructura propia, manteniendo control sobre los datos y evitando depender de un único proveedor. La propuesta combina la filosofía \textit{local-first}, que prioriza la propiedad de los datos por parte del usuario, con ideas de computación ubicua y computación proactiva: el sistema no solo responde, sino que aspira a recordar, observar y actuar cuando tiene contexto suficiente \citep{kleppmann2019localfirst,weiser1991computer,tennenhouse2000proactive}.
+Odín nace para construir un asistente personal capaz de reunir esos flujos en una infraestructura propia, manteniendo control sobre los datos y evitando depender de un único proveedor. La propuesta combina la filosofía \textit{local-first}, que prioriza la propiedad de los datos por parte del usuario, con ideas de computación ubicua y computación proactiva: el sistema no solo responde, sino que aspira a recordar, observar y actuar cuando tiene contexto suficiente \citep{kleppmann2019localfirst,weiser1991computer,tennenhouse2000proactive}.
 
-El proyecto no persigue únicamente sustituir una aplicación por otra, sino resolver un problema de arquitectura personal. Un asistente convencional puede responder preguntas; Odín aspira a conectar conversación, documentos, fotografías, cámaras, automatizaciones y estado del sistema dentro de una misma experiencia. Por ejemplo, la misma interfaz debe poder guardar una idea en Nextcloud, recuperar una fotografía desde Immich, consultar el estado del servidor, activar una luz de Home Assistant o avisar por Telegram de una incidencia. Esa amplitud es la que convierte el proyecto en un TFG de integración de sistemas y no solo en una demostración de IA generativa.
+El proyecto no persigue únicamente sustituir una aplicación por otra, sino resolver un problema de arquitectura personal. Un asistente convencional puede responder preguntas, Odín aspira a conectar conversación, documentos, fotografías, cámaras, automatizaciones y estado del sistema dentro de una misma experiencia. Por ejemplo, la misma interfaz debe poder guardar una idea en la nube privada, recuperar una fotografía desde la galería, consultar el estado del servidor, activar una luz de la habitación o avisar de una incidencia. Esa amplitud es la que convierte el proyecto en un TFG de integración de sistemas y no solo en una demostración de IA generativa.
 
 \section{Gestión actual del problema}
 La gestión habitual del problema está repartida entre varias categorías de herramientas:
 \begin{itemize}
-  \item asistentes comerciales, cómodos pero dependientes de la nube;
-  \item nubes privadas, útiles para almacenar pero no para razonar;
-  \item plataformas domóticas, capaces de automatizar pero no de integrar toda la vida digital;
+  \item Asistentes comerciales, cómodos pero dependientes de la nube
+  \item Nubes privadas, útiles para almacenar pero no para razonar
+  \item Plataformas domóticas, capaces de automatizar pero no de integrar toda la vida digital.
   \item aplicaciones de IA conversacional, potentes pero normalmente desconectadas de los datos personales reales.
 \end{itemize}
 
-El usuario acaba componiendo manualmente su propio ecosistema: una aplicación para fotos, otra para archivos, otra para la casa, otra para notas y otra para hablar con modelos. El problema no es la ausencia de herramientas, sino la falta de una capa común que convierta servicios dispersos en una experiencia coherente.
+El usuario final acaba componiendo manualmente su propio ecosistema, una aplicación para fotos, otra para archivos, otra para la casa, otra para notas y otra para hablar con modelos de IA. El problema no es la ausencia de herramientas, sino la falta de una capa común que convierta servicios dispersos en una experiencia coherente y cómoda de usar.
 
 \section{Propuesta concreta de Odín}
 La solución se organiza alrededor de dos nodos principales. El servidor doméstico aloja la mayor parte de servicios: inferencia local, memoria documental, fotos, automatizaciones, monitorización y herramientas auxiliares. Una Raspberry Pi 5 independiente mantiene Home Assistant como núcleo domótico estable. Sobre esa base, Open WebUI actúa como interfaz conversacional principal y las herramientas personalizadas conectan la conversación con servicios especializados.
@@ -40,10 +40,10 @@ La solución se organiza alrededor de dos nodos principales. El servidor domést
   \end{tabularx}
 \end{table}
 
-La arquitectura evita que el modelo de lenguaje se convierta en una caja negra con acceso indiscriminado a todo. El modelo interpreta la intención; las herramientas encapsulan acciones concretas; los servicios especializados almacenan o ejecutan la operación real. Esta separación mejora seguridad, trazabilidad y mantenibilidad.
+La arquitectura evita que el modelo de lenguaje se convierta en una caja negra con acceso indiscriminado a todo. El modelo interpreta la intención, las herramientas encapsulan acciones concretas, los servicios especializados almacenan o ejecutan la operación real.
 
 \section{Productos y soluciones relacionadas}
-Odín se sitúa entre varias familias de productos ya existentes. Los asistentes comerciales como Alexa, Siri o Google Assistant ofrecen una experiencia pulida, pero se apoyan en ecosistemas cerrados y procesamiento remoto. Home Assistant destaca en domótica local y extensibilidad, Nextcloud en nube privada, Immich en gestión de fotos, Ollama en inferencia local y Open WebUI en interfaz conversacional extensible \citep{homeAssistantDocs,immichDocs,ollamaDocs,openwebuiDocs}.
+Odín se sitúa entre varias familias de productos ya existentes. Los asistentes comerciales como Alexa, Siri o Google Assistant ofrecen una experiencia simple y pulida, apoyándose en ecosistemas cerrados y procesamiento remoto. Dentro del software autoalojado, Nextcloud cubre la nube privada y el almacenamiento de documentos, Immich la gestión y búsqueda de fotografías, Home Assistant la domótica, Ollama la inferencia local y Open WebUI la interfaz conversacional extensible \citep{nextcloudDocs,immichDocs,homeAssistantDocs,ollamaDocs,openwebuiDocs}.
 
 La diferencia del proyecto no consiste en reemplazar cada pieza, sino en integrarlas. Odín usa herramientas especializadas allí donde ya existe software maduro y añade una capa de coordinación conversacional y proactiva mediante flujos, herramientas y memoria privada.
 
@@ -61,19 +61,31 @@ Las tecnologías elegidas responden a criterios técnicos concretos:
 \end{itemize}
 
 \section{Valor diferencial}
-El valor diferencial del proyecto se concreta en funcionalidades ya implementadas:
-\begin{itemize}
-  \item guardar notas, resúmenes, recetas o ideas desde el chat;
-  \item consultar documentos personales mediante búsqueda privada;
-  \item recuperar fotografías de Immich con lenguaje natural;
-  \item consultar cámaras y eventos recientes de Frigate;
-  \item controlar la habitación inteligente mediante Home Assistant;
-  \item crear recordatorios, gestionar lista de la compra y aprovechar temporizadores y música desde HA Voice;
-  \item revisar la salud del sistema y recibir avisos proactivos por Telegram;
-  \item convertir vídeos o páginas web en texto reutilizable para la memoria personal.
-\end{itemize}
+El valor diferencial de Odín no es simplemente reunir varias aplicaciones bajo una misma interfaz. Su ambición es acercarse a lo que intuitivamente se espera de un asistente virtual real, alguien a quien poder preguntar por un pensamiento antiguo, una fotografía concreta, el estado de la casa o una tarea cotidiana, y que sea capaz de entender la intención y actuar sin que el usuario tenga que construir manualmente cada flujo desde cero. ¿De qué sirve llamar ``inteligente'' a una casa si para cada comportamiento nuevo hay que abrir una interfaz, buscar entidades, programar automatizaciones y recordar qué servicio controla cada cosa?
 
-Estas capacidades muestran que Odín no se limita a conversar. Su objetivo es actuar como una capa de coordinación sobre la vida digital y física del usuario, manteniendo la mayor parte del procesamiento y de los datos bajo control local.
+Odín intenta invertir esa relación. El usuario no debería tener que memorizar dónde guardó una nota, en qué carpeta quedó una receta o qué nombre técnico recibe una luz concreta. Debería poder formular la necesidad con sus propias palabras: ``¿dónde apunté aquella idea sobre el proyecto?'', ``enséñame la foto en la que salía tal cosa'', ``¿hay alguien en casa?'', ``enciende la luz de la habitación'' o ``guárdame la garantía del móvil nuevo que acabo de comprar''. A partir de ahí, el asistente consulta memoria documental, busca recuerdos visuales, accede a sensores o cámaras y utiliza las capacidades disponibles de Home Assistant para resolver la petición.
+
+La diferencia es importante ya que Odín no busca ser solo una colección de automatizaciones predefinidas, sino una capa de inteligencia que pueda operar sobre ellas. La domótica tradicional obliga a configurar una acción por adelantado mientras que éste proyecto permite describir dispositivos, entidades y formas de interacción para que el asistente pueda reutilizarlos en peticiones nuevas. Un sensor de presencia, una cámara, un enchufe inteligente o una luz dejan de ser elementos aislados y pasan a formar parte de un entorno sobre el que el asistente puede razonar.
+
+\begin{table}[H]
+  \centering
+  \caption{Valor diferencial de Odín frente a un ecosistema fragmentado}
+  \label{tab:valor-diferencial-odin}
+  \begin{tabularx}{\textwidth}{lXX}
+    \toprule
+    Situación habitual & Sin Odín & Con Odín \\
+    \midrule
+    Aparece una idea útil & Guardarla manualmente y confiar en recordar dónde quedó. & Pedírselo al asistente y recuperarla después por significado. \\
+    Se necesita un pensamiento antiguo & Buscar por carpetas, nombres o fechas aproximadas. & Preguntarlo en lenguaje natural sobre la memoria personal. \\
+    Se quiere encontrar una foto & Revisar álbumes o miles de imágenes. & Describir el recuerdo y recuperarlo desde Immich. \\
+    Se quiere saber qué pasa en casa & Abrir varias aplicaciones o revisar cámaras manualmente. & Preguntar si hay alguien y combinar presencia, cámaras y eventos. \\
+    Hay que actuar sobre la domótica & Configurar cada automatización o buscar cada entidad. & Describir la intención y dejar que el asistente use las capacidades disponibles. \\
+    Ocurre una incidencia técnica & Descubrirla cuando algo deja de responder. & Recibir aviso proactivo y diagnóstico operativo. \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+Por eso Odín no es simplemente un chatbot conectado a varias APIs ni una domótica más cómoda. Es el intento de construir un asistente personal con memoria, contexto y capacidad de acción, capaz de encontrar cualquier pensamiento, recuperar recuerdos visuales, ayudar con la casa sin exigir que cada comportamiento haya sido programado de antemano y ofrecer una visión centralizada de lo que ocurre en el entorno. La pregunta que intenta responder no es ``¿qué aplicación necesito ahora?'', sino una mucho más cercana a la promesa original de los asistentes virtuales: ``¿qué necesito que mi asistente haga por mí?''.
 
 \section{Adecuación del contexto}
 El proyecto queda adecuadamente contextualizado porque parte de una necesidad real, analiza cómo se resuelve hoy con productos parciales y justifica por qué se adopta una solución integradora. La hipótesis de trabajo no es que no existan herramientas, sino que todavía falta una arquitectura personal que combine privacidad, memoria, automatización y capacidad de acción bajo control del usuario.

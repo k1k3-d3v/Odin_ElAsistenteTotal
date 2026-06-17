@@ -1,130 +1,68 @@
-[
-  {
-    "id": "buscar_fotos",
-    "name": "buscar fotos",
-    "functions": [
-      "buscar_foto"
-    ],
-    "files": [
-      "buscar_fotos.py",
-      "buscar_fotos.spec.json"
-    ]
-  },
-  {
-    "id": "buscar_nextcloud",
-    "name": "Buscar Nextcloud",
-    "functions": [
-      "buscar_en_nextcloud"
-    ],
-    "files": [
-      "buscar_nextcloud.py",
-      "buscar_nextcloud.spec.json"
-    ]
-  },
-  {
-    "id": "guardar_nota",
-    "name": "Guardar nota en Nextcloud",
-    "functions": [
-      "guardar_nota_nextcloud"
-    ],
-    "files": [
-      "guardar_nota.py",
-      "guardar_nota.spec.json"
-    ]
-  },
-  {
-    "id": "guardar_transcripcion_de_video_o_pagina_web",
-    "name": "Guardar transcripción de video o página web",
-    "functions": [
-      "get_youtube_transcript",
-      "search_and_crawl_web"
-    ],
-    "files": [
-      "guardar_transcripcion_de_video_o_pagina_web.py",
-      "guardar_transcripcion_de_video_o_pagina_web.spec.json"
-    ]
-  },
-  {
-    "id": "home_assistant",
-    "name": "Home Assistant",
-    "functions": [
-      "control_home_assistant",
-      "execute_action",
-      "get_health_status",
-      "manage_calendar",
-      "manage_shopping_list"
-    ],
-    "files": [
-      "home_assistant.py",
-      "home_assistant.spec.json"
-    ]
-  },
-  {
-    "id": "home_assistant_connector",
-    "name": "Home assistant connector ",
-    "functions": [
-      "ask_home_assistant_assist"
-    ],
-    "files": [
-      "home_assistant_connector.py",
-      "home_assistant_connector.spec.json"
-    ]
-  },
-  {
-    "id": "lista_de_la_compra",
-    "name": "Lista de la compra",
-    "functions": [
-      "manage_shopping_list"
-    ],
-    "files": [
-      "lista_de_la_compra.py",
-      "lista_de_la_compra.spec.json"
-    ]
-  },
-  {
-    "id": "qr_code_generator_for_open_webui",
-    "name": "QR Code Generator for Open WebUI",
-    "functions": [
-      "generate_qr_code"
-    ],
-    "files": [
-      "qr_code_generator_for_open_webui.py",
-      "qr_code_generator_for_open_webui.spec.json"
-    ]
-  },
-  {
-    "id": "recordatorio",
-    "name": "Recordatorio",
-    "functions": [
-      "anadir_evento_calendario"
-    ],
-    "files": [
-      "recordatorio.py",
-      "recordatorio.spec.json"
-    ]
-  },
-  {
-    "id": "salud_del_sistema",
-    "name": "salud del sistema",
-    "functions": [
-      "manage_system_health"
-    ],
-    "files": [
-      "salud_del_sistema.py",
-      "salud_del_sistema.spec.json"
-    ]
-  },
-  {
-    "id": "vigilancia_frigate",
-    "name": "vigilancia_frigate",
-    "functions": [
-      "consultar_camaras",
-      "ver_foto_actual",
-      "ver_ultimo_evento"
-    ],
-    "files": [
-      "vigilancia_frigate.py",
-      "vigilancia_frigate.spec.json"
-    ]
-  }
-]
+{
+  "snapshot_date": "2026-06-09",
+  "model": "odn",
+  "model_context_tokens": 16384,
+  "assigned_tools": [
+    {
+      "id": "buscar_fotos",
+      "functions": ["buscar_foto"]
+    },
+    {
+      "id": "buscar_nextcloud",
+      "functions": ["buscar_en_nextcloud"]
+    },
+    {
+      "id": "guardar_nota",
+      "functions": ["guardar_nota_nextcloud"]
+    },
+    {
+      "id": "guardar_transcripcion_de_video_o_pagina_web",
+      "functions": ["get_youtube_transcript", "search_and_crawl_web"]
+    },
+    {
+      "id": "home_assistant",
+      "functions": [
+        "controlar_aspirador",
+        "control_home_assistant",
+        "get_health_status",
+        "manage_calendar",
+        "manage_shopping_list"
+      ]
+    },
+    {
+      "id": "mealie_recetas",
+      "functions": [
+        "crear_receta",
+        "importar_receta_url",
+        "importar_receta_imagen"
+      ]
+    },
+    {
+      "id": "qr_code_generator_for_open_webui",
+      "functions": ["generate_qr_code"]
+    },
+    {
+      "id": "salud_del_sistema",
+      "functions": ["manage_system_health"]
+    },
+    {
+      "id": "vigilancia_frigate",
+      "functions": [
+        "ultima_persona",
+        "consultar_camaras",
+        "ver_foto_actual",
+        "ver_ultimo_evento"
+      ]
+    }
+  ],
+  "registered_but_not_assigned": [
+    "lista_de_la_compra",
+    "recordatorio"
+  ],
+  "removed": [
+    {
+      "id": "home_assistant_connector",
+      "reason": "Duplicaba rutas de control y provocaba decisiones ambiguas."
+    }
+  ]
+}

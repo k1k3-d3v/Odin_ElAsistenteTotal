@@ -3,8 +3,29 @@
 \section{Recursos humanos}
 Aunque el proyecto es individual, se modelan roles profesionales para estimar el coste realista del trabajo: jefe de proyecto, analista de sistemas, desarrollador y tester. Esta separación permite valorar de forma más rigurosa tareas de planificación, diseño, implementación y validación.
 
+\begin{table}[H]
+  \centering
+  \caption{Estimación revisada de costes de personal}
+  \label{tab:costes-personal}
+  \begin{tabular}{lrr}
+    \toprule
+    Perfil o actividad & Horas & Coste estimado \\
+    \midrule
+    Gestión de proyecto & 70 & 1.799,70 EUR \\
+    Análisis de sistemas & 105 & 2.024,40 EUR \\
+    Desarrollo e integración & 220 & 3.768,60 EUR \\
+    Pruebas & 50 & 780,00 EUR \\
+    Trabajo transversal & 100 & 1.932,97 EUR \\
+    \midrule
+    \textbf{Total} & \textbf{545} & \textbf{10.305,67 EUR} \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
 \section{Recursos materiales directos}
-El coste material principal corresponde al hardware de inferencia y servicios: servidor doméstico, GPU AMD con 16 GB de VRAM, almacenamiento NVMe y dispositivos de bajo consumo como Raspberry Pi para tareas 24/7. La memoria final deberá actualizar esta sección con el hardware realmente utilizado, precios finales y justificación de cada componente.
+El coste material principal corresponde al hardware de inferencia y servicios: servidor doméstico, GPU AMD con 16 GB de VRAM, almacenamiento NVMe y dispositivos de bajo consumo como Raspberry Pi para tareas 24/7. En la revisión económica, la amortización de equipos, consumo, conectividad y material auxiliar se agrupa en 1.488,44 EUR.
+
+Los dos enchufes inteligentes destinados a medir consumo ya han sido instalados e integrados con éxito. Las lecturas, proyecciones y escenarios de coste se detallan en el capítulo de sostenibilidad. La unidad NVMe externa ya está disponible, aunque su valor operativo completo depende de terminar de consolidar su automatización y restauración.
 
 \section{Recursos materiales indirectos}
 Se incluyen conectividad, consumo energético, espacio de trabajo y amortización de equipos. Un punto relevante del proyecto es la comparación entre un modelo de inversión inicial en infraestructura propia y un modelo de suscripciones o consumo cloud.
@@ -16,7 +37,46 @@ El ecosistema se apoya mayoritariamente en software libre o de código abierto: 
 La planificación contempla una reserva para desviaciones técnicas: incompatibilidades de drivers, saturación de memoria gráfica, fallos de hardware, cambios de arquitectura y reducción de alcance. En la memoria final se diferenciará entre contingencia genérica e imprevistos derivados de riesgos identificados.
 
 \section{Estimacion final del presupuesto}
-La planificación inicial estimó un presupuesto total de 14.608,34 euros, incluyendo costes de personal, costes genéricos, contingencia e imprevistos. Esta cifra se revisará con datos reales y se explicará como presupuesto imputado de proyecto académico, no como desembolso directo completo.
+La planificación inicial estimó un presupuesto total de 14.608,34 EUR. Se trata de un presupuesto imputado de proyecto académico, no de un desembolso directo completo.
+
+\begin{table}[H]
+  \centering
+  \caption{Resumen económico revisado}
+  \label{tab:resumen-economico}
+  \begin{tabular}{lr}
+    \toprule
+    Concepto & Importe \\
+    \midrule
+    Personal & 10.305,67 EUR \\
+    Infraestructura y costes generales & 1.488,44 EUR \\
+    \midrule
+    Coste base & 11.794,11 EUR \\
+    Contingencia del 15\% & 1.769,12 EUR \\
+    Imprevistos adicionales & 1.045,11 EUR \\
+    \midrule
+    \textbf{Total presupuestado} & \textbf{14.608,34 EUR} \\
+    \bottomrule
+  \end{tabular}
+\end{table}
 
 \section{Control de gestion}
-El control económico se realizará al cierre de cada sprint, comparando horas estimadas y horas reales, además de registrar cambios relevantes de alcance. Las desviaciones negativas se asociarán a riesgos concretos cuando sea posible para justificar técnicamente el impacto.
+El control económico se realiza al cierre de cada sprint, comparando horas estimadas y reales y registrando cambios de alcance. Para separar el efecto de las tarifas del efecto de la dedicación se emplean las siguientes expresiones:
+
+\[
+D_{\mathrm{tarifa}} =
+\left(T_{\mathrm{estimada}} - T_{\mathrm{real}}\right)
+\cdot H_{\mathrm{reales}}
+\]
+
+\[
+D_{\mathrm{eficiencia}} =
+\left(H_{\mathrm{estimadas}} - H_{\mathrm{reales}}\right)
+\cdot T_{\mathrm{estimada}}
+\]
+
+\[
+D_{\mathrm{total}} =
+D_{\mathrm{tarifa}} + D_{\mathrm{eficiencia}}
+\]
+
+Estas métricas distinguen si una desviación procede de una valoración incorrecta del perfil profesional o de una estimación insuficiente del trabajo. En Odín, la desviación principal corresponde a eficiencia temporal: integración y diagnóstico requirieron más horas de las previstas, mientras que el uso de software libre contuvo los costes de licencias.

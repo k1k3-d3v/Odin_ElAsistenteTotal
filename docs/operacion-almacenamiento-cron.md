@@ -54,14 +54,22 @@ Cron activo:
 0 * * * * /home/k1k3/odin/scripts/cron_odin_ingesta.sh >> /home/k1k3/odin/logs/ingesta/cron_odin.log 2>&1
 
 # Salud y autoreparabilidad conservadora.
-*/15 * * * * /home/k1k3/odin/scripts/odin_autorepair.py --repair --alert >> /home/k1k3/odin/logs/autorepair/cron.log 2>&1
-0 9 * * * /home/k1k3/odin/scripts/odin_autorepair.py --daily >> /home/k1k3/odin/logs/autorepair/cron.log 2>&1
+*/15 * * * * /home/k1k3/odin/scripts/odin_autorepair.py --repair >> /home/k1k3/odin/logs/autorepair/cron.log 2>&1
+45 7 * * * /home/k1k3/odin/scripts/odin_autorepair.py --daily >> /home/k1k3/odin/logs/autorepair/cron.log 2>&1
 
-# Backup pausado hasta cerrar estrategia NVMe/Raspberry.
-# 0 4 * * * /home/k1k3/odin/scripts/backup_diario.sh >> /home/k1k3/odin/logs/backups/backup_diario.log 2>&1
+# Backup cifrado en el NVMe.
+0 4 * * * /home/k1k3/odin/scripts/backup_diario.sh >> /home/k1k3/odin/logs/backups/backup_diario.log 2>&1
 ```
 
 El script de ingesta se probo manualmente y proceso 35 archivos nuevos o modificados. Qdrant quedo disponible con la coleccion `memoria_ia` en estado `green` y 3554 puntos. Tambien se saco la configuracion de Telegram a `/home/k1k3/odin/scripts/telegram.env`, con permisos restrictivos y sin versionar secretos.
+
+El 12 de junio se sustituyo el mecanismo historico basado en `tar.gz` por
+Restic 0.19.0. El NVMe Crucial de 1 TB se identifica por UUID y se monta en
+`/mnt/backup_nvme` con permisos restrictivos. El repositorio queda cifrado,
+incremental y deduplicado. La copia incluye la infraestructura y la biblioteca
+de Immich, y genera antes un volcado consistente de MariaDB para Nextcloud. La
+clave de recuperacion se conserva fuera del servidor. El cron de las 04:00 se
+activa tras completar `restic check` y una restauracion de muestra.
 
 Tras mover el stack principal a `/home/k1k3/odin/core/odin-master`, se actualizo la ruta de `VAULT_PATH` en `odin_ingesta_master.py`. La cache de ingesta estaba creada por `root`, lo que provocaba un `PermissionError` al ejecutar el wrapper desde cron. Se corrigio la propiedad a `k1k3:k1k3`, se reescribieron las rutas antiguas de cache y se repitio la prueba con resultado correcto.
 

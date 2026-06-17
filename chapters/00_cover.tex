@@ -1,32 +1,69 @@
 \begin{titlepage}
   \thispagestyle{empty}
-  \centering
+  \newgeometry{left=2.4cm,right=2.4cm,top=2.1cm,bottom=2.2cm}
 
-  {\large \tfgfaculty\par}
-  {\large \tfguniversity\par}
-  \vspace{1.8cm}
+  \begin{minipage}[c]{0.62\textwidth}
+    \includegraphics[width=0.92\linewidth]{logos/upc-logo.png}
+  \end{minipage}
+  \hfill
+  \begin{minipage}[c]{0.23\textwidth}
+    \raggedleft
+    \includegraphics[width=0.96\linewidth]{logos/fib-logo.png}
+  \end{minipage}
 
-  \rule{\textwidth}{0.6pt}
+  \vspace{0.55cm}
+  {\color{black!55}\rule{\textwidth}{0.5pt}}
+
+  \vspace{1.35cm}
+  {\color{black!62}\large\bfseries
+    \MakeUppercase{\tfgtype}\par}
+
+  \vspace{1.5cm}
+  {\fontsize{29}{35}\selectfont\bfseries
+    \tfgtitle\par}
+
+  \vspace{0.55cm}
+  {\color{black!68}\fontsize{16}{21}\selectfont
+    \tfgsubtitle\par}
+
   \vspace{0.9cm}
+  {\color{upcblue}\rule{3.4cm}{3pt}}
 
-  {\Huge\bfseries \MakeUppercase{\tfgtitle}\par}
-  \vspace{0.45cm}
-  {\Large \tfgsubtitle\par}
-
-  \vspace{0.9cm}
-  \rule{\textwidth}{0.6pt}
-
-  \vspace{1.6cm}
-  {\Large\bfseries \tfgauthor\par}
+  \vspace{1.35cm}
+  {\large\bfseries \tfgauthor\par}
+  \vspace{0.2cm}
+  {\color{black!60}\normalsize \tfgdegree\par}
+  {\color{black!60}\normalsize Especialidad en \tfgspeciality\par}
 
   \vfill
 
-  \begin{tabularx}{0.9\textwidth}{>{\bfseries}lX}
-    Titulación & \tfgdegree{} (\tfgspeciality) \\
-    Director/a & \tfgdirector{} (\tfgdirectorinfo) \\
-    Tipo de documento & \tfgtype \\
-    Curso & \tfgdate \\
-  \end{tabularx}
+  \begin{minipage}[t]{0.47\textwidth}
+    {\color{black!55}\small\bfseries DIRECCIÓN\par}
+    \vspace{0.12cm}
+    {\normalsize \tfgdirector\par}
+    {\color{black!65}\small \tfgdirectorinfo\par}
+  \end{minipage}
+  \hfill
+  \begin{minipage}[t]{0.42\textwidth}
+    \raggedleft
+    {\color{black!55}\small\bfseries CENTRO\par}
+    \vspace{0.12cm}
+    {\normalsize \tfgfaculty\par}
+    {\color{black!65}\small \tfguniversity\par}
+  \end{minipage}
 
-  \vspace{1.2cm}
+  \vspace{0.75cm}
+  {\color{black!30}\rule{\textwidth}{0.5pt}}
+  \vspace{0.35cm}
+
+  \begin{minipage}[c]{0.55\textwidth}
+    {\small Barcelona\par}
+  \end{minipage}
+  \hfill
+  \begin{minipage}[c]{0.38\textwidth}
+    \raggedleft
+    {\small\bfseries \tfgdate\par}
+  \end{minipage}
+
+  \restoregeometry
 \end{titlepage}

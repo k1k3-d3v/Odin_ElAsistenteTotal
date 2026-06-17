@@ -1,10 +1,17 @@
-# Inventario inicial del servidor Odín
+# Inventario del servidor Odín
 
-Fecha de inspección: 2026-05-07  
-Host: `odin`  
-Usuario: `k1k3`  
-Sistema: Ubuntu 24.04.4 LTS  
-Kernel: Linux 6.18.7  
+Fecha de inspección: 2026-05-07
+
+Última actualización operativa: 2026-06-09
+
+Host: `odin`
+
+Usuario: `k1k3`
+
+Sistema: Ubuntu 24.04.4 LTS
+
+Kernel: Linux 6.18.7
+
 Hardware detectado: ASRock A520M-HVS, AMD Ryzen 5 5600G, GPU AMD Radeon RX 9070/9070 XT/GRE, 30 GiB RAM.
 
 > Documento de trabajo sin secretos. No incluye valores de `.env`, claves, tokens ni credenciales.
@@ -56,6 +63,10 @@ Nota: el mensaje de bienvenida del sistema muestra una temperatura absurda (`389
 
 ## Docker Compose
 
+Docker Compose es la fuente reproducible del despliegue. La inspección se
+realiza mediante `docker compose`, `docker ps`, healthchecks, logs, endpoints
+funcionales y las métricas agregadas en Home Assistant y Netdata.
+
 Proyectos Compose activos detectados:
 
 | Proyecto | Estado | Compose |
@@ -91,6 +102,12 @@ Proyectos Compose activos detectados:
 | `nextcloud-db` | `mariadb:10.11` | Base de datos Nextcloud |
 | `cloudflared-odin` | `cloudflare/cloudflared:latest` | Túnel Cloudflare |
 | `ha-proxy` | `alpine/socat` | Proxy hacia Home Assistant |
+| `mealie` | `ghcr.io/mealie-recipes/mealie:v1.12.0` | Gestor privado de recetas |
+| `mealie-tool-proxy` | `python:3.12-alpine` | API mínima para la tool de Mealie |
+| `immich-photo-proxy` | `python:3.12-alpine` | Entrega segura de fotos de Immich al navegador |
+| `nextcloud-note-proxy` | `python:3.12-alpine` | Guardado de notas en Nextcloud mediante n8n |
+| `frigate-image-proxy` | `python:3.12-alpine` | Capturas JPEG de Frigate con CORS |
+| `odin-local-proxy` | `caddy:2-alpine` | Nombres y accesos locales |
 
 Contenedores detenidos observados:
 
@@ -120,6 +137,11 @@ Contenedores detenidos observados:
 | 10301 | Faster Whisper |
 | 11235 | crawl4ai |
 | 49112 | PocketTTS |
+| 9925 | Mealie |
+| 2290 | Proxy de imágenes Immich |
+| 2291 | Proxy de notas Nextcloud |
+| 2292 | Proxy de tools Mealie |
+| 2293 | Proxy de imágenes Frigate |
 
 ## Open WebUI Tools
 
@@ -135,9 +157,16 @@ Open WebUI contiene varias tools que convierten el chat en una interfaz operativ
 | `salud_del_sistema` | Consultar salud del sistema |
 | `vigilancia_frigate` | Consultas/acciones sobre vigilancia Frigate |
 | `qr_code_generator_for_open_webui` | Generar códigos QR desde el chat |
-| `home_assistant` | Control de domótica, calendario, compra y salud desde Home Assistant |
+| `home_assistant` | Control de domótica, calendario, compra, salud y acción atómica del aspirador |
 | `guardar_transcripcion_de_video_o_pagina_web` | Lectura de webs y transcripciones de YouTube con Crawl4AI |
-| `home_assistant_connector` | Puente con Home Assistant Assist |
+| `mealie_recetas` | Crear e importar recetas en Mealie |
+
+El conector duplicado `home_assistant_connector` fue eliminado. Las tools
+históricas de compra y recordatorios permanecen registradas, pero Odín utiliza
+las funciones consolidadas en `home_assistant`.
+
+La descripción completa de las correcciones y pruebas de junio se encuentra en
+`docs/estado-final-tools-integraciones-2026-06-09.md`.
 
 ## Ollama
 
@@ -150,14 +179,17 @@ El diseño inicial mencionaba WireGuard, pero el uso actual descrito por el auto
 ## Automatizaciones cron
 
 ```cron
-# Odín cron desactivado temporalmente por reorganización de almacenamiento/NVMe.
+# Automatizaciones de Odín.
 # */30 * * * * /home/k1k3/env/bin/python3 /home/k1k3/odin/scripts/update_odin.py >> /home/k1k3/odin_sync.log 2>&1
 # 0 * * * * /home/k1k3/odin/scripts/lanzar_ingesta.sh >> /home/k1k3/odin_sync.log 2>&1
 # */15 * * * * /home/k1k3/odin/scripts/odin_autorepair.py --repair --alert >> /home/k1k3/odin/logs/autorepair/cron.log 2>&1
 # 0 9 * * * /home/k1k3/odin/scripts/odin_autorepair.py --daily >> /home/k1k3/odin/logs/autorepair/cron.log 2>&1
 ```
 
-Las entradas quedan comentadas hasta completar la reorganización del almacenamiento y el futuro uso del NVMe externo de 1 TB. La copia histórica del crontab se conserva en `/home/k1k3/odin/logs/autorepair/`.
+La copia histórica del crontab se conserva en
+`/home/k1k3/odin/logs/autorepair/`. El backup final se ejecuta desde el
+crontab de `root` a las 04:00 para poder leer los volúmenes persistentes de
+Docker y escribir el repositorio Restic del NVMe.
 
 ## Correspondencia con el mapa funcional
 
@@ -166,7 +198,7 @@ Las entradas quedan comentadas hasta completar la reorganización del almacenami
 | Hacer | n8n, Nextcloud, Home Assistant proxy, scripts de ingesta/actualización, crawl4ai |
 | Pensar | Open WebUI, Qdrant, crawl4ai, Immich, datos persistentes de WebUI |
 | Proactivo | Frigate, cron de actualización/ingesta, scripts de backup, Immich auto-upload, monitorización GPU posible con ROCm |
-| Otros | Dashboard pendiente de consolidar, limpieza de caché pendiente de formalizar, voz soportada por ASR/TTS/Wyoming/Piper |
+| Otros | Dashboard Odín implementado en Home Assistant, limpieza de caché resuelta mediante nuevo chat y voz soportada por ASR/TTS/Wyoming/Piper |
 
 ## Riesgos y notas inmediatas
 

@@ -16,6 +16,8 @@ build/
 
 # Local environments and editor state
 .venv/
+__pycache__/
+*.pyc
 .DS_Store
 .idea/
 .vscode/

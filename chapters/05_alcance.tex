@@ -23,10 +23,10 @@ El alcance práctico del proyecto se organiza en cuatro bloques, derivados de la
   \item \textbf{Hacer}: guardar ideas, notas y archivos; crear recordatorios; consultar el estado del sistema; enviar comandos de reparación; almacenar recetas; controlar la domótica; crear temporizadores; reproducir música; y realizar búsquedas en Internet cuando sea necesario.
   \item \textbf{Pensar}: navegar entre ideas, notas y archivos; mantener una conversación coherente; revisar grabaciones; consultar historial de salud; y buscar fotografías mediante Immich u otro sistema equivalente.
   \item \textbf{Proactivo}: actualizar memoria con cada actividad relevante; avisar ante eventos de cámaras de seguridad; actualizar datos de salud; ejecutar rutinas de autoreparación; realizar copias de seguridad en dispositivo externo o nube; y subir automáticamente fotografías a Immich.
-  \item \textbf{Otros}: disponer de un botón de limpieza de caché, un dashboard de control global y una vía para hablar con Odín mediante voz.
+  \item \textbf{Experiencia}: disponer de un dashboard de control global que centralice el estado del ecosistema e interactuar con Odín mediante voz de forma natural y fluida.
 \end{itemize}
 
-Quedan explícitamente fuera del alcance principal la gestión avanzada de contraseñas y la autoclasificación de correos, ya que existen servicios especializados que cubren esas necesidades de forma suficiente para este TFG.
+La gestión avanzada de contraseñas y la autoclasificación de correos se contemplaron como objetivos en las fases iniciales de planificación, pero se descartaron con el tiempo al concluir que la aportación técnica real dentro del ecosistema Odín no justificaba la complejidad de integrarlas: el valor añadido respecto a lo ya construido habría sido marginal.
 
 \section{Requerimientos funcionales}
 \begin{itemize}
@@ -40,8 +40,7 @@ Quedan explícitamente fuera del alcance principal la gestión avanzada de contr
   \item \textbf{RF-08}: el sistema debe permitir acceso remoto cifrado sin exponer servicios críticos directamente a Internet.
   \item \textbf{RF-09}: el sistema debe mantener copias de seguridad de configuraciones y datos críticos.
   \item \textbf{RF-10}: el sistema debe ofrecer un panel de control para observar servicios, métricas y acciones principales.
-  \item \textbf{RF-11}: el sistema debe permitir limpiar cachés o estados temporales de forma controlada.
-  \item \textbf{RF-12}: el sistema debe gestionar fotografías mediante subida automática y búsqueda posterior.
+  \item \textbf{RF-11}: el sistema debe gestionar fotografías mediante subida automática y búsqueda posterior.
 \end{itemize}
 
 \section{Requerimientos no funcionales}
@@ -57,11 +56,30 @@ Quedan explícitamente fuera del alcance principal la gestión avanzada de contr
 \section{Limitaciones y fuera de alcance}
 El proyecto no pretende competir con asistentes comerciales en número de integraciones ni ofrecer un producto final listo para usuarios no técnicos. Tampoco se plantea entrenar un modelo fundacional propio. El foco está en integrar herramientas existentes, desplegarlas con criterio, medir su comportamiento y demostrar una arquitectura funcional y ampliable.
 
-\section{Casos de uso representativos}
-\begin{itemize}
-  \item Enviar una nota de voz desde el móvil para que Odín la transcriba, extraiga tareas y la archive.
-  \item Consultar documentos personales mediante lenguaje natural y recibir respuestas con contexto recuperado.
-  \item Activar una rutina domótica nocturna mediante una orden simple.
-  \item Recibir una alerta si la GPU, el almacenamiento o un servicio crítico presentan anomalías.
-  \item Guardar enlaces o fotografías como entrada universal para su posterior clasificación.
-\end{itemize}
+\section{Dispositivos opcionales y principio de integración}
+Odín no depende de un único mecanismo para incorporar dispositivos y automatizaciones. En cada caso se utiliza la opción más sencilla y fiable: Home Assistant para entidades domésticas y sensores, n8n para coordinar servicios mediante eventos y API, y scripts de Python o shell para tareas de sistema, mantenimiento y procesamiento de datos. La tabla siguiente resume los elementos físicos añadidos al prototipo y la función que desempeñan.
+
+\begin{table}[H]
+  \centering
+  \caption{Dispositivos opcionales y estado de integración}
+  \label{tab:dispositivos-opcionales}
+  \small
+  \renewcommand{\arraystretch}{1.18}
+  \begin{tabularx}{\textwidth}{
+    >{\raggedright\arraybackslash}p{0.24\textwidth}
+    >{\raggedright\arraybackslash}X
+    >{\raggedright\arraybackslash}p{0.14\textwidth}}
+    \toprule
+    Dispositivo & Finalidad dentro de Odín & Estado \\
+    \midrule
+    Sensor de presencia & Detección de ocupación y automatizaciones contextuales & Operativo \\
+    Dos enchufes inteligentes & Medición del consumo del servidor y de la Raspberry Pi & Operativos \\
+    Iluminación inteligente & Control por voz, escenas y automatizaciones domésticas & Operativa \\
+    Satélite de voz & Captura y reproducción de audio mediante el protocolo Wyoming & Operativo \\
+    Cámara IP & Vigilancia, detección de eventos y capturas mediante Frigate & Operativa \\
+    Unidad NVMe externa & Copias de seguridad cifradas y pruebas de restauración con Restic & Operativa \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+Las ampliaciones deben conservar cuatro propiedades: funcionamiento local, diagnóstico sencillo, credenciales aisladas y ausencia de una dependencia obligatoria de servicios externos. De este modo, el sistema puede crecer sin comprometer su privacidad ni introducir un punto único de fallo.

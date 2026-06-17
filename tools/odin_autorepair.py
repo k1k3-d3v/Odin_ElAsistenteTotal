@@ -502,9 +502,6 @@ def format_telegram_report(report: dict[str, Any], daily: bool) -> str:
     else:
         lines.append("• Sin actividad reciente detectada en logs de ingesta.")
 
-    lines += ["", "🔎 <b>Fuentes revisadas/visitadas</b>"]
-    for source in report.get("report_sources", []):
-        lines.append(f"• <code>{html_escape(source)}</code>")
     if processed:
         lines += ["", "🧠 <b>Fuentes de memoria procesadas recientemente</b>"]
         lines.extend(f"• <code>{html_escape(short_line(src, 150))}</code>" for src in processed[-12:])

@@ -56,7 +56,7 @@ Open WebUI recibio atencion especial. Antes del cambio, el contenedor montaba su
 
 Tambien se incorporo `ha-proxy` a Docker Compose. Antes era un contenedor creado manualmente, sin etiquetas Compose; ahora pertenece al stack `home-assistant-proxy`. Home Assistant no se ha levantado en Docker en Odín: sigue alojado en la Raspberry Pi 5, y `ha-proxy` actua solo como puente HTTP local.
 
-Para la monitorizacion visual se desplego Netdata en `/home/k1k3/odin/monitoring/netdata`. El servicio escucha en `http://192.168.86.105:19999` y puede integrarse en Home Assistant mediante una tarjeta Webpage/iframe, sin modificar la instalacion principal de HA.
+Para la monitorizacion visual se desplego Netdata en `/home/k1k3/odin/monitoring/netdata`. El servicio escucha en `http://192.168.1.133:19999` y puede integrarse en Home Assistant mediante una tarjeta Webpage/iframe, sin modificar la instalacion principal de HA.
 
 ## Estado observado
 

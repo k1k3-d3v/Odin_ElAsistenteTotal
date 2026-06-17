@@ -1,44 +1,37 @@
 \chapter{Integración de conocimientos}
 
-\section{Carácter interdisciplinar}
-Odín integra conocimientos de varias áreas del grado y de práctica profesional:
+\section{Competencias técnicas principales}
+Desde el inicio del proyecto se escogieron tres competencias de la mención de Tecnologías de la Información como las más representativas del trabajo desarrollado:
 \begin{itemize}
-  \item \textbf{Sistemas operativos}: servicios \texttt{systemd}, logs, procesos, cron, almacenamiento y permisos.
-  \item \textbf{Redes}: VPN, LAN, DNS, NAT, proxies y reducción de exposición pública.
-  \item \textbf{Bases de datos}: PostgreSQL, MariaDB, Redis/Valkey, SQLite y Qdrant.
-  \item \textbf{Ingeniería del software}: modularidad, versionado, documentación, separación de responsabilidades y pruebas.
-  \item \textbf{Seguridad}: gestión de credenciales, secretos, superficies de ataque y principio de mínimo privilegio.
-  \item \textbf{Inteligencia artificial}: LLM locales, embeddings, RAG, STT y TTS.
-  \item \textbf{Automatización y sistemas ciberfísicos}: Home Assistant, sensores, cámaras y acciones sobre el entorno.
+  \item \textbf{CTI1.3 (en profundidad)}: seleccionar, desplegar, integrar y gestionar sistemas de información que satisfagan las necesidades de la organización con los criterios de coste y calidad identificados.
+  \item \textbf{CTI2.3}: demostrar comprensión, aplicar y gestionar la garantía y la seguridad de los sistemas informáticos.
+  \item \textbf{CTI3.1}: concebir sistemas, aplicaciones y servicios basados en tecnologías de red, teniendo en cuenta Internet, web, multimedia, servicios interactivos y computación ubicua.
 \end{itemize}
 
-\section{Soluciones creativas}
-La creatividad del proyecto aparece en la forma de combinar tecnologías existentes para construir capacidades nuevas:
-\begin{itemize}
-  \item transformar Open WebUI en una interfaz operativa mediante herramientas personalizadas;
-  \item usar memoria documental privada para consultar notas y archivos mediante lenguaje natural;
-  \item enlazar el estado del servidor con Telegram y Home Assistant;
-  \item integrar fotos de Immich y cámaras de Frigate dentro de la conversación;
-  \item plantear autoreparabilidad conservadora basada en diagnóstico antes que en reinicios indiscriminados.
-\end{itemize}
+\section{CTI1.3: selección, despliegue e integración}
+Esta es la competencia más central del proyecto. Odín no consiste en instalar una única aplicación, sino en escoger servicios distintos, justificar por qué se usa cada uno y conseguir que funcionen como un sistema coherente. La elección de Nextcloud para documentos, Immich para fotos, Home Assistant para domótica, Qdrant para búsqueda vectorial, Open WebUI como interfaz y Ollama para inferencia local responde precisamente a ese trabajo de selección e integración. También entra aquí la reorganización de Docker, el control de costes, la comparación entre alternativas y la decisión de no reimplementar piezas que ya tienen soluciones maduras.
 
-\section{Ejemplos de integración}
+\section{CTI2.3: garantía y seguridad}
+La seguridad no aparece solo al final como una comprobación, sino en decisiones repartidas por todo el diseño. El acceso remoto se ha movido a Tailscale para evitar exposición innecesaria de puertos. Las configuraciones que se suben al repositorio se han saneado para no publicar secretos. La monitorización, las notificaciones por Telegram y la autoreparabilidad conservadora ayudan a detectar fallos sin convertir al asistente en un sistema que actúe sin control. También se ha tenido en cuenta la videovigilancia, la protección de datos y la necesidad de separar credenciales históricas en ficheros de entorno.
+
+\section{CTI3.1: redes, web y computación ubicua}
+Odín encaja de forma clara con esta competencia porque no es un sistema encerrado en una única máquina. Combina un servidor doméstico, una Raspberry Pi 5, clientes móviles, acceso remoto, web, mensajería, cámaras, voz y automatizaciones. El asistente puede recibir una petición desde el móvil, consultar documentos, accionar una entidad de Home Assistant o devolver una imagen de Immich en la conversación. Esa continuidad entre red, servicios web, multimedia y mundo físico es justamente la base de la computación ubicua que se planteaba desde el GEP.
+
+\section{Conocimientos integrados}
 \begin{table}[H]
   \centering
-  \caption{Ejemplos de integración de conocimientos}
-  \label{tab:integracion-conocimientos}
+  \caption{Relación entre competencias y evidencias del proyecto}
+  \label{tab:competencias-evidencias}
   \begin{tabularx}{\textwidth}{lX}
     \toprule
-    Caso & Disciplinas integradas \\
+    Competencia & Evidencias en Odín \\
     \midrule
-    Buscar documentos personales desde chat & IA, embeddings, bases de datos, almacenamiento y diseño de interfaces. \\
-    Consultar estado del sistema & Sistemas, monitorización, automatización y experiencia de usuario. \\
-    Controlar la habitación desde conversación & Domótica, redes, APIs y seguridad. \\
-    Acceder remotamente sin abrir puertos & Redes, seguridad y administración de sistemas. \\
-    Investigar voz sobre AMD & IA aplicada, hardware, rendimiento y evaluación experimental. \\
+    CTI1.3 & Selección de servicios, despliegue con Docker Compose, integración de herramientas, comparación de alternativas y control económico. \\
+    CTI2.3 & Tailscale, saneamiento de secretos, monitorización, avisos proactivos, autoreparabilidad y revisión de normativa. \\
+    CTI3.1 & Arquitectura distribuida, clientes web y móviles, Home Assistant, Frigate, Immich, Telegram y acceso remoto seguro. \\
     \bottomrule
   \end{tabularx}
 \end{table}
 
 \section{Valor académico}
-El proyecto no se limita a demostrar que varias herramientas pueden instalarse, sino que exige entender sus límites, contratos y dependencias. Esa integración de conocimiento es precisamente una de sus mayores aportaciones: la solución solo funciona cuando muchas decisiones correctas de áreas distintas se sostienen a la vez.
+El valor académico del proyecto está en que esas tres competencias no aparecen por separado. La solución solo funciona porque se combinan decisiones de sistemas, redes, seguridad, bases de datos, inteligencia artificial y automatización. Seleccionar bien una herramienta no basta si luego no se integra con las demás, si no se protege o si no puede utilizarse de forma natural desde distintos contextos. Esa mezcla es la que convierte Odín en un proyecto propio de la especialidad de Tecnologías de la Información.

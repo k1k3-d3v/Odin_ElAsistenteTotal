@@ -19,21 +19,81 @@ La validación se organizará por capas y por casos de uso. Primero se comprobar
     Domótica & Control mediante Home Assistant, HA Assist y HA Voice. & Correcto \\
     Temporizadores y música & Ejecución desde Home Assistant/HA Voice. & Correcto \\
     Cámaras y presencia & Frigate y automatización de presencia en Home Assistant. & Correcto \\
+    Recetas estructuradas & Creación e importación mediante Mealie y su proxy local. & Correcto \\
+    Transcripción de vídeo & Llamada real a \texttt{youtube-transcript-api} desde Open WebUI. & Correcto \\
     Monitorización & Netdata, JSON para HA y Telegram. & Correcto \\
+    Dashboard unificado & Cuatro vistas de Home Assistant y 24 entidades publicadas por la API. & Correcto \\
     Autoreparabilidad & \texttt{odin\_autorepair.py} en modo diagnóstico, alerta y reparación conservadora. & Correcto \\
-    Backup físico & Estrategia definida con futuro NVMe externo transportable. & Pendiente de ejecución \\
+    Backup físico & NVMe montado por UUID, repositorio Restic cifrado, copia integral, comprobación y restauración de muestra. & Cumplido \\
     \bottomrule
   \end{tabularx}
 \end{table}
 
 Como primera prueba de autoreparabilidad se validó el flujo de diagnóstico de Ollama. El servicio se encontraba inicialmente inactivo, se arrancó mediante systemd y se comprobó la disponibilidad de la API local consultando \texttt{/api/tags}. Posteriormente se ejecutó \texttt{odin\_autorepair.py --repair}; al detectar que Ollama estaba activo y la API respondía, la herramienta no realizó ninguna acción destructiva ni reinicios innecesarios.
 
+En una prueba posterior, una transcripción de vídeo produjo un prompt de 4265 tokens y Ollama registró truncado porque Open WebUI cargaba el modelo con un contexto de 4096. Se comprobó que \texttt{ministral-3:14b} admite hasta 262144 tokens y se configuró Odín con 16384. La validación de \texttt{/api/ps} mostró \texttt{context\_length: 16384}, y una generación limpia respondió correctamente. Con esta configuración el modelo ocupa aproximadamente 12,7 GB.
+
+\subsection{Comparativa de modelos locales}
+El 12 de junio se ejecutó un benchmark reproducible con \texttt{benchmark\_ollama.py}. Antes de cada modelo se descargaron los runners residentes; se fijaron 4096 tokens de contexto, temperatura cero y un mismo prompt que pedía no inventar el cifrado de un NVMe cuando el contexto no lo especificaba.
+
+\begin{table}[H]
+  \centering
+  \caption{Comparativa de modelos locales en Ollama}
+  \label{tab:benchmark-ollama}
+  \begin{tabularx}{\textwidth}{l r r r X}
+    \toprule
+    Modelo & VRAM & Frío & Caliente & Resultado cualitativo \\
+    \midrule
+    \texttt{qwen3.5:4b} & 5,94 GB & 6,12 s & 1,62 s & Correcto; reconoció que faltaba la información. \\
+    \texttt{llama3:latest} & 5,21 GB & 2,92 s & 0,94 s & Alucinó AES-XTS, AES-CBC y TCG Opal pese a la instrucción. \\
+    \texttt{ministral-3:14b} & 10,69 GB & 4,45 s & 1,24 s & Correcto y consistente; mejor equilibrio para Odín. \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+El Llama 3 básico alcanzó 100,37 tokens/s en caliente y fue el más rápido, pero también el único que completó una laguna con datos no proporcionados. Ministral generó 57,57 tokens/s y Qwen 63,10 tokens/s, ambos sin inventar. Por ello la selección no se basó únicamente en latencia: para memoria personal y ejecución de herramientas, la obediencia y la calibración resultan más importantes que unas décimas de segundo.
+
+Como prueba de límite se cargó \texttt{lfm2:latest}, un modelo MoE cuantizado de 23,8B, con el contexto real de 16384. La carga tardó 9,39 s y Ollama reservó 15,02 GB. \texttt{rocm-smi} registró 15,45 de 17,10 GB de VRAM, GPU al 100\% y 63 grados en el sensor de unión. Aunque llegó a responder, dejó solo 1,65 GB libres, insuficientes para convivir con otra carga relevante. Este resultado explica los runners terminados y justifica descartar el modelo mayor para uso diario.
+
+\subsection{Pruebas controladas de STT y TTS}
+Se sintetizó una locución española de 8,04 s y 31 palabras, con referencias a Nextcloud, Immich y el horario del backup. Faster-whisper y el ASR ONNX propio obtuvieron un WER normalizado del 6,5\%: ambos comprendieron la frase completa y cometieron únicamente dos sustituciones en los nombres propios de los servicios.
+
+\begin{table}[H]
+  \centering
+  \caption{Latencia medida en los servicios de voz}
+  \label{tab:benchmark-voz}
+  \begin{tabularx}{\textwidth}{l l r r X}
+    \toprule
+    Servicio & Tipo & Frío & Caliente & Resultado \\
+    \midrule
+    faster-whisper small & STT CPU & 9,13 s & 5,32 s & WER 6,5\%; maduro, pero más lento que el audio en frío. \\
+    Odin ASR ONNX & STT & 5,95 s & 0,55 s & WER 6,5\%; muy rápido una vez cargado. \\
+    Piper/Wyoming & TTS & 0,72 s & 0,13--0,20 s & Primer audio en 0,49 s en frío y unos 0,05 s en caliente. \\
+    PocketTTS & TTS & 2,73 s & 1,81--3,80 s & Viable, pero con mayor variabilidad. \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+Piper produjo unos 4,2 s de voz en bastante menos tiempo real, confirmando su idoneidad para Home Assistant. PocketTTS produjo entre 4,0 y 5,12 s de audio, pero su tiempo osciló más. En STT, los errores sugieren añadir \textit{hotwords} para nombres propios antes que sustituir todo el motor.
+
 También se validó el envío de informes a Telegram mediante \texttt{odin\_autorepair.py --daily}. El mensaje se generó reutilizando la configuración ya existente en los scripts de mantenimiento del servidor y sin versionar credenciales en el repositorio. Finalmente se probó el modo \texttt{--alert}, que detectó avisos vigentes relacionados con runners de Ollama, eventos AMDGPU y ocupación de disco, enviando alerta únicamente al cambiar la firma del problema.
 
 La ingesta de memoria se validó ejecutando manualmente el mismo wrapper que utiliza cron. La ejecución cargó el modelo \texttt{mxbai-embed-large}, procesó 35 archivos nuevos o modificados y finalizó con código de salida 0. Después se comprobó Qdrant: la colección \texttt{memoria\_ia} quedó en estado \texttt{green} con 3554 puntos. Esta prueba confirma que la automatización horaria no solo apunta a una ruta válida, sino que ejecuta el flujo real de actualización de memoria. La prueba también permitió detectar y corregir un problema de permisos en la caché de ingesta, creada anteriormente por \texttt{root}.
 
+Las tools corregidas se probaron a través de la API de chat de Open WebUI, no solo llamando a sus dependencias. La transcripción de YouTube mostró como fuente \texttt{get\_youtube\_transcript} y devolvió texto real. Home Assistant localizó \texttt{vacuum.d10\_plus\_gen\_2} al consultar ``aspirador'', frente a las coincidencias irrelevantes de la versión inicial. Frigate llamó a \texttt{ultima\_persona}, recuperó una detección reconocida y devolvió una captura JPEG de 1280 por 720 a través del proxy con CORS. Mealie creó una receta con ingredientes, pasos e imagen y las recetas de prueba se eliminaron tras la validación.
+
+El dashboard de Home Assistant se validó en tres niveles. La API confirmó que el panel \texttt{odin-panel} estaba registrado en modo \textit{storage}, visible en la barra lateral y con seis vistas. El exportador publicó las entidades de Odín para servicios, métricas agregadas y reservas de ampliación, incluyendo 17 servicios disponibles, 29 contenedores, cero contenedores problemáticos y 3565 puntos en Qdrant. La vista de salud añadió 25 entidades reales de Health Connect para actividad, sueño, constantes y composición corporal.
+
+Tras la revisión final, la configuración alcanzó seis vistas y 33 secciones. Se recorrieron programáticamente todas las entidades utilizadas por tarjetas, listas, calendario, gráficos, cámaras y controles y se compararon con los estados expuestos por Home Assistant. El resultado fue de cero referencias ausentes.
+
+La imagen panorámica se cargó en el almacenamiento de imágenes de Home Assistant y se verificó mediante una URL del mismo origen. También se comprobó que no quedara ninguna tarjeta \texttt{iframe}. Esta prueba elimina dos fallos observados: fondos inaccesibles desde algunos dispositivos y bloqueos del navegador al intentar conectar una sesión pública con recursos privados HTTP. El instalador actualizó el dashboard existente sin crear duplicados.
+
+\evidencefigure{evidence/13-dashboard-validacion.png}{Validación del dashboard Odín: entrada visible en la barra lateral de Home Assistant y vista Resumen cargada.}{fig:dashboard-odin-validacion}
+
+\evidencefigure{evidence/10-dashboard-monitor.png}{Vista Monitor nativa utilizada para validar métricas operativas, discos, consumo y acceso opcional a Netdata.}{fig:dashboard-odin-netdata}
+
 \section{Pruebas no funcionales}
-Las pruebas no funcionales se centraron en estabilidad, mantenibilidad, consumo de recursos y seguridad operativa. No todas las métricas están cerradas con el mismo nivel de precisión: el consumo eléctrico real se medirá posteriormente con un medidor físico, mientras que estado de contenedores, uso de disco, temperatura GPU y salud de endpoints sí se han observado directamente.
+Las pruebas no funcionales se centraron en estabilidad, mantenibilidad, consumo de recursos y seguridad operativa. El consumo eléctrico se midió mediante dos enchufes inteligentes integrados en Home Assistant; su metodología, proyección económica e interpretación ambiental se desarrollan en el capítulo de sostenibilidad. En este capítulo se conserva únicamente su validación como requisito medido.
 
 \begin{table}[H]
   \centering
@@ -43,7 +103,7 @@ Las pruebas no funcionales se centraron en estabilidad, mantenibilidad, consumo 
     \toprule
     Métrica & Valor o evidencia & Estado \\
     \midrule
-    Contenedores activos & 23 contenedores, todos asociados a Docker Compose. & Medido \\
+    Contenedores activos & 29 contenedores observados el 9 de junio, incluidos Mealie y cuatro proxies especializados. & Medido \\
     Contenedores no sanos & 0 en la validación del exportador. & Medido \\
     Proyectos Compose & 7 proyectos activos. & Medido \\
     Qdrant & Colección \texttt{memoria\_ia} en estado operativo con 3554 puntos. & Medido \\
@@ -51,23 +111,27 @@ Las pruebas no funcionales se centraron en estabilidad, mantenibilidad, consumo 
     Immich & Biblioteca migrada con 202 GB y 77.666 ficheros. & Medido \\
     GPU & Temperaturas observadas en torno a 38--40 grados mediante \texttt{rocm-smi}. & Medido \\
     Netdata & Endpoint local disponible y contenedor en \texttt{healthy}. & Medido \\
-    Consumo eléctrico & Se medirá con enchufe medidor externo. & Pendiente \\
-    Coste energético & Se calculará a partir del consumo real medido. & Pendiente \\
-    Backup NVMe & Estrategia definida; falta ejecución y prueba de restauración. & Pendiente \\
+    Consumo eléctrico & Medido mediante dos enchufes inteligentes con lectura de potencia y energía. & Medido \\
+    Coste energético & Calculado a partir de las tarifas eléctricas y consumos reales. & Medido \\
+    Backup & Repositorio Restic cifrado en NVMe; infraestructura, Nextcloud e Immich incluidos; comprobación y restauración correctas. & Medido \\
     \bottomrule
   \end{tabularx}
 \end{table}
 
+La prueba confirmó que Home Assistant recibe potencia instantánea y energía acumulada de ambos enchufes, conserva histórico y permite calcular costes. Los resultados detallados se recogen en las Tablas~\ref{tab:consumo-observado}--\ref{tab:sensibilidad-coste}.
+
 La prueba también registró señales útiles para evaluar estabilidad: uso de GPU, porcentaje de VRAM asignada, temperaturas, estado de contenedores relevantes y ocupación de disco. En la ejecución observada, \texttt{rocm-smi} informó temperaturas en torno a 38--40 grados y ausencia de procesos KFD activos tras el arranque del servicio, mientras que Docker no presentaba contenedores críticos en estado problemático.
 
-La verificación del cron permitió comprobar primero que las rutas antiguas ya no estaban presentes en la configuración activa. Posteriormente, durante la reorganización del almacenamiento, el cron se pausó por completo de forma reversible. Esta prueba valida una decisión operativa importante: cuando el sistema está cambiando de estructura, es preferible detener automatizaciones recurrentes antes que permitir que ejecuten ingestas, backups o reportes sobre rutas que pueden quedar obsoletas en mitad de una migración. Los logs previos se conservan como evidencia, pero la configuración activa queda en estado controlado.
+La verificación del cron permitió comprobar primero que las rutas antiguas ya no estaban presentes en la configuración activa. Durante la reorganización del almacenamiento, el cron se pausó de forma reversible. Tras identificar el NVMe por UUID, montar el destino y validar Restic, la tarea de backup se reactivó a las 04:00. Esta secuencia evita ejecutar automatizaciones sobre rutas transitorias y demuestra una activación controlada.
+
+La prueba específica de backup comenzó con una auditoría del mecanismo histórico \texttt{tar.gz}, que permitió detectar exclusiones obsoletas y validar una restauración por hash. La solución definitiva se simplificó con Restic. El NVMe Crucial de 1 TB quedó identificado por UUID y montado en \texttt{/mnt/backup\_nvme}; el repositorio se inicializó cifrado y la clave de recuperación se copió fuera del servidor con permisos \texttt{0600}. El script genera un volcado consistente de MariaDB, copia la infraestructura y la biblioteca de Immich, aplica retención y ejecuta \texttt{restic check}. Finalmente se restauró un fichero en un directorio temporal y se comparó su hash con el original.
 
 Como prueba adicional de operación se migró la ubicación de la biblioteca de Immich hacia \texttt{/mnt/almacen}. La validación comparó tamaño y número de ficheros entre origen y destino, actualizó \texttt{UPLOAD\_LOCATION}, levantó el stack de Immich y comprobó tanto el estado de los contenedores como la respuesta de la API local. El resultado fue positivo: origen y destino quedaron con 202 GB y 77.666 ficheros, los contenedores quedaron en estado \texttt{healthy} y la API local respondió correctamente. Esta prueba no solo mide que el servicio arranque, sino que demuestra una mejora de mantenibilidad: los datos multimedia dejan de competir directamente con el espacio del sistema raíz.
 
 También se revisó el estado de Docker Compose. Los stacks \texttt{odin-master}, \texttt{immich}, \texttt{audio}, \texttt{frigate}, \texttt{home-assistant-proxy}, \texttt{netdata} y \texttt{pocket-tts} aparecieron activos. Tras mover el stack principal al árbol de Odín, se comprobaron endpoints de Open WebUI, Qdrant, Nextcloud, n8n, Immich, Netdata y Stirling PDF. No se eliminaron volúmenes ni carpetas históricas, ya que podían contener datos persistentes, modelos o evidencias útiles de experimentación.
 
 \subsection{Validación completa del despliegue Docker}
-La validación de Docker se planteó en tres niveles: estado de Compose, estado de contenedores y comprobación funcional de endpoints. El primer nivel confirmó que todos los servicios activos pertenecían a un proyecto Compose y que ya no quedaban contenedores manuales sin etiquetar. Este punto es importante porque un contenedor creado con \texttt{docker run} puede seguir funcionando, pero queda fuera de la documentación reproducible del sistema. En Odín, la situación validada fue de 23 contenedores activos, 0 contenedores sin Compose, 0 contenedores en estado problemático y 7 proyectos Compose.
+La validación de Docker se planteó en tres niveles: estado de Compose, estado de contenedores y comprobación funcional de endpoints. El primer nivel confirmó que todos los servicios activos pertenecían a un proyecto Compose y que ya no quedaban contenedores manuales sin etiquetar. Este punto es importante porque un contenedor creado con \texttt{docker run} puede seguir funcionando, pero queda fuera de la documentación reproducible del sistema. En la validación inicial de mayo se observaron 23 contenedores activos, 0 contenedores sin Compose, 0 contenedores en estado problemático y 7 proyectos Compose. La revisión del 9 de junio registró 29 contenedores tras incorporar Mealie, Stirling PDF y los proxies especializados.
 
 \begin{table}[H]
   \centering
@@ -109,30 +173,30 @@ El segundo nivel revisó servicios visibles mediante peticiones HTTP locales. Op
   \end{tabularx}
 \end{table}
 
-El tercer nivel consistió en generar un estado agregable por Home Assistant mediante \texttt{odin\_ha\_status.py}. El exportador escribe \nolinkurl{/home/k1k3/odin/public/ha_status.json} y se publica con \texttt{odin-health-http.service}. El JSON incluye estado global, número de contenedores, contenedores sin Compose, contenedores no sanos, proyectos Compose, estado de endpoints, uso de disco, puntos de Qdrant y resumen de autoreparación. La última validación devolvió \texttt{overall: ok}, 23 contenedores, 0 sin Compose, 0 no sanos, 7 proyectos Compose y \texttt{netdata: 200}. Con esto, Home Assistant puede consumir una señal compacta para automatizaciones mientras Netdata queda disponible como panel humano.
+El tercer nivel consistió en generar un estado agregable por Home Assistant mediante \texttt{odin\_ha\_status.py}. El exportador escribe \nolinkurl{/home/k1k3/odin/public/ha_status.json} y se publica con \texttt{odin-health-http.service}. El JSON incluye estado global, número de contenedores, contenedores sin Compose, contenedores no sanos, proyectos Compose, estado de endpoints, uso de disco, puntos de Qdrant y resumen de autoreparación. La validación de mayo devolvió \texttt{overall: ok}, 23 contenedores, 0 sin Compose, 0 no sanos, 7 proyectos Compose y \texttt{netdata: 200}. Con esto, Home Assistant puede consumir una señal compacta para automatizaciones mientras Netdata queda disponible como panel humano.
 
 Esta prueba enlaza directamente con los requisitos del proyecto: Odín debe ser capaz de hacer, pensar y avisar. Docker Compose aporta reproducibilidad; los healthchecks y endpoints aportan evidencia de funcionamiento; el JSON de estado permite automatización; Netdata aporta supervisión visual; y Telegram cubre avisos proactivos cuando aparece una anomalía. La monitorización no queda como una pieza decorativa, sino como parte del comportamiento del asistente.
 
-\pendingfigure{Dashboard de Netdata mostrando métricas del servidor Odín}{fig:netdata-dashboard}
+\evidencefigure{evidence/15-netdata.png}{Dashboard de Netdata mostrando CPU, memoria, red, disco y presión del servidor Odín durante una ventana de actividad.}{fig:netdata-dashboard}
 
-\pendingfigure{Sensor o panel de Home Assistant con el estado agregado de Odín}{fig:home-assistant-odin-status}
+\evidencefigure{evidence/10-dashboard-monitor.png}{Panel de Home Assistant con el estado agregado de Odín, contenedores, avisos y ocupación de discos.}{fig:home-assistant-odin-status}
 
-\pendingfigure{Alerta proactiva enviada por Telegram o Home Assistant ante un evento relevante}{fig:alerta-proactiva}
+\evidencefigure{evidence/17-alerta-proactiva.jpg}{Informe proactivo de Odín enviado por Telegram con estado operativo, métricas y anomalías detectadas.}{fig:alerta-proactiva}
 
 \section{Resultados obtenidos}
 Los resultados obtenidos muestran que Odín ha superado la fase de prototipo conceptual. El sistema integra conversación, memoria documental, fotos, domótica, cámaras, monitorización, acceso remoto, alertas y autoreparabilidad. La evidencia principal no es una única prueba aislada, sino la convivencia de múltiples servicios funcionando de forma coordinada.
 
 En la capa de interacción, Open WebUI actúa como interfaz principal y las tools permiten ejecutar acciones reales. En la capa de memoria, Nextcloud y Qdrant permiten guardar y recuperar información. En la capa visual, Immich permite trabajar con fotos y Frigate con cámaras. En la capa domótica, Home Assistant y HA Voice resuelven control de dispositivos, temporizadores, música y presencia. En la capa operativa, Netdata, Telegram y el exportador JSON ofrecen visibilidad sobre el estado del sistema.
 
-Las capturas finales se incorporarán como evidencia visual: panel de Open WebUI, listado o uso de tools, búsqueda de foto en Immich, consulta de memoria, dashboard de Netdata, automatización de Home Assistant, estado Docker y notificación de Telegram/HA. Estas capturas no son necesarias para demostrar que el sistema existe, pero sí ayudan a que la memoria sea más comprensible y verificable para el tribunal.
+Las capturas incorporadas aportan evidencia visual del panel de Open WebUI, las tools, la búsqueda de fotos en Immich, la consulta de memoria, Mealie, el dashboard de Netdata, Home Assistant, Frigate, consumo eléctrico y las notificaciones proactivas. Junto con las pruebas de API y las tablas de validación, permiten comprobar el sistema desde la perspectiva técnica y desde la experiencia de uso.
 
-\pendingfigure{Ejemplo de consulta de memoria privada con resultados procedentes de Nextcloud y Qdrant}{fig:consulta-memoria}
+\evidencefigure{evidence/18-consulta-memoria.png}{Consulta de memoria privada sobre documentación académica almacenada en Nextcloud y recuperada desde Odín.}{fig:consulta-memoria}
 
 \section{Discusion}
 El proyecto confirma que un asistente personal privado es viable, pero también muestra que el coste principal no es solo computacional. El reto real está en la integración: cada servicio funciona de una forma distinta, requiere credenciales, puertos, persistencia, logs, actualizaciones y decisiones de seguridad. Odín funciona porque no intenta resolver todo con un único modelo, sino combinando herramientas especializadas.
 
 Lo que mejor ha funcionado es la arquitectura modular. Docker Compose permite aislar servicios, Home Assistant aporta una base domótica estable, Open WebUI ofrece interfaz y extensibilidad, Qdrant habilita memoria semántica, Immich cubre recuerdos visuales y n8n facilita automatizaciones. También ha funcionado bien la idea de monitorización proactiva: Telegram, Netdata y el exportador para Home Assistant convierten el mantenimiento en parte del propio asistente.
 
-Lo más difícil ha sido la voz y la aceleración con AMD. La búsqueda de un TTS realista, rápido y compatible con ROCm consumió mucho esfuerzo y no produjo una solución perfecta. Esta limitación se acepta dentro del alcance: Odín tiene voz funcional mediante HA Voice/Piper, pero no una voz final ideal. Otro compromiso importante es el backup: la decisión de usar un NVMe externo físico es adecuada para soberanía y transporte, pero requiere todavía procedimiento y prueba de restauración.
+Lo más difícil ha sido la voz y la aceleración con AMD. La búsqueda de un TTS realista, rápido y compatible con ROCm consumió mucho esfuerzo y no produjo una solución perfecta. Las medidas confirman que Piper sí cumple la latencia interactiva, aunque no sea la voz más natural. En backup, el montaje persistente, el cifrado del repositorio, la copia de datos masivos y la restauración quedan validados; como mejora futura permanece una segunda copia física o remota para aproximarse a una política 3-2-1.
 
 La discusión final es que Odín no debe evaluarse como una aplicación cerrada, sino como una infraestructura personal integrada. Su valor está en que permite hacer cosas reales: guardar, buscar, recordar, controlar, avisar, monitorizar y mantener. Precisamente por eso la memoria debe mostrar no solo el resultado, sino las decisiones que lo hacen sostenible.

@@ -188,8 +188,8 @@ Se actualizó el crontab a rutas reales dentro de `/home/k1k3/odin/scripts/` y s
 ```cron
 */30 * * * * /home/k1k3/env/bin/python3 /home/k1k3/odin/scripts/update_odin.py >> /home/k1k3/odin_sync.log 2>&1
 0 * * * * /home/k1k3/odin/scripts/lanzar_ingesta.sh >> /home/k1k3/odin_sync.log 2>&1
-*/15 * * * * /home/k1k3/odin/scripts/odin_autorepair.py --repair --alert >> /home/k1k3/odin/logs/autorepair/cron.log 2>&1
-0 9 * * * /home/k1k3/odin/scripts/odin_autorepair.py --daily >> /home/k1k3/odin/logs/autorepair/cron.log 2>&1
+*/15 * * * * /home/k1k3/odin/scripts/odin_autorepair.py --repair >> /home/k1k3/odin/logs/autorepair/cron.log 2>&1
+45 7 * * * /home/k1k3/odin/scripts/odin_autorepair.py --daily >> /home/k1k3/odin/logs/autorepair/cron.log 2>&1
 ```
 
 Antes de modificar el cron se guardó una copia en `/home/k1k3/odin/logs/autorepair/`.

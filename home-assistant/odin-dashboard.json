@@ -1,0 +1,1549 @@
+{
+  "title": "Odín",
+  "views": [
+    {
+      "title": "Resumen",
+      "path": "resumen",
+      "icon": "mdi:view-dashboard",
+      "type": "sections",
+      "max_columns": 4,
+      "sections": [
+        {
+          "type": "grid",
+          "column_span": 4,
+          "cards": [
+            {
+              "type": "picture-elements",
+              "image": "/api/image/serve/75aefc42573204d6c5ef4b32cc07f60f/original",
+              "dark_mode_image": "/api/image/serve/75aefc42573204d6c5ef4b32cc07f60f/original",
+              "grid_options": {
+                "columns": "full",
+                "rows": 7
+              },
+              "elements": [
+                {
+                  "type": "state-label",
+                  "entity": "sensor.odin_estado",
+                  "prefix": "ODÍN  ·  ",
+                  "style": {
+                    "left": "7%",
+                    "top": "20%",
+                    "transform": "none",
+                    "color": "#f4f4f2",
+                    "font-size": "clamp(24px, 3vw, 40px)",
+                    "font-weight": "600",
+                    "font-family": "var(--primary-font-family)",
+                    "letter-spacing": "0",
+                    "text-transform": "uppercase",
+                    "text-shadow": "0 2px 14px rgba(0,0,0,.8)"
+                  }
+                },
+                {
+                  "type": "state-label",
+                  "entity": "sensor.odin_contenedores",
+                  "prefix": "SERVICIOS ACTIVOS  ·  ",
+                  "style": {
+                    "left": "7.2%",
+                    "top": "61%",
+                    "transform": "none",
+                    "color": "#deded8",
+                    "font-size": "clamp(12px, 1.4vw, 18px)",
+                    "font-weight": "500",
+                    "letter-spacing": "0",
+                    "text-shadow": "0 2px 10px rgba(0,0,0,.9)"
+                  }
+                },
+                {
+                  "type": "state-label",
+                  "entity": "sensor.odin_qdrant_puntos",
+                  "prefix": "MEMORIA  ·  ",
+                  "suffix": " PUNTOS",
+                  "style": {
+                    "left": "7.2%",
+                    "top": "69%",
+                    "transform": "none",
+                    "color": "#deded8",
+                    "font-size": "clamp(12px, 1.4vw, 18px)",
+                    "font-weight": "500",
+                    "letter-spacing": "0",
+                    "text-shadow": "0 2px 10px rgba(0,0,0,.9)"
+                  }
+                },
+                {
+                  "type": "state-label",
+                  "entity": "sensor.odin_avisos",
+                  "prefix": "AVISOS  ·  ",
+                  "style": {
+                    "left": "7.2%",
+                    "top": "77%",
+                    "transform": "none",
+                    "color": "#deded8",
+                    "font-size": "clamp(12px, 1.4vw, 18px)",
+                    "font-weight": "500",
+                    "letter-spacing": "0",
+                    "text-shadow": "0 2px 10px rgba(0,0,0,.9)"
+                  }
+                },
+                {
+                  "type": "state-icon",
+                  "entity": "binary_sensor.odin_open_webui",
+                  "title": "Abrir Open WebUI",
+                  "tap_action": {
+                    "action": "url",
+                    "url_path": "http://192.168.1.133:3000"
+                  },
+                  "style": {
+                    "left": "90%",
+                    "top": "18%",
+                    "color": "#f2c879",
+                    "--mdc-icon-size": "34px"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "grid",
+          "column_span": 1,
+          "cards": [
+            {
+              "type": "heading",
+              "heading": "Tiempo en casa",
+              "icon": "mdi:weather-partly-cloudy"
+            },
+            {
+              "show_current": true,
+              "show_forecast": true,
+              "type": "weather-forecast",
+              "entity": "weather.forecast_casa",
+              "forecast_type": "daily",
+              "forecast_slots": 5,
+              "grid_options": {
+                "columns": "full"
+              }
+            }
+          ]
+        },
+        {
+          "type": "grid",
+          "cards": [
+            {
+              "type": "heading",
+              "heading": "Biblioteca personal",
+              "icon": "mdi:bookshelf"
+            },
+            {
+              "type": "horizontal-stack",
+              "cards": [
+                {
+                  "type": "button",
+                  "name": "Fotos",
+                  "icon": "mdi:image-multiple",
+                  "tap_action": {
+                    "action": "url",
+                    "url_path": "http://192.168.1.133:2283"
+                  }
+                },
+                {
+                  "type": "button",
+                  "name": "Archivos",
+                  "icon": "mdi:cloud",
+                  "tap_action": {
+                    "action": "url",
+                    "url_path": "http://192.168.1.133:8082"
+                  }
+                },
+                {
+                  "type": "button",
+                  "name": "Recetas",
+                  "icon": "mdi:food-apple",
+                  "tap_action": {
+                    "action": "url",
+                    "url_path": "http://192.168.1.133:9925"
+                  }
+                }
+              ],
+              "grid_options": {
+                "columns": "full"
+              }
+            },
+            {
+              "type": "entities",
+              "state_color": true,
+              "entities": [
+                "binary_sensor.odin_immich",
+                "binary_sensor.odin_nextcloud",
+                "binary_sensor.odin_mealie"
+              ],
+              "grid_options": {
+                "columns": "full"
+              }
+            }
+          ],
+          "column_span": 1.7
+        },
+        {
+          "type": "grid",
+          "cards": [
+            {
+              "type": "heading",
+              "heading": "Salud ahora",
+              "icon": "mdi:heart-pulse"
+            },
+            {
+              "type": "markdown",
+              "content": "### {{ states('sensor.pixel_9_pro_steps_sensor') | int(0) }} pasos\n\n**{{ states('sensor.pixel_9_pro_heart_rate') | round(0) }} bpm** de pulso  ·  **{{ states('sensor.pixel_9_pro_oxygen_saturation') | round(0) }} %** de oxígeno\n\n**{{ (states('sensor.pixel_9_pro_weight') | float(0) / 1000) | round(1) }} kg**  ·  **{{ states('sensor.pixel_9_pro_body_fat') | round(1) }} %** grasa",
+              "grid_options": {
+                "rows": 1,
+                "columns": 12
+              }
+            },
+            {
+              "type": "horizontal-stack",
+              "cards": [
+                {
+                  "type": "button",
+                  "name": "Abrir salud",
+                  "icon": "mdi:heart-pulse",
+                  "tap_action": {
+                    "action": "navigate",
+                    "navigation_path": "/odin-panel/salud"
+                  }
+                },
+                {
+                  "type": "button",
+                  "name": "Hablar con Odín",
+                  "icon": "mdi:chat-processing",
+                  "tap_action": {
+                    "action": "url",
+                    "url_path": "http://192.168.1.133:3000"
+                  }
+                }
+              ],
+              "grid_options": {
+                "rows": "auto",
+                "columns": 8
+              }
+            },
+            {
+              "show_name": false,
+              "show_icon": true,
+              "type": "button",
+              "entity": "sensor.pixel_9_pro_weight",
+              "grid_options": {
+                "columns": 4,
+                "rows": "auto"
+              },
+              "show_state": true
+            },
+            {
+              "type": "sensor",
+              "entity": "sensor.ow3_battery_level",
+              "graph": "line",
+              "grid_options": {
+                "columns": 12,
+                "rows": "auto"
+              }
+            }
+          ]
+        },
+        {
+          "type": "grid",
+          "cards": [
+            {
+              "type": "heading",
+              "heading": "Explorar Odín",
+              "icon": "mdi:compass-outline"
+            },
+            {
+              "type": "horizontal-stack",
+              "cards": [
+                {
+                  "type": "button",
+                  "name": "Servicios",
+                  "icon": "mdi:apps",
+                  "tap_action": {
+                    "action": "navigate",
+                    "navigation_path": "/odin-panel/servicios"
+                  }
+                },
+                {
+                  "type": "button",
+                  "name": "Casa",
+                  "icon": "mdi:home-automation",
+                  "tap_action": {
+                    "action": "navigate",
+                    "navigation_path": "/odin-panel/casa"
+                  }
+                },
+                {
+                  "type": "button",
+                  "name": "Salud",
+                  "icon": "mdi:heart-pulse",
+                  "tap_action": {
+                    "action": "navigate",
+                    "navigation_path": "/odin-panel/salud"
+                  }
+                },
+                {
+                  "type": "button",
+                  "name": "Monitor",
+                  "icon": "mdi:chart-box",
+                  "tap_action": {
+                    "action": "navigate",
+                    "navigation_path": "/odin-panel/monitor"
+                  }
+                },
+                {
+                  "type": "button",
+                  "name": "Listas",
+                  "icon": "mdi:format-list-checks",
+                  "tap_action": {
+                    "action": "navigate",
+                    "navigation_path": "/odin-panel/organizacion"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "markdown",
+              "content": "### {{ 'Todo bajo control' if is_state('sensor.odin_estado', 'ok') else 'Odín necesita atención' }}\n\nEl núcleo mantiene **{{ states('sensor.odin_contenedores') }} contenedores**, **{{ states('sensor.odin_contenedores_con_problemas') }} con problemas** y **{{ states('sensor.odin_avisos') }} avisos** activos."
+            }
+          ]
+        },
+        {
+          "type": "grid",
+          "cards": [
+            {
+              "type": "heading",
+              "heading": "Estado operativo",
+              "icon": "mdi:pulse",
+              "grid_options": {
+                "rows": "auto",
+                "columns": "full"
+              }
+            },
+            {
+              "type": "tile",
+              "entity": "sensor.odin_estado",
+              "name": "Estado general",
+              "grid_options": {
+                "columns": 6,
+                "rows": "auto"
+              }
+            },
+            {
+              "type": "tile",
+              "entity": "sensor.odin_disco_raiz",
+              "name": "Disco raíz",
+              "grid_options": {
+                "rows": "auto"
+              }
+            },
+            {
+              "type": "tile",
+              "entity": "sensor.odin_disco_almacen",
+              "name": "Almacén",
+              "grid_options": {
+                "columns": 6,
+                "rows": "auto"
+              }
+            },
+            {
+              "type": "tile",
+              "entity": "sensor.odin_qdrant_puntos",
+              "name": "Memoria vectorial"
+            }
+          ]
+        },
+        {
+          "type": "grid",
+          "column_span": 1,
+          "cards": [
+            {
+              "type": "heading",
+              "heading": "Núcleo de inteligencia",
+              "icon": "mdi:brain"
+            },
+            {
+              "type": "horizontal-stack",
+              "cards": [
+                {
+                  "type": "tile",
+                  "entity": "binary_sensor.odin_open_webui",
+                  "name": "Open WebUI",
+                  "color": "green"
+                },
+                {
+                  "type": "tile",
+                  "entity": "binary_sensor.odin_ollama",
+                  "name": "Ollama",
+                  "color": "green"
+                },
+                {
+                  "type": "tile",
+                  "entity": "binary_sensor.odin_qdrant",
+                  "name": "Qdrant",
+                  "color": "green"
+                },
+                {
+                  "type": "tile",
+                  "entity": "binary_sensor.odin_n8n",
+                  "name": "n8n",
+                  "color": "green"
+                },
+                {
+                  "type": "tile",
+                  "entity": "binary_sensor.odin_frigate",
+                  "name": "Frigate",
+                  "color": "green"
+                },
+                {
+                  "type": "tile",
+                  "entity": "binary_sensor.odin_netdata",
+                  "name": "Netdata",
+                  "color": "green"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "grid",
+          "cards": [
+            {
+              "type": "custom:mass-player-card",
+              "entities": [
+                "media_player.living_room_tv_2"
+              ],
+              "grid_options": {
+                "columns": "full",
+                "rows": 1
+              },
+              "default_section": "music_player",
+              "download_local": true,
+              "expressive_scheme": "expressive"
+            },
+            {
+              "type": "heading",
+              "heading": "Nueva sección",
+              "grid_options": {
+                "rows": "auto",
+                "columns": "full"
+              }
+            }
+          ],
+          "column_span": 4
+        }
+      ],
+      "header": {
+        "card": {
+          "type": "markdown",
+          "text_only": true,
+          "content": "# Hola {{ user }} \nBienvenido a Asgard"
+        }
+      }
+    },
+    {
+      "title": "Salud",
+      "path": "salud",
+      "icon": "mdi:heart-pulse",
+      "type": "sections",
+      "max_columns": 4,
+      "sections": [
+        {
+          "type": "grid",
+          "column_span": 4,
+          "cards": [
+            {
+              "type": "picture-elements",
+              "image": "/api/image/serve/bd4a7ed2dbcd85ab6f7606308dac8abf/original",
+              "dark_mode_image": "/api/image/serve/bd4a7ed2dbcd85ab6f7606308dac8abf/original",
+              "grid_options": {
+                "columns": "full",
+                "rows": "auto"
+              },
+              "elements": [
+                {
+                  "type": "state-label",
+                  "entity": "sensor.pixel_9_pro_heart_rate",
+                  "prefix": "SALUD  ·  ",
+                  "suffix": " BPM",
+                  "style": {
+                    "left": "6%",
+                    "top": "28%",
+                    "transform": "none",
+                    "color": "#f4f4f2",
+                    "font-size": "clamp(24px, 3vw, 40px)",
+                    "font-weight": "600",
+                    "font-family": "var(--primary-font-family)",
+                    "letter-spacing": "0",
+                    "text-shadow": "0 2px 14px rgba(0,0,0,.9)"
+                  }
+                },
+                {
+                  "type": "state-label",
+                  "entity": "sensor.pixel_9_pro_steps_sensor",
+                  "prefix": "PASOS  ·  ",
+                  "style": {
+                    "left": "6.2%",
+                    "top": "67%",
+                    "transform": "none",
+                    "color": "#deded8",
+                    "font-size": "clamp(12px, 1.4vw, 18px)",
+                    "font-weight": "500",
+                    "letter-spacing": "0",
+                    "text-shadow": "0 2px 10px rgba(0,0,0,.9)"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "grid",
+          "cards": [
+            {
+              "type": "heading",
+              "heading": "Resumen de hoy",
+              "icon": "mdi:heart-pulse"
+            },
+            {
+              "type": "markdown",
+              "content": "## Estado actual\n\n**{{ states('sensor.pixel_9_pro_steps_sensor') | int(0) }}** pasos  ·  **{{ states('sensor.pixel_9_pro_heart_rate') | round(0) }}** bpm  ·  **{{ states('sensor.pixel_9_pro_oxygen_saturation') | round(0) }} %** SpO₂\n\n**{{ (states('sensor.pixel_9_pro_weight') | float(0) / 1000) | round(1) }} kg**  ·  **{{ states('sensor.pixel_9_pro_body_fat') | round(1) }} %** grasa  ·  **{{ states('sensor.pixel_9_pro_total_calories_burned') | round(0) }} kcal**\n\nActividad detectada: **{{ states('sensor.pixel_9_pro_detected_activity') }}**",
+              "grid_options": {
+                "rows": "auto",
+                "columns": 6
+              }
+            },
+            {
+              "type": "gauge",
+              "entity": "sensor.pixel_9_pro_steps_sensor",
+              "name": "Pasos",
+              "min": 0,
+              "max": 10000,
+              "severity": {
+                "red": 0,
+                "yellow": 4000,
+                "green": 8000
+              },
+              "grid_options": {
+                "columns": 9,
+                "rows": "auto"
+              }
+            },
+            {
+              "type": "gauge",
+              "entity": "sensor.pixel_9_pro_total_calories_burned",
+              "name": "Calorías totales",
+              "min": 0,
+              "max": 2500,
+              "severity": {
+                "red": 0,
+                "yellow": 1000,
+                "green": 1800
+              },
+              "grid_options": {
+                "columns": 9,
+                "rows": "auto"
+              }
+            }
+          ],
+          "column_span": 4
+        },
+        {
+          "type": "grid",
+          "cards": [
+            {
+              "type": "heading",
+              "heading": "Corazón y respiración",
+              "icon": "mdi:heart-pulse"
+            },
+            {
+              "type": "tile",
+              "entity": "sensor.pixel_9_pro_heart_rate",
+              "name": "Frecuencia cardíaca"
+            },
+            {
+              "type": "tile",
+              "entity": "sensor.pixel_9_pro_resting_heart_rate",
+              "name": "Pulso en reposo"
+            },
+            {
+              "type": "gauge",
+              "entity": "sensor.pixel_9_pro_oxygen_saturation",
+              "name": "Saturación de oxígeno",
+              "min": 80,
+              "max": 100,
+              "severity": {
+                "red": 80,
+                "yellow": 92,
+                "green": 95
+              }
+            },
+            {
+              "type": "history-graph",
+              "title": "Evolución corporal",
+              "hours_to_show": 168,
+              "entities": [
+                "sensor.pixel_9_pro_weight",
+                "sensor.pixel_9_pro_body_fat"
+              ]
+            },
+            {
+              "type": "markdown",
+              "content": "## Última medición\n\nPeso: **{{ (states('sensor.pixel_9_pro_weight') | float(0) / 1000) | round(2) }} kg**\n\nGrasa corporal: **{{ states('sensor.pixel_9_pro_body_fat') | round(1) }} %**"
+            },
+            {
+              "type": "heading",
+              "heading": "Composición corporal",
+              "icon": "mdi:scale-bathroom"
+            },
+            {
+              "type": "entities",
+              "state_color": true,
+              "entities": [
+                "sensor.pixel_9_pro_weight",
+                "sensor.pixel_9_pro_body_fat",
+                "sensor.pixel_9_pro_lean_body_mass",
+                "sensor.pixel_9_pro_body_water_mass",
+                "sensor.pixel_9_pro_daily_hydration"
+              ]
+            },
+            {
+              "type": "tile",
+              "entity": "sensor.pixel_9_pro_bone_mass"
+            },
+            {
+              "type": "tile",
+              "entity": "sensor.pixel_9_pro_height"
+            },
+            {
+              "type": "statistics-graph",
+              "entities": [
+                "sensor.pixel_9_pro_daily_floors"
+              ],
+              "days_to_show": 7,
+              "period": "day",
+              "chart_type": "bar",
+              "stat_types": [
+                "change"
+              ]
+            },
+            {
+              "type": "tile",
+              "entity": "notify.pixel_9_pro",
+              "grid_options": {
+                "columns": 12,
+                "rows": "auto"
+              }
+            }
+          ]
+        },
+        {
+          "type": "grid",
+          "cards": [
+            {
+              "type": "heading",
+              "heading": "Actividad y sueño",
+              "icon": "mdi:run"
+            },
+            {
+              "type": "tile",
+              "entity": "sensor.pixel_9_pro_daily_steps",
+              "name": "Pasos diarios Health Connect"
+            },
+            {
+              "type": "tile",
+              "entity": "sensor.pixel_9_pro_steps_sensor",
+              "name": "Pasos del dispositivo"
+            },
+            {
+              "type": "tile",
+              "entity": "sensor.pixel_9_pro_daily_distance",
+              "name": "Distancia diaria"
+            },
+            {
+              "type": "tile",
+              "entity": "sensor.pixel_9_pro_total_calories_burned",
+              "name": "Calorías totales"
+            },
+            {
+              "type": "tile",
+              "entity": "sensor.pixel_9_pro_sleep_duration",
+              "name": "Duración del sueño"
+            },
+            {
+              "type": "tile",
+              "entity": "sensor.pixel_9_pro_sleep_confidence",
+              "name": "Confianza del sueño"
+            },
+            {
+              "type": "markdown",
+              "content": "Segmento de sueño registrado: **{{ (states('sensor.pixel_9_pro_sleep_segment') | float(0) / 3600000) | round(1) }} horas**"
+            },
+            {
+              "type": "history-graph",
+              "title": "Actividad reciente",
+              "hours_to_show": 24,
+              "entities": [
+                "sensor.pixel_9_pro_steps_sensor",
+                "sensor.pixel_9_pro_total_calories_burned",
+                "sensor.pixel_9_pro_sleep_duration"
+              ]
+            },
+            {
+              "type": "history-graph",
+              "title": "Últimas 24 horas",
+              "hours_to_show": 24,
+              "entities": [
+                "sensor.pixel_9_pro_heart_rate",
+                "sensor.pixel_9_pro_resting_heart_rate",
+                "sensor.pixel_9_pro_oxygen_saturation",
+                "sensor.pixel_9_pro_respiratory_rate"
+              ],
+              "grid_options": {
+                "columns": "full",
+                "rows": "auto"
+              }
+            }
+          ]
+        },
+        {
+          "type": "grid",
+          "cards": [
+            {
+              "type": "heading",
+              "heading": "Nueva sección"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Casa",
+      "path": "casa",
+      "icon": "mdi:home-automation",
+      "type": "sections",
+      "max_columns": 3,
+      "sections": [
+        {
+          "type": "grid",
+          "column_span": 3,
+          "cards": [
+            {
+              "type": "picture-elements",
+              "image": "/api/image/serve/47de0f6db6187a10e3988e8039c80bf3/original",
+              "dark_mode_image": "/api/image/serve/47de0f6db6187a10e3988e8039c80bf3/original",
+              "grid_options": {
+                "columns": "full",
+                "rows": "auto"
+              },
+              "elements": [
+                {
+                  "type": "state-label",
+                  "entity": "binary_sensor.tapo_salon_person_occupancy",
+                  "prefix": "CASA  ·  PRESENCIA  ",
+                  "style": {
+                    "left": "6%",
+                    "top": "30%",
+                    "transform": "none",
+                    "color": "#f4f4f2",
+                    "font-size": "clamp(24px, 3vw, 40px)",
+                    "font-weight": "600",
+                    "font-family": "var(--primary-font-family)",
+                    "letter-spacing": "0",
+                    "text-shadow": "0 2px 14px rgba(0,0,0,.9)"
+                  }
+                },
+                {
+                  "type": "state-label",
+                  "entity": "vacuum.d10_plus_gen_2",
+                  "prefix": "ASPIRADOR  ·  ",
+                  "style": {
+                    "left": "6.2%",
+                    "top": "68%",
+                    "transform": "none",
+                    "color": "#deded8",
+                    "font-size": "clamp(12px, 1.4vw, 18px)",
+                    "font-weight": "500",
+                    "letter-spacing": "0",
+                    "text-shadow": "0 2px 10px rgba(0,0,0,.9)"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "grid",
+          "cards": [
+            {
+              "type": "heading",
+              "heading": "Cámara del salón",
+              "icon": "mdi:cctv"
+            },
+            {
+              "type": "picture-entity",
+              "entity": "camera.tapo_salon",
+              "camera_view": "live",
+              "show_name": true,
+              "show_state": true,
+              "grid_options": {
+                "columns": "full",
+                "rows": "auto"
+              }
+            }
+          ],
+          "column_span": 3
+        },
+        {
+          "type": "grid",
+          "cards": [
+            {
+              "type": "heading",
+              "heading": "Aspirador",
+              "icon": "mdi:robot-vacuum"
+            },
+            {
+              "type": "tile",
+              "entity": "vacuum.d10_plus_gen_2",
+              "name": "Dreame D10 Plus Gen 2",
+              "features": [
+                {
+                  "type": "vacuum-commands",
+                  "commands": [
+                    "start_pause",
+                    "stop",
+                    "return_home"
+                  ]
+                }
+              ],
+              "grid_options": {
+                "columns": "full",
+                "rows": 2
+              }
+            },
+            {
+              "type": "picture-entity",
+              "entity": "camera.d10_plus_gen_2_map",
+              "show_name": true,
+              "show_state": false,
+              "grid_options": {
+                "columns": "full"
+              }
+            }
+          ],
+          "column_span": 3
+        },
+        {
+          "type": "grid",
+          "cards": [
+            {
+              "type": "heading",
+              "heading": "Personas y móviles",
+              "icon": "mdi:account-multiple"
+            },
+            {
+              "type": "entities",
+              "state_color": true,
+              "entities": [
+                {
+                  "entity": "sensor.pixel_9_pro_battery_level",
+                  "name": "Pixel 9 Pro"
+                },
+                {
+                  "entity": "sensor.pixel_9_pro_geocoded_location",
+                  "name": "Ubicación de Quique"
+                },
+                {
+                  "entity": "sensor.iphone_de_ivet_battery_level",
+                  "name": "iPhone de Ivet"
+                },
+                {
+                  "entity": "sensor.iphone_de_ivet_geocoded_location",
+                  "name": "Ubicación de Ivet"
+                }
+              ],
+              "grid_options": {
+                "columns": "full"
+              }
+            },
+            {
+              "type": "map",
+              "hours_to_show": 12,
+              "auto_fit": true,
+              "entities": [
+                "device_tracker.pixel_9_pro",
+                "device_tracker.iphone_de_ivet"
+              ]
+            }
+          ],
+          "column_span": 3
+        },
+        {
+          "type": "grid",
+          "cards": [
+            {
+              "type": "heading",
+              "heading": "Entretenimiento",
+              "icon": "mdi:television"
+            },
+            {
+              "type": "tile",
+              "entity": "sensor.sonoff_temperatura_temperatura",
+              "grid_options": {
+                "columns": 9,
+                "rows": 1
+              }
+            },
+            {
+              "type": "tile",
+              "entity": "sensor.sonoff_temperatura_humedad",
+              "grid_options": {
+                "columns": 9,
+                "rows": 1
+              }
+            },
+            {
+              "type": "tile",
+              "entity": "media_player.xbox_series_x",
+              "name": "Xbox Series X",
+              "grid_options": {
+                "columns": 9,
+                "rows": 1
+              }
+            },
+            {
+              "type": "tile",
+              "entity": "sensor.pixel_9_pro_next_alarm",
+              "grid_options": {
+                "columns": 9,
+                "rows": 1
+              }
+            },
+            {
+              "type": "media-control",
+              "entity": "media_player.google_tv",
+              "name": "Google TV",
+              "grid_options": {
+                "columns": "full",
+                "rows": "auto"
+              }
+            },
+            {
+              "type": "tile",
+              "entity": "media_player.living_room_tv",
+              "name": "Televisión del salón",
+              "features": [
+                {
+                  "type": "media-player-volume-slider"
+                }
+              ],
+              "grid_options": {
+                "columns": "full",
+                "rows": 2
+              }
+            }
+          ],
+          "column_span": 3
+        }
+      ]
+    },
+    {
+      "title": "Organización",
+      "path": "organizacion",
+      "icon": "mdi:format-list-checks",
+      "type": "sections",
+      "max_columns": 4,
+      "sections": [
+        {
+          "type": "grid",
+          "column_span": 4,
+          "cards": [
+            {
+              "type": "picture-elements",
+              "image": "/api/image/serve/30695060304caecb1cb628e5c6d109c5/original",
+              "dark_mode_image": "/api/image/serve/30695060304caecb1cb628e5c6d109c5/original",
+              "grid_options": {
+                "columns": "full",
+                "rows": "auto"
+              },
+              "elements": [
+                {
+                  "type": "state-label",
+                  "entity": "todo.lista_tareas_casa",
+                  "prefix": "ORGANIZACIÓN  ·  ",
+                  "suffix": " TAREAS",
+                  "style": {
+                    "left": "6%",
+                    "top": "28%",
+                    "transform": "none",
+                    "color": "#f4f4f2",
+                    "font-size": "clamp(24px, 3vw, 40px)",
+                    "font-weight": "600",
+                    "font-family": "var(--primary-font-family)",
+                    "letter-spacing": "0",
+                    "text-shadow": "0 2px 14px rgba(0,0,0,.9)"
+                  }
+                },
+                {
+                  "type": "state-label",
+                  "entity": "todo.lista_de_la_compra",
+                  "prefix": "COMPRA  ·  ",
+                  "suffix": " PRODUCTOS",
+                  "style": {
+                    "left": "6.2%",
+                    "top": "67%",
+                    "transform": "none",
+                    "color": "#deded8",
+                    "font-size": "clamp(12px, 1.4vw, 18px)",
+                    "font-weight": "500",
+                    "letter-spacing": "0",
+                    "text-shadow": "0 2px 10px rgba(0,0,0,.9)"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "grid",
+          "cards": [
+            {
+              "type": "heading",
+              "heading": "Lista de la compra",
+              "icon": "mdi:cart-outline"
+            },
+            {
+              "type": "todo-list",
+              "entity": "todo.lista_de_la_compra",
+              "title": "Compra",
+              "hide_completed": true,
+              "hide_section_headers": true,
+              "item_tap_action": "toggle"
+            }
+          ]
+        },
+        {
+          "type": "grid",
+          "cards": [
+            {
+              "type": "heading",
+              "heading": "Tareas pendientes",
+              "icon": "mdi:clipboard-check-outline"
+            },
+            {
+              "type": "todo-list",
+              "entity": "todo.lista_tareas_casa",
+              "title": "Casa",
+              "hide_completed": true,
+              "display_order": "duedate_asc",
+              "item_tap_action": "edit"
+            }
+          ]
+        },
+        {
+          "type": "grid",
+          "column_span": 4,
+          "cards": [
+            {
+              "type": "heading",
+              "heading": "Calendario",
+              "icon": "mdi:calendar-month"
+            },
+            {
+              "initial_view": "dayGridMonth",
+              "type": "calendar",
+              "entities": [
+                "calendar.mycal"
+              ],
+              "grid_options": {
+                "columns": "full",
+                "rows": 8
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Monitor",
+      "path": "monitor",
+      "icon": "mdi:chart-box",
+      "type": "sections",
+      "max_columns": 4,
+      "sections": [
+        {
+          "type": "grid",
+          "column_span": 4,
+          "cards": [
+            {
+              "type": "picture-elements",
+              "image": "/api/image/serve/7bb923fb72d6b4a672a73ca26c388331/original",
+              "dark_mode_image": "/api/image/serve/7bb923fb72d6b4a672a73ca26c388331/original",
+              "grid_options": {
+                "columns": "full",
+                "rows": "auto"
+              },
+              "elements": [
+                {
+                  "type": "state-label",
+                  "entity": "sensor.odin_estado",
+                  "prefix": "MONITOR  ·  ",
+                  "style": {
+                    "left": "6%",
+                    "top": "28%",
+                    "transform": "none",
+                    "color": "#f4f4f2",
+                    "font-size": "clamp(24px, 3vw, 40px)",
+                    "font-weight": "600",
+                    "font-family": "var(--primary-font-family)",
+                    "letter-spacing": "0",
+                    "text-shadow": "0 2px 14px rgba(0,0,0,.9)"
+                  }
+                },
+                {
+                  "type": "state-label",
+                  "entity": "sensor.odin_avisos",
+                  "prefix": "AVISOS ACTIVOS  ·  ",
+                  "style": {
+                    "left": "6.2%",
+                    "top": "67%",
+                    "transform": "none",
+                    "color": "#deded8",
+                    "font-size": "clamp(12px, 1.4vw, 18px)",
+                    "font-weight": "500",
+                    "letter-spacing": "0",
+                    "text-shadow": "0 2px 10px rgba(0,0,0,.9)"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "grid",
+          "cards": [
+            {
+              "type": "heading",
+              "heading": "Infraestructura",
+              "icon": "mdi:server-network"
+            },
+            {
+              "type": "entities",
+              "state_color": true,
+              "entities": [
+                "sensor.odin_estado",
+                "sensor.odin_contenedores",
+                "sensor.odin_contenedores_con_problemas",
+                "sensor.odin_qdrant_puntos",
+                "sensor.odin_avisos"
+              ]
+            },
+            {
+              "type": "horizontal-stack",
+              "cards": [
+                {
+                  "type": "gauge",
+                  "entity": "sensor.odin_disco_raiz",
+                  "name": "Raíz",
+                  "min": 0,
+                  "max": 100,
+                  "severity": {
+                    "green": 0,
+                    "yellow": 75,
+                    "red": 90
+                  }
+                },
+                {
+                  "type": "gauge",
+                  "entity": "sensor.odin_disco_almacen",
+                  "name": "Almacén",
+                  "min": 0,
+                  "max": 100,
+                  "severity": {
+                    "green": 0,
+                    "yellow": 75,
+                    "red": 90
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "grid",
+          "cards": [
+            {
+              "type": "heading",
+              "heading": "Servicios críticos",
+              "icon": "mdi:lan-check"
+            },
+            {
+              "type": "entities",
+              "state_color": true,
+              "entities": [
+                "binary_sensor.odin_open_webui",
+                "binary_sensor.odin_ollama",
+                "binary_sensor.odin_qdrant",
+                "binary_sensor.odin_n8n",
+                "binary_sensor.odin_nextcloud",
+                "binary_sensor.odin_immich",
+                "binary_sensor.odin_frigate",
+                "binary_sensor.odin_netdata"
+              ]
+            },
+            {
+              "type": "button",
+              "name": "Abrir Netdata en la red local",
+              "icon": "mdi:open-in-new",
+              "tap_action": {
+                "action": "url",
+                "url_path": "http://192.168.1.133:19999"
+              }
+            }
+          ]
+        },
+        {
+          "type": "grid",
+          "column_span": 4,
+          "cards": [
+            {
+              "type": "heading",
+              "heading": "Consumo eléctrico",
+              "icon": "mdi:lightning-bolt"
+            },
+            {
+              "type": "markdown",
+              "content": "{% set tarifa = 0.20 %}\n{% set torre_total = states('sensor.pc_sonoff_100272c1b3_energy') %}\n{% set rpi_total = states('sensor.s60tpf_sonoff_100272cc26_energy') %}\n{% set torre = torre_total | float(states('sensor.servidor_torre_energy_month') | float(0)) %}\n{% set rpi = rpi_total | float(states('sensor.servidor_rpi5_energy_month') | float(0)) %}\n{% set energia = torre + rpi %}\n## {{ energia | round(3) }} kWh · {{ (energia * tarifa) | round(2) }} €\n\nCoste acumulado disponible desde el inicio de la medición. Tarifa estimada: **{{ tarifa }} €/kWh**.\n\nTorre: **{{ torre | round(3) }} kWh · {{ (torre * tarifa) | round(2) }} €**  \nRPi: **{{ rpi | round(3) }} kWh · {{ (rpi * tarifa) | round(2) }} €**"
+            },
+            {
+              "type": "horizontal-stack",
+              "cards": [
+                {
+                  "type": "tile",
+                  "entity": "switch.servidor_torre",
+                  "name": "Torre"
+                },
+                {
+                  "type": "tile",
+                  "entity": "sensor.servidor_torre_power",
+                  "name": "Potencia torre"
+                },
+                {
+                  "type": "tile",
+                  "entity": "sensor.servidor_torre_energy_month",
+                  "name": "Energía torre"
+                }
+              ]
+            },
+            {
+              "type": "horizontal-stack",
+              "cards": [
+                {
+                  "type": "history-graph",
+                  "title": "Potencia durante las últimas 24 horas",
+                  "hours_to_show": 24,
+                  "entities": [
+                    {
+                      "entity": "sensor.servidor_torre_power",
+                      "name": "Torre"
+                    },
+                    {
+                      "entity": "sensor.servidor_rpi5_power",
+                      "name": "RPi"
+                    }
+                  ]
+                },
+                {
+                  "type": "history-graph",
+                  "title": "Energía acumulada",
+                  "hours_to_show": 168,
+                  "entities": [
+                    {
+                      "entity": "sensor.servidor_torre_energy_month",
+                      "name": "Torre"
+                    },
+                    {
+                      "entity": "sensor.servidor_rpi5_energy_month",
+                      "name": "RPi"
+                    }
+                  ]
+                }
+              ],
+              "grid_options": {
+                "columns": "full"
+              }
+            }
+          ]
+        },
+        {
+          "type": "grid",
+          "cards": [
+            {
+              "type": "heading",
+              "heading": "Backup NVMe",
+              "icon": "mdi:backup-restore"
+            },
+            {
+              "type": "markdown",
+              "content": "El NVMe y su carcasa están disponibles. Este bloque mostrará el montaje, fecha de última copia, tamaño, integridad y resultado de restauración."
+            },
+            {
+              "type": "entities",
+              "entities": [
+                "sensor.odin_backup_estado",
+                "sensor.odin_backup_ultima_copia",
+                "sensor.odin_backup_tamano"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Servicios",
+      "path": "servicios",
+      "icon": "mdi:apps",
+      "type": "sections",
+      "max_columns": 4,
+      "sections": [
+        {
+          "type": "grid",
+          "column_span": 4,
+          "cards": [
+            {
+              "type": "picture-elements",
+              "image": "/api/image/serve/f4a110394a389f6f104b2cd7f0a0db2c/original",
+              "dark_mode_image": "/api/image/serve/f4a110394a389f6f104b2cd7f0a0db2c/original",
+              "grid_options": {
+                "columns": "full",
+                "rows": 3
+              },
+              "elements": [
+                {
+                  "type": "state-label",
+                  "entity": "sensor.odin_contenedores",
+                  "prefix": "SERVICIOS  ·  ",
+                  "style": {
+                    "left": "6%",
+                    "top": "28%",
+                    "transform": "none",
+                    "color": "#f4f4f2",
+                    "font-size": "clamp(24px, 3vw, 40px)",
+                    "font-weight": "600",
+                    "font-family": "var(--primary-font-family)",
+                    "letter-spacing": "0",
+                    "text-shadow": "0 2px 14px rgba(0,0,0,.9)"
+                  }
+                },
+                {
+                  "type": "state-label",
+                  "entity": "sensor.odin_contenedores_con_problemas",
+                  "prefix": "CON PROBLEMAS  ·  ",
+                  "style": {
+                    "left": "6.2%",
+                    "top": "67%",
+                    "transform": "none",
+                    "color": "#deded8",
+                    "font-size": "clamp(12px, 1.4vw, 18px)",
+                    "font-weight": "500",
+                    "letter-spacing": "0",
+                    "text-shadow": "0 2px 10px rgba(0,0,0,.9)"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "grid",
+          "cards": [
+            {
+              "type": "heading",
+              "heading": "IA y automatización",
+              "icon": "mdi:brain"
+            },
+            {
+              "type": "entities",
+              "state_color": true,
+              "entities": [
+                "binary_sensor.odin_open_webui",
+                "binary_sensor.odin_ollama",
+                "binary_sensor.odin_qdrant",
+                "binary_sensor.odin_n8n",
+                "binary_sensor.odin_crawl4ai"
+              ]
+            }
+          ]
+        },
+        {
+          "type": "grid",
+          "cards": [
+            {
+              "type": "heading",
+              "heading": "Voz y mensajería",
+              "icon": "mdi:account-voice"
+            },
+            {
+              "type": "entities",
+              "state_color": true,
+              "entities": [
+                "binary_sensor.odin_piper",
+                "binary_sensor.odin_pockettts",
+                "binary_sensor.odin_wyoming_whisper",
+                "binary_sensor.odin_faster_whisper",
+                "binary_sensor.odin_odin_asr",
+                "binary_sensor.odin_evolution_api"
+              ]
+            }
+          ]
+        },
+        {
+          "type": "grid",
+          "cards": [
+            {
+              "type": "heading",
+              "heading": "Vigilancia y sistema",
+              "icon": "mdi:shield-home"
+            },
+            {
+              "type": "entities",
+              "state_color": true,
+              "entities": [
+                "binary_sensor.odin_frigate",
+                "binary_sensor.odin_netdata",
+                "sensor.odin_contenedores",
+                "sensor.odin_contenedores_con_problemas",
+                "sensor.odin_avisos"
+              ]
+            }
+          ]
+        },
+        {
+          "type": "grid",
+          "cards": [
+            {
+              "type": "heading",
+              "heading": "Datos y contenidos",
+              "icon": "mdi:folder-multiple"
+            },
+            {
+              "type": "entities",
+              "state_color": true,
+              "entities": [
+                "binary_sensor.odin_nextcloud",
+                "binary_sensor.odin_immich",
+                "binary_sensor.odin_mealie",
+                "binary_sensor.odin_stirling_pdf"
+              ]
+            }
+          ]
+        },
+        {
+          "type": "grid",
+          "cards": [
+            {
+              "type": "horizontal-stack",
+              "cards": [
+                {
+                  "type": "button",
+                  "name": "Open WebUI",
+                  "icon": "mdi:chat-processing",
+                  "tap_action": {
+                    "action": "url",
+                    "url_path": "http://192.168.1.133:3000"
+                  }
+                },
+                {
+                  "type": "button",
+                  "name": "n8n",
+                  "icon": "mdi:transit-connection-variant",
+                  "tap_action": {
+                    "action": "url",
+                    "url_path": "http://192.168.1.133:5679"
+                  }
+                },
+                {
+                  "type": "button",
+                  "name": "Qdrant",
+                  "icon": "mdi:database-search",
+                  "tap_action": {
+                    "action": "url",
+                    "url_path": "http://192.168.1.133:6333/dashboard"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "horizontal-stack",
+              "cards": [
+                {
+                  "type": "button",
+                  "name": "Nextcloud",
+                  "icon": "mdi:cloud",
+                  "tap_action": {
+                    "action": "url",
+                    "url_path": "http://192.168.1.133:8082"
+                  }
+                },
+                {
+                  "type": "button",
+                  "name": "Immich",
+                  "icon": "mdi:image-multiple",
+                  "tap_action": {
+                    "action": "url",
+                    "url_path": "http://192.168.1.133:2283"
+                  }
+                },
+                {
+                  "type": "button",
+                  "name": "Mealie",
+                  "icon": "mdi:food-apple",
+                  "tap_action": {
+                    "action": "url",
+                    "url_path": "http://192.168.1.133:9925"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "horizontal-stack",
+              "cards": [
+                {
+                  "type": "button",
+                  "name": "Frigate",
+                  "icon": "mdi:cctv",
+                  "tap_action": {
+                    "action": "url",
+                    "url_path": "http://192.168.1.133:5001"
+                  }
+                },
+                {
+                  "type": "button",
+                  "name": "Netdata",
+                  "icon": "mdi:chart-areaspline",
+                  "tap_action": {
+                    "action": "url",
+                    "url_path": "http://192.168.1.133:19999"
+                  }
+                }
+              ],
+              "grid_options": {
+                "columns": "full",
+                "rows": "auto"
+              }
+            },
+            {
+              "type": "heading",
+              "heading": "Nueva sección"
+            }
+          ],
+          "column_span": 4
+        }
+      ]
+    }
+  ]
+}

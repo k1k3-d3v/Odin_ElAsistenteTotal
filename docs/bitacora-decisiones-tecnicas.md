@@ -46,7 +46,7 @@ Tools detectadas en la base de datos de Open WebUI:
 | `qr_code_generator_for_open_webui` | QR Code Generator for Open WebUI | Generar QR dentro del chat |
 | `home_assistant` | Home Assistant | Control de domótica, calendario, compra y salud desde Home Assistant |
 | `guardar_transcripcion_de_video_o_pagina_web` | Guardar transcripción de video o página web | Lectura web/YouTube con Crawl4AI y transcripciones |
-| `home_assistant_connector` | Home assistant connector | Puente directo con Home Assistant Assist |
+| `home_assistant_connector` | Home assistant connector | Histórico: eliminado en junio por duplicar rutas y provocar decisiones ambiguas |
 
 Estas tools son una de las diferencias más importantes de Odín frente a un chatbot genérico: convierten el lenguaje natural en acciones sobre servicios locales.
 
@@ -129,3 +129,46 @@ El servidor está en una fase experimental avanzada, no en una fase limpia de pr
 3. descartar lo que no cumple latencia/estabilidad;
 4. consolidar lo que sí funciona;
 5. documentar deuda técnica y trabajo futuro.
+
+## Consolidación tras el cambio de red
+
+Fecha: 2026-06-09
+
+Tras el cambio de domicilio, varias tools seguían usando direcciones de la red
+`192.168.86.0/24`. La solución adoptada fue usar `127.0.0.1` para llamadas
+entre servicios del mismo host y proxies LAN mínimos para recursos que debe
+cargar el navegador.
+
+Se incorporaron proxies separados para imágenes de Immich, notas de Nextcloud,
+Mealie e imágenes de Frigate. Esta separación evita incrustar secretos en las
+tools, reduce dependencia de URLs públicas y permite aplicar validaciones
+distintas a cada tipo de recurso.
+
+## Tools atómicas frente a acciones narradas
+
+Se observó que un modelo puede localizar correctamente una entidad y, aun así,
+detenerse después de escribir “ejecutando” sin realizar la segunda llamada. El
+caso más claro fue el aspirador.
+
+La decisión final fue crear `controlar_aspirador`, que resuelve entidad,
+servicio, ejecución y comprobación de estado en una sola función. El mismo
+principio se aplicó a Frigate mediante `ultima_persona`: filtra eventos de
+persona y devuelve directamente identidad y captura. Estas funciones reducen
+la libertad del modelo justo donde una acción real o una evidencia visual
+requieren comportamiento determinista.
+
+## Contexto de Ollama
+
+Una transcripción de YouTube superó la ventana configurada de 4096 tokens,
+aunque `ministral-3:14b` admite un contexto muy superior. Odín quedó configurado
+con 16384 tokens y se verificó el valor en el proceso cargado de Ollama. La
+decisión equilibra conversaciones largas y consumo de memoria en un host con
+30 GiB de RAM.
+
+## Mealie
+
+Se añadió Mealie como destino estructurado para recetas. Guardarlas como notas
+en Nextcloud funcionaba, pero no proporcionaba ingredientes, pasos, tiempos,
+raciones, imágenes ni navegación específica de cocina. La tool de Mealie crea
+recetas desde texto e importa URLs o imágenes mediante un token dedicado no
+incluido en el código.

@@ -6,11 +6,38 @@ Este Trabajo de Fin de Grado ha desarrollado Odín, una arquitectura de asistent
 El sistema permite ejecutar casos de uso reales: guardar notas, buscar documentos privados, consultar fotos, controlar domótica, gestionar recordatorios, usar temporizadores y música mediante HA Voice, revisar cámaras, recibir notificaciones de presencia, comprobar el estado del servidor y generar alertas proactivas. Además, se han documentado los contenedores, herramientas, decisiones de diseño, problemas encontrados y validaciones realizadas.
 
 \section{Cumplimiento de objetivos}
-El objetivo principal se considera cumplido: se ha construido un asistente personal integrado que prioriza privacidad, control local y capacidad de actuar sobre servicios reales. Los objetivos secundarios también quedan cubiertos en distinto grado.
+El objetivo principal se considera cumplido: se ha diseñado, desplegado y validado un asistente personal autoalojado que integra inteligencia artificial local, memoria, automatización, domótica, datos privados, acceso remoto y supervisión. Odín no alcanza la madurez de un producto comercial, pero sí demuestra que estas capacidades pueden convivir en una arquitectura real bajo control del usuario.
 
-La soberanía de datos se aborda mediante Nextcloud, Immich, Qdrant y almacenamiento local. La interacción natural se cubre mediante Open WebUI, HA Voice y herramientas conversacionales. La domótica funciona sobre Home Assistant, manteniendo la Raspberry Pi 5 como centro estable. La memoria documental se apoya en ingesta, embeddings y Qdrant. La monitorización queda cubierta por Netdata, Telegram, exportador JSON para Home Assistant y autoreparabilidad conservadora. El acceso remoto se resuelve con Tailscale, evitando depender de DNS dinámico y reduciendo exposición pública.
+\begin{table}[H]
+  \centering
+  \caption{Cumplimiento de los objetivos definidos}
+  \label{tab:cumplimiento-objetivos}
+  \small
+  \begin{tabularx}{\textwidth}{
+    >{\raggedright\arraybackslash}p{0.31\textwidth}
+    >{\raggedright\arraybackslash}X
+    >{\raggedright\arraybackslash}p{0.16\textwidth}}
+    \toprule
+    Objetivo & Resultado y evidencia & Grado \\
+    \midrule
+    Infraestructura estable y reproducible & Servicios organizados mediante Docker Compose, systemd, cron, almacenamiento separado y guía de réplica. & Cumplido \\
+    Inferencia local evaluada & Ollama ejecuta modelos locales y se midieron latencia, VRAM, calidad y límites de modelos de distintos tamaños. & Cumplido \\
+    Orquestación de flujos & n8n conecta APIs y webhooks; scripts Python/shell cubren sistema y datos; Home Assistant conserva la lógica doméstica. & Cumplido \\
+    Memoria personal & Nextcloud, ingesta, embeddings y Qdrant permiten guardar y recuperar documentos, notas y conocimiento privado. & Cumplido \\
+    Domótica e interacción natural & Home Assistant controla dispositivos, listas, calendario, cámaras y aspirador; Open WebUI y HA Voice ofrecen interacción conversacional. & Cumplido con límites \\
+    Acceso remoto seguro & Tailscale entra por la Raspberry Pi y permite alcanzar Odín sin exponer directamente los servicios críticos. & Cumplido \\
+    Backup, monitorización y recuperación & Restic cifra copias en NVMe, aplica retención y verificación; Netdata, Home Assistant, Telegram y scripts supervisan el sistema. & Cumplido \\
+    Interfaz global de control & Dashboard de Home Assistant con vistas de servicios, casa, salud, organización y monitorización. & Cumplido \\
+    Documentación reproducible & Memoria, inventarios, scripts saneados, configuraciones de ejemplo, pruebas y guía detallada de réplica. & Cumplido \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
 
-No todo queda cerrado al mismo nivel. La voz realista y rápida se acepta como limitación técnica; el dashboard único de control queda como mejora inmediata; la política de backup con NVMe externo debe ejecutarse y probarse; y la medición de consumo eléctrico queda pendiente hasta disponer del medidor. Estas limitaciones no invalidan el resultado, sino que delimitan honestamente el alcance alcanzado.
+Entre los resultados plenamente alcanzados destacan la soberanía de datos mediante Nextcloud, Immich, Qdrant y almacenamiento local; la automatización híbrida mediante n8n, scripts y Home Assistant; la consulta conversacional de documentos, fotografías, recetas, cámaras y estado del servidor; el acceso remoto cifrado; la medición de consumo; y una política de backup con restauración comprobada.
+
+Algunas capacidades funcionan, pero no con la calidad ideal planteada al inicio. La voz local es operativa mediante Piper, Whisper y Wyoming, aunque la síntesis no alcanza siempre la naturalidad deseada y varias alternativas presentaron latencia o incompatibilidades con AMD. La autoreparación se mantiene deliberadamente conservadora: diagnostica y reinicia únicamente casos seguros, sin permitir que un modelo ejecute correcciones destructivas. La proactividad existe mediante avisos, presencia, cron e informes, pero no constituye todavía un agente autónomo general.
+
+Finalmente, se descartaron la gestión avanzada de contraseñas y la autoclasificación de correo porque su aportación no justificaba el riesgo y el esfuerzo adicional. Tampoco se desarrolló un agente de escritorio capaz de operar el ordenador completo ni una voz local indistinguible de servicios comerciales. Estas decisiones no invalidan el resultado: delimitan un alcance realizable y mantienen el núcleo de Odín estable, privado y demostrable.
 
 \section{Adecuacion a los conocimientos de la carrera}
 Odín encaja de forma transversal con los conocimientos del Grado en Ingeniería Informática. Desde sistemas operativos y administración de sistemas, el proyecto exige gestionar servicios systemd, permisos, logs, cron, almacenamiento y procesos. Desde redes, incluye VPN, puertos, túneles, LAN, acceso remoto y reducción de exposición. Desde bases de datos, utiliza PostgreSQL, MariaDB, Redis/Valkey, SQLite y Qdrant como base vectorial.
@@ -18,11 +45,11 @@ Odín encaja de forma transversal con los conocimientos del Grado en Ingeniería
 Desde ingeniería del software, el trabajo requiere diseñar una arquitectura modular, documentar decisiones, versionar configuraciones, separar responsabilidades y validar flujos. Desde seguridad, obliga a tratar credenciales, exposición de servicios, copias de seguridad, permisos y aislamiento. Desde inteligencia artificial, integra modelos locales, embeddings, RAG, STT, TTS y limitaciones de aceleración GPU. Finalmente, desde gestión de proyectos, obliga a controlar alcance, priorizar funcionalidades, aceptar límites y convertir un sistema real en una memoria evaluable.
 
 \section{Trabajo futuro}
-El trabajo futuro no debe entenderse como una lista de carencias, sino como la evolución natural de una infraestructura personal que ya funciona. La primera línea de mejora es crear un dashboard único de control en Home Assistant. Actualmente existen piezas separadas: Netdata para monitorización visual, el JSON de estado de Odín para sensores, automatizaciones de presencia, herramientas de Open WebUI, Frigate, Immich y Home Assistant. El siguiente paso lógico es reunirlas en una vista operativa clara: estado general, avisos activos, servicios principales, cámaras, almacenamiento, GPU, ingesta de memoria y accesos rápidos.
+El trabajo futuro no debe entenderse como una lista de carencias, sino como la evolución natural de una infraestructura personal que ya funciona. La primera línea de mejora es ampliar el dashboard único de Home Assistant, ya operativo, con el historial de copias del NVMe y métricas detalladas de la GPU bajo cargas extremas.
 
-La segunda línea es consolidar la política de copias de seguridad. Ya existe separación de datos pesados en \nolinkurl{/mnt/almacen}, la biblioteca de Immich se ha migrado fuera del disco raíz y se han evitado limpiezas destructivas de volúmenes. Sin embargo, falta cerrar una estrategia final de backup: qué se copia, con qué frecuencia, dónde se guarda, cómo se restaura y qué queda excluido. Esta parte es especialmente importante porque Odín no almacena datos abstractos: almacena fotos, notas, documentos, configuraciones, memoria vectorial y automatizaciones personales.
+La segunda línea es reforzar la política de copias ya desplegada mediante una segunda unidad física o una réplica externa. El repositorio Restic actual protege frente a borrados y fallos lógicos y permite restaurar el sistema, pero una única unidad conectada no sustituye una política completa 3-2-1.
 
-La tercera línea es convertir Odín en un asistente también del ordenador. Actualmente el sistema actúa sobre servicios del hogar y del servidor: Home Assistant, Nextcloud, Immich, Frigate, n8n, Open WebUI, Qdrant y herramientas de monitorización. Una ampliación natural sería añadir capacidades de asistente de escritorio: abrir aplicaciones, organizar archivos locales, resumir ventanas o documentos, preparar comandos, controlar determinadas tareas del sistema operativo y actuar con confirmación sobre el ordenador personal. Esta línea debe diseñarse con especial cuidado, porque aumenta mucho el riesgo: un agente de escritorio necesita permisos, límites claros, confirmaciones y trazabilidad.
+La tercera línea es convertir Odín en un asistente también del ordenador. Actualmente el sistema actúa sobre servicios del hogar y del servidor: Home Assistant, Nextcloud, Immich, Frigate, Mealie, n8n, Open WebUI, Qdrant y herramientas de monitorización. Una ampliación natural sería añadir capacidades de asistente de escritorio: abrir aplicaciones, organizar archivos locales, resumir ventanas o documentos, preparar comandos, controlar determinadas tareas del sistema operativo y actuar con confirmación sobre el ordenador personal. Esta línea debe diseñarse con especial cuidado, porque aumenta mucho el riesgo: un agente de escritorio necesita permisos, límites claros, confirmaciones y trazabilidad.
 
 \begin{table}[H]
   \centering
@@ -45,6 +72,27 @@ La tercera línea es convertir Odín en un asistente también del ordenador. Act
 Esta ampliación permitiría que Odín pasara de ser un asistente de servicios a ser un asistente de entorno de trabajo. El objetivo no sería sustituir al usuario ni ejecutar acciones opacas, sino reducir fricción: preparar contexto, recuperar archivos, ordenar información y ayudar a operar el ordenador de forma auditable.
 
 La cuarta línea es mejorar la evaluación longitudinal. Odín ya tiene funciones reales: guarda notas, busca memoria, controla domótica, gestiona recordatorios, consulta fotos, notifica presencia, revisa estado del sistema y permite monitorización. El siguiente paso académico sería medir su uso durante varias semanas: número de interacciones, tipos de acciones, errores, latencia percibida, utilidad real y tareas que el usuario sigue prefiriendo hacer manualmente.
+
+\section{Adecuación a las competencias de la titulación}
+\begin{table}[H]
+  \centering
+  \caption{Relación explícita con las competencias específicas}
+  \label{tab:competencias}
+  \begin{tabularx}{\textwidth}{lX}
+    \toprule
+    Competencia & Evidencia desarrollada en el proyecto \\
+    \midrule
+    CTI1.3, en profundidad & Selección, despliegue, integración y gestión de sistemas de información con criterios de coste y calidad: servicios especializados, Docker Compose, herramientas conversacionales y control económico. \\
+    CTI2.3 & Garantía y seguridad de sistemas informáticos mediante Tailscale, saneamiento de secretos, monitorización, avisos, autoreparabilidad conservadora y revisión normativa. \\
+    CTI3.1 & Concepción de servicios basados en red, web, multimedia, interacción y computación ubicua: servidor, Raspberry Pi, clientes móviles, Home Assistant, Frigate, Immich y Telegram. \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\section{Implicación profesional, ética e iniciativa}
+El trabajo requirió tomar decisiones más allá de instalar software: reconocer límites de compatibilidad, descartar alternativas que no resultaron sostenibles, evitar afirmar que una automatización se había ejecutado sin comprobarla y documentar tanto éxitos como fallos. La protección de datos personales se incorporó mediante configuraciones sanitizadas, separación de credenciales, procesamiento local y revisión de la exposición pública.
+
+También se actuó de forma proactiva ante problemas no previstos, como el cambio de red, la degradación de Ollama, los WebSocket del proxy, las herramientas que devolvían texto sin ejecutar acciones o las imágenes que no podían renderizarse desde una URL interna. La respuesta habitual fue aislar capas, medir el fallo real, aplicar un cambio reversible y convertir la solución en documentación reutilizable.
 
 Finalmente, la voz queda como una limitación aceptada del proyecto. Se han probado varias alternativas y se mantiene una solución funcional mediante Piper/HA Voice y servicios experimentales de TTS, pero no se perseguirá dentro del alcance una voz más realista y rápida. En este caso, cerrar el alcance es parte de la decisión técnica: el sistema debe entregarse funcionando, no quedarse indefinidamente bloqueado por una mejora de experiencia que depende mucho del soporte de hardware AMD y de la madurez de las herramientas disponibles.
 

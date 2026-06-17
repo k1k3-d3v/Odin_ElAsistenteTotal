@@ -1,7 +1,7 @@
 \chapter{Planificacion temporal}
 
 \section{Descripcion de las tareas}
-La planificación inicial estima 545 horas de dedicación distribuidas desde febrero hasta junio de 2026. Aunque la memoria final ajustará estas cifras con el trabajo realmente realizado, se mantiene la división en bloques porque ayuda a explicar la evolución del proyecto.
+La planificación inicial estimaba 545 horas de dedicación distribuidas desde febrero hasta junio de 2026. El cómputo final asciende a 584 horas, una desviación de 39 horas (7,2\%) respecto a la previsión. El incremento no fue uniforme: se concentró en la implementación e integración, especialmente en la capa de voz STT/TTS, la compatibilidad con GPU AMD y la recuperación de servicios tras el cambio de red local.
 
 \subsection{Gestion del proyecto}
 Planificación, seguimiento, revisión de alcance, reuniones académicas y organización de la documentación.
@@ -46,25 +46,189 @@ Pruebas funcionales, latencia, estabilidad, uso de VRAM, recuperación ante fall
   \item \textbf{M5}: memoria final, evidencias técnicas y defensa.
 \end{itemize}
 
-\section{Diagrama de Gantt}
-La planificación se puede resumir en cinco bloques temporales. En febrero se cerraron alcance, motivación y requisitos iniciales. Entre marzo y abril se concentró la investigación técnica y el despliegue de servicios base: Docker, Open WebUI, Ollama, Nextcloud, Qdrant, Home Assistant, Immich y primeras automatizaciones. Durante abril y mayo se produjo la fase más intensa de integración: tools de Open WebUI, n8n, Frigate, voz, monitorización, ingesta de memoria y reorganización del servidor. A partir de mayo se priorizó estabilizar el sistema, documentar evidencias, revisar contenedores y convertir el trabajo real en memoria. Junio queda reservado para cierre, revisión formal, capturas, defensa y correcciones finales.
+\section{Planificación inicial y ejecución real}
+Para distinguir con claridad lo previsto de lo realizado se presentan dos diagramas. Ambos utilizan la misma escala semanal, desde febrero hasta junio de 2026. El primero representa el plan de partida; el segundo recoge la ejecución final y permite observar los solapamientos, retrasos y ampliaciones que aparecieron durante el desarrollo.
+
+\begin{figure}[H]
+  \centering
+  \makebox[\textwidth][c]{%
+  \resizebox{0.95\textwidth}{!}{%
+  \begin{ganttchart}[
+      hgrid,
+      vgrid={*{3}{draw=none}, dotted},
+      x unit=0.62cm,
+      y unit title=0.6cm,
+      y unit chart=0.7cm,
+      title height=1,
+      bar height=0.6,
+      group height=0.3,
+      title label font=\small,
+      bar label font=\small,
+      group label font=\small\bfseries,
+      bar/.append style={fill=blue!40, rounded corners=2pt},
+      bar incomplete/.append style={fill=gray!30},
+      milestone/.append style={fill=orange, rounded corners=2pt}
+    ]{1}{22}
+    \gantttitle{Feb}{4}
+    \gantttitle{Mar}{4}
+    \gantttitle{Abr}{5}
+    \gantttitle{May}{5}
+    \gantttitle{Jun}{4} \\
+    \ganttbar[bar/.append style={fill=gray!50}]{Gestión}{1}{22} \\
+    \ganttbar[bar/.append style={fill=blue!30}]{Análisis}{1}{8} \\
+    \ganttbar[bar/.append style={fill=teal!40}]{Diseño}{3}{10} \\
+    \ganttbar[bar/.append style={fill=blue!55}]{Implementación}{6}{17} \\
+    \ganttbar[bar/.append style={fill=violet!45}]{STT y TTS}{9}{13} \\
+    \ganttbar[bar/.append style={fill=orange!50}]{Pruebas y validación}{14}{19} \\
+    \ganttbar[bar/.append style={fill=green!40}]{Memoria y defensa}{10}{22} \\
+    \ganttmilestone{M1}{4} \\
+    \ganttmilestone{M2}{8} \\
+    \ganttmilestone{M3}{12} \\
+    \ganttmilestone{M4}{16} \\
+    \ganttmilestone{M5}{22}
+  \end{ganttchart}
+  }
+  }
+  \caption{Diagrama de Gantt inicial del Proyecto Odín}
+  \label{fig:gantt-inicial}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \makebox[\textwidth][c]{%
+  \resizebox{0.95\textwidth}{!}{%
+  \begin{ganttchart}[
+      hgrid,
+      vgrid={*{3}{draw=none}, dotted},
+      x unit=0.62cm,
+      y unit title=0.6cm,
+      y unit chart=0.7cm,
+      title height=1,
+      bar height=0.6,
+      title label font=\small,
+      bar label font=\small,
+      milestone label font=\small,
+      bar/.append style={fill=blue!40, rounded corners=2pt},
+      milestone/.append style={fill=orange, rounded corners=2pt}
+    ]{1}{22}
+    \gantttitle{Feb}{4}
+    \gantttitle{Mar}{4}
+    \gantttitle{Abr}{5}
+    \gantttitle{May}{5}
+    \gantttitle{Jun}{4} \\
+    \ganttbar[bar/.append style={fill=gray!50}]{Gestión}{1}{22} \\
+    \ganttbar[bar/.append style={fill=blue!30}]{Análisis}{1}{10} \\
+    \ganttbar[bar/.append style={fill=teal!40}]{Diseño}{3}{11} \\
+    \ganttbar[bar/.append style={fill=blue!55}]{Implementación}{6}{21} \\
+    \ganttbar[bar/.append style={fill=violet!60}]{STT y TTS}{9}{19} \\
+    \ganttbar[bar/.append style={fill=orange!50}]{Pruebas y validación}{12}{21} \\
+    \ganttbar[bar/.append style={fill=green!40}]{Memoria y defensa}{10}{22} \\
+    \ganttmilestone{M1}{4} \\
+    \ganttmilestone{M2}{9} \\
+    \ganttmilestone{M3}{13} \\
+    \ganttmilestone{M4}{20} \\
+    \ganttmilestone{M5}{22}
+  \end{ganttchart}
+  }
+  }
+  \caption{Diagrama de Gantt real del Proyecto Odín}
+  \label{fig:gantt-real}
+\end{figure}
+
+La diferencia más visible aparece en la integración. El plan suponía que, una vez desplegados los contenedores, la voz quedaría resuelta mediante una combinación directa de Whisper y Piper. En la práctica fue necesario probar Whisper, faster-whisper, Wyoming Whisper y un ASR propio basado en ONNX para la entrada, además de Piper, Kokoro, Chatterbox y PocketTTS para la salida. También hubo que medir arranque en frío, latencia sostenida, precisión, naturalidad y consumo de memoria, y después adaptar los servicios a Home Assistant y Open WebUI.
+
+Esta dificultad no es exclusiva del prototipo. Whisper ofrece una base robusta gracias a su entrenamiento a gran escala, pero su precisión varía con ruido, acento, micrófono y otras perturbaciones \citep{radford2023whisper,speechRobustBench2024}. En síntesis, la evaluación tampoco depende de una única métrica: deben equilibrarse inteligibilidad, naturalidad, prosodia, robustez y eficiencia \citep{tan2021neuraltts}. En un asistente local se añade además una restricción práctica: una voz de mayor calidad deja de ser útil si tarda demasiado en comenzar o compite con el LLM por la memoria disponible. Estas limitaciones explican que el bloque STT/TTS se prolongara desde abril hasta finales de mayo y que Piper se conservara como opción estable, aunque otras voces resultaran más naturales.
+
+\section{Gestion del riesgo}
+Los riesgos principales se concentran en la compatibilidad del stack AMD/ROCm, la saturación de VRAM al combinar LLM, RAG, voz y visión, la dependencia de un único nodo físico, la seguridad del acceso remoto y el crecimiento incontrolado del alcance. La mitigación combina fallback a CPU, carga bajo demanda de modelos, snapshots, copias de seguridad, segmentación de red y poda de funcionalidades secundarias si el calendario lo exige.
+
+\section{Evolución respecto a la planificación inicial}
+La planificación inicial subestimó el esfuerzo de integración entre servicios heterogéneos. En el seguimiento realizado el 15 de mayo de 2026 se habían acumulado 425 horas de trabajo, distribuidas según la Tabla~\ref{tab:horas-reales-intermedias}. Esta cifra constituye una fotografía histórica del proyecto, no el cómputo definitivo de cierre.
 
 \begin{table}[H]
   \centering
-  \caption{Resumen textual del Gantt}
-  \label{tab:gantt-textual}
-  \begin{tabularx}{\textwidth}{lX}
+  \caption{Horas acumuladas en el seguimiento intermedio}
+  \label{tab:horas-reales-intermedias}
+  \begin{tabular}{lr}
     \toprule
-    Periodo & Trabajo principal \\
+    Bloque de trabajo & Horas acumuladas \\
     \midrule
-    Febrero 2026 & Definición del problema, objetivos, alcance, requisitos y planificación inicial. \\
-    Marzo 2026 & Investigación de alternativas, diseño de arquitectura, preparación del servidor y primeras pruebas de IA local. \\
-    Abril 2026 & Despliegue e integración de servicios: Open WebUI, Qdrant, Nextcloud, Immich, Home Assistant, n8n, Frigate y voz. \\
-    Mayo 2026 & Reorganización Docker, monitorización, autoreparabilidad, Telegram, Netdata, documentación de tools y validaciones. \\
-    Junio 2026 & Cierre de memoria, capturas, métricas finales, revisión de bibliografía, anexos y preparación de defensa. \\
+    Gestión del proyecto & 40 \\
+    Análisis y requisitos & 60 \\
+    Diseño de la solución & 55 \\
+    Implementación e integración & 205 \\
+    Pruebas y aseguramiento de calidad & 25 \\
+    Documentación & 40 \\
+    \midrule
+    \textbf{Total} & \textbf{425} \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+La desviación se concentró en compatibilidad de GPU, redes Docker, proxies, herramientas de Open WebUI, servicios de voz y recuperación tras el cambio de red local. Como respuesta, se redujo la prioridad de funciones accesorias, se separaron las pruebas por capas y se reservó el tramo final para estabilización, copias de seguridad, medición y documentación.
+
+El cómputo total del proyecto al cierre de la memoria se sitúa en 584 horas. La Tabla~\ref{tab:horas-reales-finales} recoge el desglose final por bloque, comparado con la previsión inicial.
+
+\begin{table}[H]
+  \centering
+  \caption{Horas finales reales frente a estimación inicial}
+  \label{tab:horas-reales-finales}
+  \begin{tabular}{lrrr}
+    \toprule
+    Bloque de trabajo & Estimado & Real & Desviación \\
+    \midrule
+    Gestión del proyecto         & 70  & 52  & $-18$ \\
+    Análisis e investigación     & 45  & 58  & $+13$ \\
+    Diseño de la solución        & 60  & 63  & $+3$  \\
+    Implementación e integración & 220 & 275 & $+55$ \\
+    Pruebas y validación         & 50  & 50  & $0$  \\
+    Redacción de memoria         & 100 & 86  & $-14$ \\
+    \midrule
+    \textbf{Total} & \textbf{545} & \textbf{584} & \textbf{$+39$} \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Para hacer visible dónde se produjo el incremento, la Tabla~\ref{tab:desviacion-implementacion} detalla los principales trabajos de implementación. Las cifras son una reconstrucción razonada a partir del seguimiento del proyecto y de las incidencias documentadas.
+
+\begin{table}[H]
+  \centering
+  \caption{Desglose de la desviación en implementación e integración}
+  \label{tab:desviacion-implementacion}
+  \small
+  \begin{tabularx}{\textwidth}{Xrrr}
+    \toprule
+    Actividad & Previstas & Reales & Desviación \\
+    \midrule
+    Infraestructura, Docker y redes & 55 & 65 & $+10$ \\
+    Núcleo conversacional, RAG y tools & 55 & 60 & $+5$ \\
+    Domótica, cámaras y automatización & 45 & 50 & $+5$ \\
+    Voz local: STT, TTS y Wyoming & 25 & 58 & $+33$ \\
+    Monitorización, backup y seguridad & 40 & 42 & $+2$ \\
+    \midrule
+    \textbf{Total de implementación} & \textbf{220} & \textbf{275} & \textbf{$+55$} \\
     \bottomrule
   \end{tabularx}
 \end{table}
 
-\section{Gestion del riesgo}
-Los riesgos principales se concentran en la compatibilidad del stack AMD/ROCm, la saturación de VRAM al combinar LLM, RAG, voz y visión, la dependencia de un único nodo físico, la seguridad del acceso remoto y el crecimiento incontrolado del alcance. La mitigación combina fallback a CPU, carga bajo demanda de modelos, snapshots, copias de seguridad, segmentación de red y poda de funcionalidades secundarias si el calendario lo exige.
+La gestión consumió menos horas porque no existía coordinación de equipo. En cambio, el análisis aumentó por la investigación de AMD/ROCm, modelos locales y alternativas de voz. La mayor desviación se produjo en STT/TTS: cada motor requería instalar dependencias distintas, comprobar su compatibilidad con CPU o GPU, descargar voces y modelos, exponer una API, integrarla mediante Wyoming o HTTP y repetir las pruebas con audio real. Varias opciones funcionaban de forma aislada, pero no reunían simultáneamente baja latencia, naturalidad, pronunciación correcta en español y estabilidad. Por ello se cerró el alcance con Piper como TTS operativo, faster-whisper y Wyoming Whisper como soluciones maduras de STT, y los motores más ambiciosos como experimentación documentada.
+
+\section{Revisión de riesgos durante la ejecución}
+\begin{table}[H]
+  \centering
+  \caption{Riesgos revisados tras la implementación}
+  \label{tab:riesgos-revisados}
+  \begin{tabularx}{\textwidth}{XlX}
+    \toprule
+    Riesgo & Nivel & Respuesta adoptada o pendiente \\
+    \midrule
+    Incompatibilidades AMD/ROCm & Alto & Validación por servicio, versiones fijadas y alternativa CPU. \\
+    Agotamiento de VRAM o memoria & Alto & Límites de recursos, menor concurrencia y reinicio controlado de Ollama. \\
+    Fallo físico o pérdida de datos & Alto & NVMe montado por UUID, backup Restic cifrado, comprobación de integridad y restauración de muestra. \\
+    Deuda operativa por configuraciones dispersas & Alto & Inventario, guía de réplica y documentación de dependencias. \\
+    Dependencia de automatizaciones externas & Medio & Webhooks verificables y rutas locales cuando resulta viable. \\
+    Exposición de secretos & Alto & Rotación, variables de entorno y ejemplos sanitizados. \\
+    Crecimiento descontrolado del alcance & Medio & Priorización del núcleo y traslado de ampliaciones a trabajo futuro. \\
+    \bottomrule
+  \end{tabularx}
+\end{table}

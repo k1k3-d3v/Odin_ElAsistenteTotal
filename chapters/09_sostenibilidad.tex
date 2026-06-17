@@ -1,32 +1,153 @@
 \chapter{Informe de sostenibilidad}
 
 \section{Autoevaluacion}
-La sostenibilidad de Odín se analiza desde tres dimensiones: económica, ambiental y social. El proyecto no trata la sostenibilidad como una sección añadida al final, sino como una consecuencia directa de su diseño: sustituir dependencias externas por infraestructura propia cambia los costes, el consumo, la privacidad y la responsabilidad del usuario.
+La sostenibilidad de Odín se analiza desde cuatro dimensiones: ambiental, económica, social y técnica. Ejecutar servicios de inteligencia artificial en infraestructura propia mejora la privacidad y reduce la dependencia de plataformas externas, pero traslada al usuario el consumo eléctrico, el mantenimiento y la responsabilidad sobre el ciclo de vida del hardware. Por ello, este capítulo combina una valoración cualitativa con mediciones reales obtenidas mediante dos enchufes inteligentes Sonoff integrados en Home Assistant.
 
 \section{Dimension ambiental}
-La dimensión ambiental se centra en el equilibrio entre ejecutar IA local y evitar el uso constante de infraestructuras remotas. El diseño debe minimizar consumo base mediante servicios ligeros, activar la GPU solo cuando la carga lo justifique y reutilizar el hardware para otros fines al final del ciclo principal del proyecto.
+El impacto ambiental directo durante el uso procede principalmente de la electricidad consumida por el servidor principal y, en menor medida, por la Raspberry Pi 5. El servidor concentra los modelos de lenguaje, almacenamiento, visión, transcripción y servicios Docker. La Raspberry Pi mantiene Home Assistant, la VPN y funciones domésticas que deben permanecer disponibles con un consumo reducido.
+
+\subsection{Metodologia de medicion}
+Cada equipo se conectó a un enchufe inteligente independiente. Home Assistant registra potencia instantánea y energía acumulada, lo que permite consultar el historial y construir promedios. La potencia expresa la demanda en un instante; la energía expresa el consumo durante un intervalo. No deben confundirse: un pico de inferencia de varios segundos no implica que el servidor mantenga esa potencia durante todo el día.
+
+Las proyecciones se calculan a partir de la energía diaria media observada:
+\[
+  E_{\mathrm{mes}} = E_{\mathrm{dia}} \cdot 30,
+  \qquad
+  E_{\mathrm{anual}} = E_{\mathrm{dia}} \cdot 365
+\]
+
+El coste se obtiene mediante \(C = E \cdot T\), donde \(E\) es la energía en kWh y \(T\) la tarifa en EUR/kWh. Las cifras son una estimación operativa basada en el periodo medido, no una auditoría energética anual. Las cargas de trabajo, la temperatura, la actividad de la GPU y las tareas de indexación pueden modificar los promedios.
+
+\subsection{Resultados de consumo}
+\begin{table}[H]
+  \centering
+  \caption{Potencia y energía observadas en el ecosistema Odín}
+  \label{tab:consumo-observado}
+  \begin{tabularx}{\textwidth}{Xrrr}
+    \toprule
+    Equipo & Potencia observada & Energía diaria media & Reparto \\
+    \midrule
+    Servidor principal (Torre) & 109,93 W & 0,64 kWh/día & 94,1\% \\
+    Raspberry Pi 5 & 3,81 W & 0,04 kWh/día & 5,9\% \\
+    \midrule
+    \textbf{Conjunto Odín} & \textbf{113,74 W} & \textbf{0,68 kWh/día} & \textbf{100\%} \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+La potencia recoge una lectura representativa del panel, no una media de 24 horas. La energía diaria sí procede del acumulado temporal y constituye la base adecuada para proyectar consumo y coste. El servidor representa aproximadamente el 94,1\% de la energía medida; la Raspberry Pi aporta el 5,9\% restante.
+
+\begin{table}[H]
+  \centering
+  \caption{Proyección energética por equipo}
+  \label{tab:proyeccion-energetica}
+  \begin{tabularx}{\textwidth}{Xrrr}
+    \toprule
+    Equipo & Consumo diario & Consumo mensual & Consumo anual \\
+    \midrule
+    Servidor principal & 0,64 kWh & 19,20 kWh & 233,60 kWh \\
+    Raspberry Pi 5 & 0,04 kWh & 1,20 kWh & 14,60 kWh \\
+    \midrule
+    \textbf{Total} & \textbf{0,68 kWh} & \textbf{20,40 kWh} & \textbf{248,20 kWh} \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\begin{figure}[H]
+  \centering
+  \begin{tikzpicture}[x=0.32cm,y=0.8cm,font=\small]
+    \draw[->] (0,0) -- (22,0) node[right]{kWh/mes};
+    \foreach \x in {0,5,10,15,20}
+      \draw (\x,0.08) -- (\x,-0.08) node[below]{\x};
+    \draw[fill=blue!65,rounded corners=2pt] (0,1.0) rectangle (19.2,1.55);
+    \node[anchor=east] at (-0.4,1.275) {Torre};
+    \node[anchor=west] at (19.45,1.275) {19,20};
+    \draw[fill=orange!70,rounded corners=2pt] (0,2.0) rectangle (1.2,2.55);
+    \node[anchor=east] at (-0.4,2.275) {Raspberry Pi};
+    \node[anchor=west] at (1.45,2.275) {1,20};
+  \end{tikzpicture}
+  \caption{Consumo energético mensual proyectado por equipo}
+  \label{fig:consumo-mensual}
+\end{figure}
+
+El gráfico muestra que las medidas de eficiencia deben centrarse en la torre. Apagar la Raspberry Pi reduciría muy poco el total y eliminaría servicios esenciales de domótica y acceso remoto. En cambio, descargar modelos no utilizados, limitar procesos intensivos, evitar indexaciones innecesarias y suspender el servidor durante ausencias prolongadas puede producir una reducción apreciable.
+
+\subsection{Coste electrico}
+La tarifa real varía según contrato, impuestos y franja horaria. Para no presentar una única cifra como universal, la Tabla~\ref{tab:sensibilidad-coste} muestra tres escenarios calculados sobre los 248,20 kWh anuales proyectados.
+
+\begin{table}[H]
+  \centering
+  \caption{Sensibilidad del coste eléctrico según tarifa}
+  \label{tab:sensibilidad-coste}
+  \begin{tabular}{rrr}
+    \toprule
+    Tarifa & Coste mensual & Coste anual \\
+    \midrule
+    0,15 EUR/kWh & 3,06 EUR & 37,23 EUR \\
+    0,20 EUR/kWh & 4,08 EUR & 49,64 EUR \\
+    0,25 EUR/kWh & 5,10 EUR & 62,05 EUR \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+El dashboard utiliza provisionalmente 0,20 EUR/kWh, por lo que el coste operativo esperado es de unos 4,08 EUR mensuales y 49,64 EUR anuales. Esta cifra cubre electricidad, pero no amortización del hardware, conectividad ni sustitución de discos, que pertenecen al análisis económico general.
+
+\subsection{Estimacion de emisiones}
+La intensidad de emisiones de la electricidad cambia con el país, la hora y la composición del sistema eléctrico. La Agencia Europea de Medio Ambiente define este indicador en gramos de CO\(_2\) equivalente por kWh y confirma una tendencia descendente asociada al aumento de generación renovable \citep{eeaElectricityIntensity}. Red Eléctrica publica también datos de emisiones para el sistema español \citep{reeEmisionesElectricidad}.
+
+Por esta variabilidad no se atribuye a Odín una cifra absoluta de huella de carbono. Como escenario ilustrativo, aplicando un factor medio de 0,20 kg CO\(_2\)e/kWh al consumo anual proyectado:
+\[
+  248,20\ \mathrm{kWh/a} \cdot 0,20\ \mathrm{kg\ CO}_{2}\mathrm{e/kWh}
+  = 49,64\ \mathrm{kg\ CO}_{2}\mathrm{e/a}
+\]
+El resultado representa únicamente emisiones asociadas al uso eléctrico. No incluye fabricación, transporte ni fin de vida. La reutilización del servidor y de la Raspberry Pi evita adquirir dispositivos dedicados adicionales y reduce el impacto incorporado frente a una renovación completa del hardware.
+
+\subsection{Medidas de reduccion}
+\begin{table}[H]
+  \centering
+  \caption{Medidas de eficiencia energética aplicadas o propuestas}
+  \label{tab:medidas-eficiencia}
+  \small
+  \begin{tabularx}{\textwidth}{p{0.27\textwidth}Xp{0.19\textwidth}}
+    \toprule
+    Medida & Justificación & Estado \\
+    \midrule
+    Modelos bajo demanda & Evita mantener recursos ocupados y ejecutar inferencias sin una petición real. & Aplicada \\
+    STT en CPU & Impide que la transcripción compita permanentemente con Ollama por la GPU. & Aplicada \\
+    Separación en Raspberry Pi & Mantiene domótica y VPN con bajo consumo aunque la torre esté en mantenimiento. & Aplicada \\
+    Limpieza de servicios & Elimina contenedores, pruebas y procesos que ya no aportan funcionalidad. & Aplicada \\
+    Suspensión programada & Reduce consumo durante ausencias o periodos sin uso del núcleo de IA. & Propuesta \\
+    Alertas de potencia anómala & Permiten detectar procesos bloqueados o cargas inesperadas. & Propuesta \\
+    Revisión periódica & Compara el promedio mensual con la línea base de 20,40 kWh. & Propuesta \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
 
 \section{Dimension economica}
-La viabilidad económica se basa en pasar de un modelo OPEX de suscripciones y APIs externas a un modelo CAPEX de infraestructura propia. La memoria deberá comparar esta inversión con alternativas comerciales, teniendo en cuenta no solo euros, sino independencia, aprendizaje y control.
+La viabilidad económica combina una inversión inicial en infraestructura propia con un coste eléctrico moderado. El proyecto sustituye parte del gasto recurrente en APIs y suscripciones por hardware reutilizable y servicios abiertos. No se afirma que el autoalojamiento sea siempre más barato: su valor incluye privacidad, aprendizaje, control técnico y disponibilidad local. El escenario central de electricidad, 49,64 EUR anuales, debe sumarse a la amortización y al mantenimiento descritos en el capítulo de gestión económica.
 
 \section{Dimension social}
-Socialmente, Odín responde a una preocupación creciente: la pérdida de control sobre información íntima en entornos digitales opacos. Su aportación es demostrar que una parte de la IA personal puede ejecutarse de forma privada y auditable. Al mismo tiempo, se reconocerá la barrera técnica del autoalojamiento, que limita su adopción por usuarios no especializados.
+Odín demuestra que una parte relevante de la IA personal puede ejecutarse de forma privada y auditable. Documentos, voz, fotografías, salud y eventos domésticos permanecen bajo control del usuario. Como contrapartida, el autoalojamiento presenta una barrera técnica elevada y traslada al propietario responsabilidades de seguridad, mantenimiento y recuperación ante fallos.
+
+\section{Dimension tecnica}
+La sostenibilidad técnica consiste en mantener el sistema comprensible y recuperable a largo plazo. La separación por stacks, los healthchecks, la monitorización, el backup cifrado y la documentación de réplica reducen la dependencia de conocimiento implícito. También se evita mantener componentes experimentales que no ofrecen suficiente valor, porque cada servicio adicional incrementa consumo, superficie de ataque y carga de mantenimiento.
 
 \section{Matriz de sostenibilidad}
 \begin{table}[H]
   \centering
   \caption{Matriz de sostenibilidad del proyecto}
   \label{tab:sostenibilidad}
-  \begin{tabularx}{\textwidth}{lXXX}
+  \small
+  \begin{tabularx}{\textwidth}{p{0.14\textwidth}XXX}
     \toprule
-    Dimension & Impactos positivos & Riesgos o impactos negativos & Medidas de mejora \\
+    Dimensión & Impactos positivos & Riesgos o impactos negativos & Medidas adoptadas \\
     \midrule
-    Ambiental & Reutilización de hardware, reducción de llamadas a servicios externos y almacenamiento local controlado. & Consumo eléctrico permanente del servidor y uso puntual de GPU para IA o machine learning. & Medir consumo con enchufe medidor, ajustar servicios activos, evitar cargas GPU innecesarias y apagar pruebas no usadas. \\
-    Económica & Menor dependencia de suscripciones, APIs externas y plataformas cerradas. Aprendizaje transferible a administración real de sistemas. & Inversión inicial en hardware, discos, NVMe externo, adaptador USB y futuro medidor de consumo. & Comparar coste mensual equivalente, estimar amortización y documentar coste energético real. \\
-    Social & Mayor privacidad, soberanía digital y trazabilidad de datos personales. & Barrera técnica alta para usuarios no especializados y responsabilidad directa sobre seguridad. & Documentar instalación, separar secretos, usar VPN, restringir exposición y mantener copias verificables. \\
-    Técnica & Sistema modular, ampliable y auditable mediante Docker Compose, logs y documentación. & Riesgo de complejidad excesiva, deuda técnica y dependencia de un único nodo físico. & Separar stacks, limpiar servicios no usados, monitorizar salud y planificar restauración desde backup. \\
+    Ambiental & Reutilización de hardware y consumo medido de 20,40 kWh/mes. & Funcionamiento prolongado de la torre y picos asociados a IA. & Medición Sonoff, modelos bajo demanda y separación de servicios ligeros. \\
+    Económica & Menor dependencia de APIs y suscripciones. & Inversión, mantenimiento y unos 49,64 EUR/año de electricidad. & Reutilización, software libre y seguimiento del coste real. \\
+    Social & Privacidad, soberanía digital y trazabilidad. & Barrera técnica y responsabilidad directa sobre datos sensibles. & VPN, aislamiento de secretos, documentación y backup. \\
+    Técnica & Arquitectura modular, observable y reproducible. & Complejidad operativa y dependencia del nodo principal. & Compose, healthchecks, monitorización y restauración verificada. \\
     \bottomrule
   \end{tabularx}
 \end{table}
 
-Como mejora futura se añadirá medición real de consumo eléctrico mediante un medidor externo. Esto permitirá transformar la estimación económica en datos observados: coste diario, coste mensual, consumo en reposo, consumo durante inferencia y consumo durante tareas de GPU. Con esos datos se podrán generar gráficas y comparar el coste real de Odín con alternativas basadas en nube o suscripciones.
+La evaluación muestra que el impacto principal no está en la Raspberry Pi ni en los sensores, sino en mantener disponible el servidor de inferencia. La estrategia sostenible no consiste en apagar indiscriminadamente, sino en asignar cada carga al equipo adecuado, medir su comportamiento y mantener activo únicamente aquello que aporta una función real.

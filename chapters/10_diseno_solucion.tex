@@ -1,60 +1,216 @@
-\chapter{Especificacion y diseno de la solucion}
+\chapter{Especificación y diseño de la solución}
 
-\section{Vision general}
-Odín se diseña como una arquitectura por capas. La capa física proporciona cómputo, almacenamiento y aceleración. La capa de virtualización y contenedores aísla servicios. La capa de datos almacena documentos, configuraciones, embeddings y registros. La capa cognitiva ejecuta modelos locales y recuperación semántica. La capa de orquestación conecta eventos con acciones. Finalmente, la capa de interacción permite usar el sistema desde voz, móvil, panel web o automatizaciones.
+\section{Objetivo del diseño}
+Odín debe reunir servicios personales que normalmente funcionan de forma
+aislada: conversación con IA, documentos, fotografías, automatización,
+domótica, cámaras, voz y monitorización. El diseño persigue que todos ellos
+puedan utilizarse desde una interfaz común sin entregar los datos personales a
+un proveedor externo.
 
-\section{Arquitectura del sistema}
-La arquitectura de Odín se organiza alrededor de un servidor principal y una Raspberry Pi 5 dedicada a Home Assistant. El servidor aloja los servicios de IA, memoria, fotos, automatización, monitorización y herramientas auxiliares. Home Assistant permanece fuera de Docker en la Raspberry Pi, porque ya funciona como centro domótico estable; Odín se conecta a él mediante herramientas, proxy local y HA Voice.
+La solución se resume en tres elementos:
+
+\begin{enumerate}
+  \item \textbf{Servidor Odín}: ejecuta la IA y almacena los datos personales.
+  \item \textbf{Raspberry Pi 5}: ejecuta Home Assistant y controla el hogar.
+  \item \textbf{Dispositivos cliente}: permiten acceder mediante navegador,
+        móvil, voz o VPN.
+\end{enumerate}
+
+Esta separación evita mezclar la infraestructura de IA con el control
+domótico. Si un modelo o un contenedor falla, Home Assistant puede continuar
+funcionando; si la conexión a Internet desaparece, los servicios principales
+siguen disponibles dentro de la red local.
+
+\section{Especificación funcional}
+La \cref{tab:requisitos-diseno} recoge únicamente las capacidades que
+condicionan la arquitectura. El inventario detallado de servicios y versiones
+se presenta posteriormente, en el capítulo de desarrollo.
 
 \begin{table}[H]
   \centering
-  \caption{Capas de arquitectura de Odín}
-  \label{tab:arquitectura-capas}
+  \caption{Requisitos esenciales de la solución}
+  \label{tab:requisitos-diseno}
   \begin{tabularx}{\textwidth}{lX}
     \toprule
-    Capa & Componentes principales \\
+    Requisito & Respuesta de diseño \\
     \midrule
-    Interacción & Open WebUI, HA Voice, Telegram, futuro dashboard de Home Assistant. \\
-    IA e inferencia & Ollama, Open WebUI, servicios STT/TTS, Piper, faster-whisper, Wyoming Whisper y ASR propio. \\
-    Memoria y conocimiento & Nextcloud, Qdrant, ingesta de documentos, Crawl4AI y herramientas de búsqueda. \\
-    Domótica y mundo físico & Home Assistant en Raspberry Pi 5, sensores, luces, música, temporizadores, presencia y Frigate. \\
-    Automatización & n8n, webhooks, cron, herramientas de Open WebUI y scripts de mantenimiento. \\
-    Observabilidad & Netdata, exportador JSON para Home Assistant, Telegram, smartmontools, sensores y logs. \\
-    Acceso remoto & Tailscale como VPN principal y Cloudflared como pieza histórica de transición. \\
-    Almacenamiento & Disco raíz, \nolinkurl{/mnt/almacen}, biblioteca Immich y futuro NVMe externo para backup físico. \\
+    Privacidad & Procesamiento y almacenamiento local de conversaciones,
+    documentos, fotografías y grabaciones. \\
+    Interfaz única & Open WebUI para conversación y Home Assistant para
+    supervisión, voz y control del hogar. \\
+    Memoria personal & Nextcloud conserva los originales y Qdrant permite
+    recuperarlos mediante búsqueda semántica. \\
+    Automatización & Las tools y n8n convierten una petición en una acción
+    verificable sobre un servicio concreto. \\
+    Acceso remoto & Tailscale proporciona acceso privado sin publicar cada
+    aplicación directamente en Internet. \\
+    Mantenimiento & Docker Compose, monitorización, alertas y documentación
+    reproducible reducen el trabajo operativo. \\
     \bottomrule
   \end{tabularx}
 \end{table}
 
-El flujo normal parte de una entrada del usuario, ya sea desde chat, voz o automatización. Open WebUI interpreta la intención y, cuando corresponde, invoca una tool. Esa tool puede consultar Nextcloud, Qdrant, Immich, Frigate, Home Assistant o n8n. Los resultados vuelven al modelo, que responde al usuario con texto, imagen, confirmación o alerta. La arquitectura separa deliberadamente interfaz, ejecución y almacenamiento: el modelo decide qué herramienta usar, pero la acción real se delega en servicios especializados.
+\section{Arquitectura general}
+La arquitectura física es deliberadamente sencilla. El servidor principal
+concentra los servicios con mayor consumo de CPU, memoria, GPU y
+almacenamiento. La Raspberry Pi conserva Home Assistant como núcleo doméstico
+independiente y actúa además como punto de entrada de la VPN. En acceso remoto,
+el cliente entra primero en la Raspberry Pi mediante Tailscale y desde ella
+alcanza el servidor Odín a través de la red local.
 
-\pendingfigure{Arquitectura general de Odín y relación entre servidor, Raspberry Pi 5, Home Assistant, Open WebUI, Qdrant, Nextcloud, Immich, Frigate, n8n, Netdata y clientes}{fig:arquitectura-general}
+\begin{figure}[H]
+  \centering
+  \begin{tikzpicture}[
+    node distance=1.05cm,
+    font=\sffamily\small,
+    >=Stealth,
+    block/.style={
+      draw=black!45,
+      fill=black!3,
+      rounded corners=3pt,
+      minimum height=3.1cm,
+      text width=3.35cm,
+      align=center,
+      inner sep=10pt
+    },
+    link/.style={->, thick, draw=black!55}
+  ]
+    \node[block] (clients) {
+      \textbf{Dispositivos cliente}\\[4pt]
+      Navegador y móvil\\
+      Satélite de voz\\
+      Acceso remoto
+    };
 
-\section{Modelo de datos}
-El modelo de datos debe distinguir entre datos personales persistentes, configuraciones de servicios, logs de automatización, embeddings para búsqueda semántica y estados temporales de conversación. Esta separación es importante para definir copias de seguridad, políticas de retención y aislamiento entre servicios.
+    \node[block, right=of clients] (ha) {
+      \textbf{Raspberry Pi 5}\\[4pt]
+      Entrada VPN\\
+      Tailscale\\
+      Home Assistant\\
+      Voz local\\
+      Sensores y actuadores
+    };
 
-\section{Flujos principales}
+    \node[block, right=of ha] (server) {
+      \textbf{Servidor Odín}\\[4pt]
+      IA y conversación\\
+      Memoria y archivos\\
+      Automatización y multimedia\\
+      Monitorización
+    };
+
+    \draw[link, <->] (clients) --
+      node[above, midway, font=\tiny, fill=white, inner sep=1pt]
+      {\shortstack{VPN\\Tailscale}} (ha);
+    \draw[link, <->] (ha) --
+      node[above, midway, font=\tiny, fill=white, inner sep=1pt]
+      {\shortstack{LAN\\local}} (server);
+  \end{tikzpicture}
+  \caption{Arquitectura simplificada de Odín}
+  \label{fig:arquitectura-general}
+\end{figure}
+
+\section{Organización del servidor}
+Dentro del servidor, los contenedores se agrupan por función. Esta clasificación
+es más útil que representar cada aplicación como una pieza independiente,
+porque muestra qué responsabilidad tiene cada grupo.
+
+\begin{table}[H]
+  \centering
+  \caption{Bloques funcionales del servidor Odín}
+  \label{tab:arquitectura-capas}
+  \begin{tabularx}{\textwidth}{lXX}
+    \toprule
+    Bloque & Función & Servicios representativos \\
+    \midrule
+    Inteligencia & Conversación, inferencia y herramientas & Open WebUI,
+    Ollama y servicios de voz \\
+    Memoria & Archivos y recuperación semántica & Nextcloud y Qdrant \\
+    Contenido & Fotografías, recetas y documentos & Immich, Mealie y
+    Stirling PDF \\
+    Automatización & Webhooks, flujos y acciones externas & n8n y tools de
+    Open WebUI \\
+    Operación & Cámaras, métricas y administración visual & Frigate, Netdata
+    y healthchecks \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\section{Flujo de una petición}
+Todas las interacciones siguen el mismo recorrido básico:
+
+\begin{enumerate}
+  \item El usuario formula una petición desde chat, voz o Home Assistant.
+  \item El modelo interpreta la intención y selecciona una herramienta.
+  \item La herramienta consulta o modifica el servicio especializado.
+  \item El servicio devuelve un resultado verificable.
+  \item Odín presenta texto, imagen, confirmación o alerta al usuario.
+\end{enumerate}
+
+\begin{figure}[H]
+  \centering
+  \begin{tikzpicture}[
+    font=\sffamily\scriptsize,
+    node distance=0.45cm,
+    >=Stealth,
+    flowbox/.style={
+      draw=black!40,
+      fill=blue!5,
+      rounded corners=2pt,
+      minimum width=2.6cm,
+      minimum height=1cm,
+      align=center
+    }
+  ]
+    \node[flowbox] (request) {Petición};
+    \node[flowbox, right=of request] (model) {Interpretación};
+    \node[flowbox, right=of model] (tool) {Tool};
+    \node[flowbox, right=of tool] (service) {Servicio};
+    \node[flowbox, right=of service] (answer) {Resultado};
+
+    \draw[->, thick] (request) -- (model);
+    \draw[->, thick] (model) -- (tool);
+    \draw[->, thick] (tool) -- (service);
+    \draw[->, thick] (service) -- (answer);
+  \end{tikzpicture}
+  \caption{Flujo común de interacción con Odín}
+  \label{fig:flujo-odin}
+\end{figure}
+
+El modelo no controla directamente los dispositivos ni escribe por sí mismo en
+los repositorios. Las acciones se delegan en tools con parámetros definidos.
+Esta separación facilita registrar errores, comprobar resultados y limitar el
+alcance de cada integración.
+
+\section{Datos y persistencia}
+Los datos se separan según su finalidad:
+
 \begin{itemize}
-  \item Flujo de consulta: entrada en lenguaje natural, clasificación, recuperación de contexto, inferencia local y respuesta.
-  \item Flujo de ingesta: recepción de contenido, extracción, normalización, clasificación, almacenamiento e indexación.
-  \item Flujo de fotografía: subida automática desde móvil, procesamiento, almacenamiento, búsqueda y recuperación posterior.
-  \item Flujo domótico: comando, interpretación, validación, acción sobre Home Assistant y confirmación.
-  \item Flujo de monitorización: métrica, detección de anomalía, decisión, alerta y posible autoreparación.
-  \item Flujo de acceso remoto: cliente externo, túnel seguro, autenticación y acceso a servicios internos.
+  \item \textbf{Originales}: documentos, fotografías, vídeos y recetas.
+  \item \textbf{Índices}: embeddings y metadatos utilizados para búsquedas.
+  \item \textbf{Configuración}: ficheros Compose, variables y ajustes.
+  \item \textbf{Operación}: estados, métricas, eventos y logs.
 \end{itemize}
 
-\section{Decisiones de diseno}
-Las decisiones de diseño se documentarán con especial atención a las herramientas usadas. No bastará con decir que se ha utilizado Docker, n8n u Ollama; se explicará qué aporta cada herramienta, qué alternativas existían, qué configuración fue necesaria y qué límites aparecieron durante el despliegue.
+Los originales no se sustituyen por la base vectorial. Qdrant conserva
+representaciones para localizar información, mientras que Nextcloud, Immich o
+Mealie mantienen el contenido fuente. Esta distinción permite reconstruir los
+índices y definir copias de seguridad claras.
 
-\section{Seguridad, privacidad y calidad}
-El diseño sigue una lógica de mínima exposición: servicios internos no publicados directamente, acceso remoto mediante túneles cifrados, separación por redes, credenciales gestionadas con cuidado y copias de seguridad verificables. La calidad se medirá por estabilidad de servicios, trazabilidad de flujos, reproducibilidad de despliegues y cumplimiento de casos de uso.
+\section{Seguridad y acceso remoto}
+El criterio principal es no publicar innecesariamente los servicios internos.
+La red local es la ruta habitual. Para el acceso remoto, Tailscale termina en
+la Raspberry Pi 5, que actúa como puerta de entrada hacia Home Assistant y el
+servidor Odín.
+Las credenciales se almacenan fuera del repositorio, las tools tienen funciones
+limitadas y los datos sensibles permanecen en los equipos del proyecto.
 
-\section{Acceso remoto: OpenVPN, WireGuard y Tailscale}
-Uno de los requisitos transversales de Odín es poder acceder al servidor desde fuera del hogar sin exponer directamente los servicios internos a Internet. Durante la planificación se contemplaron alternativas clásicas como OpenVPN y WireGuard. OpenVPN es una solución madura y flexible basada en SSL/TLS, con soporte para certificados, usuarios, reglas y despliegues complejos \cite{openvpnHowTo,openvpnManual}. Su principal inconveniente para este proyecto es la carga de administración: certificados, perfiles, puertos, reglas de red y mantenimiento operativo.
-
-WireGuard representa una alternativa más moderna, simple y eficiente. Su diseño se apoya en criptografía actual y en el concepto de \textit{cryptokey routing}, asociando claves públicas con direcciones permitidas dentro del túnel \cite{wireguardDocs,wireguardWhitepaper}. Para Odín era una opción técnicamente muy atractiva, pero seguía exigiendo resolver manualmente aspectos prácticos: direccionamiento, claves, peers, exposición o reenvío de puertos, DNS dinámico y comportamiento ante redes cambiantes.
-
-La implementación final adopta Tailscale. Tailscale utiliza WireGuard como protocolo criptográfico subyacente, pero añade una capa de coordinación, identidad, NAT traversal, DNS interno y gestión de dispositivos mediante una red privada denominada \textit{tailnet} \cite{tailscaleConcepts,tailscaleConnectivity}. Esta decisión se tomó por motivos operativos: la solución previa basada en DuckDNS resultó inestable en determinados momentos, especialmente cuando el servicio DNS dinámico fallaba o se degradaba. Tailscale elimina la dependencia directa de DuckDNS, evita abrir puertos y permite acceder al servidor por VPN de forma más robusta.
+\subsection{Elección de Tailscale}
+Se estudiaron OpenVPN, WireGuard y Tailscale. OpenVPN ofrece mucha
+configurabilidad, pero requiere más administración. WireGuard es ligero y
+eficiente, aunque obliga a gestionar manualmente peers, claves, DNS y
+conectividad. Tailscale utiliza WireGuard y añade identidad, coordinación,
+resolución de nombres y NAT traversal \citep{wireguardDocs,tailscaleConcepts}.
 
 \begin{table}[H]
   \centering
@@ -64,12 +220,26 @@ La implementación final adopta Tailscale. Tailscale utiliza WireGuard como prot
     \toprule
     Criterio & OpenVPN & WireGuard & Tailscale \\
     \midrule
-    Base técnica & SSL/TLS, certificados y perfiles & Protocolo moderno con claves públicas & WireGuard más coordinación e identidad \\
     Configuración & Alta & Media & Baja \\
-    NAT traversal & Requiere diseño de red o puerto accesible & Requiere diseño manual & Integrado con conexión directa o relays \\
-    DNS/dispositivos & Manual & Manual & MagicDNS y tailnet \cite{tailscaleMagicDNS} \\
-    Mantenimiento & Alto & Medio & Bajo \\
-    Encaje en Odín & Potente pero pesado & Eficiente pero más manual & Elegido por robustez y simplicidad \\
+    Apertura de puertos & Habitual & Habitual & No necesaria \\
+    Gestión de dispositivos & Manual & Manual & Centralizada \\
+    Encaje en Odín & Excesivo & Válido & Elegido \\
     \bottomrule
   \end{tabularx}
 \end{table}
+
+Tailscale se adopta porque reduce la complejidad operativa y evita depender de
+una única ruta pública o de DNS dinámico. Su ubicación en la Raspberry Pi
+mantiene la entrada remota separada del host que ejecuta IA y almacena los
+datos. Cloudflared permanece documentado como solución utilizada durante una
+fase anterior, no como requisito del diseño definitivo.
+
+\section{Criterios de calidad}
+La solución se considera correctamente diseñada si cumple cuatro condiciones:
+
+\begin{itemize}
+  \item los servicios esenciales continúan disponibles dentro de la red local;
+  \item cada acción puede atribuirse a una tool o automatización concreta;
+  \item los datos persistentes pueden copiarse y restaurarse;
+  \item una nueva instalación puede reproducirse con la documentación incluida.
+\end{itemize}

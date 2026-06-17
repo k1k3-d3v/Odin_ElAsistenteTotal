@@ -1,7 +1,7 @@
 \chapter{Objetivos, alcance y requisitos actualizados}
 
 \section{Objetivo general}
-El objetivo general no ha cambiado respecto al GEP: diseñar y desplegar un asistente personal local, autoalojado y proactivo que combine inteligencia artificial, memoria documental, domótica y operación segura bajo control del usuario. La formulación actual es más precisa porque el proyecto ya ha dejado de ser hipotético. Odín no pretende construir un modelo fundacional propio, sino una arquitectura capaz de hacer útil la IA local sobre datos y servicios personales reales.
+El objetivo general no ha cambiado respecto al GEP, diseñar y desplegar un asistente personal local, autoalojado y proactivo que combine inteligencia artificial, memoria documental, domótica y operación segura bajo control del usuario. La formulación actual es más precisa porque el proyecto ya ha dejado de ser hipotético. Éste Trabajo de fin de grado no pretende construir un modelo fundacional propio, sino una arquitectura capaz de hacer útil la IA local sobre datos y servicios personales reales.
 
 \section{Objetivos específicos revisados}
 \begin{longtable}{p{0.08\textwidth}p{0.34\textwidth}p{0.16\textwidth}p{0.34\textwidth}}
@@ -24,7 +24,7 @@ El objetivo general no ha cambiado respecto al GEP: diseñar y desplegar un asis
   O5 & Controlar el entorno físico. & Avanzado & Home Assistant, HA Voice, presencia, luces, música, temporizadores y cámaras. \\
   O6 & Mantener acceso remoto seguro. & Avanzado & Tailscale adoptado como VPN principal. \\
   O7 & Incorporar monitorización y proactividad. & Avanzado & Netdata, Telegram, exportador HA y autoreparabilidad conservadora. \\
-  O8 & Definir estrategia de backup y continuidad. & Parcial & Política con NVMe externo definida; falta prueba final de restauración. \\
+  O8 & Definir estrategia de backup y continuidad. & Parcial & Política con NVMe externo definida, falta prueba final de restauración. \\
   O9 & Documentar decisiones, límites y resultados. & En curso & Memoria extensa, bibliografía real y anexos técnicos saneados. \\
   \bottomrule
 \end{longtable}
@@ -32,9 +32,9 @@ El objetivo general no ha cambiado respecto al GEP: diseñar y desplegar un asis
 \section{Correcciones respecto al alcance inicial}
 El GEP inicial era deliberadamente ambicioso y hablaba de un ``asistente total''. El seguimiento permite separar mejor tres categorías:
 \begin{itemize}
-  \item \textbf{núcleo obligatorio}: memoria, conversación, domótica, fotos, acceso remoto y operación segura;
-  \item \textbf{capacidades ya alcanzadas}: notas, búsqueda documental, Immich, Frigate, recordatorios, lista de compra, salud del sistema y alertas;
-  \item \textbf{líneas pospuestas o fuera de alcance}: clasificación avanzada de correos, avisos de contraseñas, dashboard único terminado y agente de escritorio.
+  \item \textbf{núcleo obligatorio}: Memoria, conversación, domótica, fotos, acceso remoto y operación segura.
+  \item \textbf{capacidades ya alcanzadas}: Notas, búsqueda documental, Immich, Frigate, recordatorios, lista de compra, salud del sistema y alertas.
+  \item \textbf{líneas pospuestas o fuera de alcance}: Clasificación avanzada de correos, avisos de contraseñas
 \end{itemize}
 
 Esta corrección mejora el rigor del proyecto. No todo lo imaginable debe entrar en el TFG para que el sistema sea valioso. De hecho, decidir que correos y contraseñas quedan fuera de alcance evita duplicar servicios especializados que ya resuelven bien esos problemas y permite concentrar el esfuerzo en lo diferencial de Odín.
@@ -77,7 +77,7 @@ Esta corrección mejora el rigor del proyecto. No todo lo imaginable debe entrar
     \midrule
     Privacidad & Priorizar ejecución local, no publicar secretos y minimizar exposición de servicios. \\
     Mantenibilidad & Usar Compose, documentación versionada y separación progresiva por dominios. \\
-    Disponibilidad & Mantener Home Assistant desacoplado del servidor principal y monitorizar servicios. \\
+    Disponibilidad & Detectar caídas de servicios, enviar avisos proactivos por Telegram y aplicar autoreparaciones conservadoras cuando procede. \\
     Extensibilidad & Añadir nuevas tools sin rediseñar toda la arquitectura. \\
     Reproducibilidad & Conservar configuraciones saneadas y decisiones técnicas trazables. \\
     Usabilidad & Preferir flujos conversacionales y respuestas realmente útiles frente a demos aisladas. \\
@@ -96,11 +96,11 @@ Una de las ideas más importantes del proyecto es que Odín no exige un catálog
     \toprule
     Dispositivo & Papel posible & Tratamiento económico \\
     \midrule
-    Sensor de presencia & Detectar llegada o actividad y disparar automatizaciones. & Opcional; coste incremental cero si ya estaba disponible. \\
-    Enchufe inteligente & Encender, apagar o medir consumo de equipos concretos. & Opcional; útil para futuras métricas energéticas. \\
-    Luces inteligentes & Control conversacional de la habitación. & Opcional; integrables como entidades HA. \\
-    Altavoz o satélite de voz & Interacción oral distribuida. & Opcional; HA Voice ya cubre el caso principal. \\
-    Cámara compatible & Eventos y capturas para Frigate. & Opcional; amplía seguridad y contexto visual. \\
+    Sensor de presencia & Detectar llegada o actividad y disparar automatizaciones. & Opcional, coste incremental cero si ya estaba disponible. \\
+    Enchufe inteligente & Encender, apagar o medir consumo de equipos concretos. & Opcional, útil para futuras métricas energéticas. \\
+    Luces inteligentes & Control conversacional de la habitación. & Opcional, integrables como entidades HA. \\
+    Altavoz o satélite de voz & Interacción oral distribuida. & Opcional, desde el teléfono también puedes accionar cualquier mensaje. \\
+    Cámara compatible & Eventos y capturas para Frigate. & Opcional, amplía seguridad y contexto visual. \\
     \bottomrule
   \end{tabularx}
 \end{table}

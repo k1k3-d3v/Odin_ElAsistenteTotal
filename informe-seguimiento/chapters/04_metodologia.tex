@@ -1,32 +1,30 @@
 \chapter{Metodología y rigor}
 
 \section{Metodología adoptada}
-El proyecto sigue una metodología iterativa e incremental. La elección se debe a que Odín no es un producto cerrado con requisitos completamente estables desde el primer día, sino una integración de sistemas heterogéneos: modelos locales, contenedores, redes, almacenamiento, domótica y automatización. En este tipo de proyecto, una planificación puramente secuencial habría ocultado demasiada incertidumbre técnica.
+El proyecto sigue una metodología iterativa e incremental. Con el principal objetivo de ser muy escalable a largo plazo. La elección se debe a que Odín no es un producto cerrado con requisitos completamente estables desde el primer día, sino una integración de sistemas heterogéneos, modelos locales, contenedores, redes, almacenamiento, domótica y automatización.
 
 Cada iteración busca producir una capacidad verificable:
 \begin{enumerate}
-  \item desplegar una pieza;
-  \item probarla de forma aislada;
-  \item integrarla con el resto;
-  \item registrar problemas, decisiones y límites;
-  \item decidir si se consolida, se sustituye o se descarta.
+  \item Desplegar una pieza.
+  \item Probarla de forma aislada.
+  \item Integrarla con el resto.
+  \item Registrar problemas, decisiones y límites.
+  \item Decidir si se consolida, se sustituye o se descarta.
 \end{enumerate}
 
 \section{Cambios respecto a la metodología inicial}
-La metodología no ha cambiado de raíz, pero sí se ha endurecido. Al comienzo bastaba con experimentar; a medida que el sistema creció fue necesario introducir más disciplina operativa:
+La metodología no ha cambiado de raíz, pero sí se ha endurecido. Al comienzo bastaba con experimentar, a medida que el sistema creció fue necesario introducir más disciplina operativa:
 \begin{itemize}
-  \item versionado de configuraciones Docker saneadas;
-  \item documentación de decisiones técnicas;
-  \item separación progresiva de secretos;
-  \item comprobación de servicios mediante logs y \textit{healthchecks};
-  \item uso de avisos proactivos y monitorización visual;
-  \item priorización de cambios reversibles frente a limpiezas agresivas.
+  \item Versionado de configuraciones Docker saneadas.
+  \item Documentación de decisiones técnicas.
+  \item Separación progresiva de secretos.
+  \item Comprobación de servicios mediante logs y \textit{healthchecks}.
+  \item Uso de avisos proactivos y monitorización visual.
+  \item Priorización de cambios reversibles frente a limpiezas agresivas.
 \end{itemize}
 
 \section{Rigor técnico}
-El rigor del trabajo se apoya en evidencias repetibles. No basta con que una herramienta haya funcionado una vez: se documenta qué servicio la soporta, qué entrada recibe, qué salida devuelve, qué dependencias tiene y qué ocurre cuando falla. Esta práctica es especialmente importante en flujos como la memoria documental, la salud del sistema, la domótica o la búsqueda de fotos.
-
-También se ha aplicado rigor negativo: cuando una solución no alcanza el nivel esperado, se documenta y se descarta. Esto ha ocurrido con varios motores TTS y con configuraciones que saturaban la GPU. La decisión profesional no consiste en mantener todas las ideas iniciales, sino en justificar por qué algunas dejan de ser buenas decisiones cuando se contrastan con el sistema real.
+El rigor técnico se ha basado en probar las piezas dentro del sistema real y no solo por separado. No basta con que una herramienta responda una vez si después falla al integrarla con el resto. Por eso se han revisado flujos completos como guardar una nota, buscar documentos, consultar fotos o comprobar la salud del servidor. También se han documentado las alternativas descartadas. En la voz, por ejemplo, algunas soluciones parecían mejores sobre el papel, pero eran demasiado lentas o daban problemas con AMD, así que se han dejado fuera aunque fueran más atractivas en teoría.
 
 \section{Seguimiento y control}
-El seguimiento se realiza mediante repositorio Git, documentos técnicos, inventario de contenedores, bitácora de decisiones y revisión periódica del alcance. Esta combinación permite evaluar no solo el resultado, sino el proceso por el que se ha llegado a él. El informe de seguimiento refleja precisamente esa madurez: el proyecto ya no se mide por una lista de deseos, sino por la calidad de sus decisiones y por su capacidad de sostenerse operativamente.
+El seguimiento se ha apoyado en Git, documentos técnicos, inventario de contenedores y una bitácora de decisiones. Esto ha sido necesario porque el servidor ha ido creciendo con pruebas, rutas antiguas y servicios que ya no siempre seguían en uso. Tener ese registro ha permitido ordenar Docker sin romper nada, corregir cron antiguos, subir configuraciones saneadas al repositorio y aprovechar problemas reales, como la caída de Ollama, para mejorar el sistema en lugar de limitarse a reiniciarlo.

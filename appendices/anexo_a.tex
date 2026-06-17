@@ -1,24 +1,82 @@
 \chapter{Anexos}
 
 \section{Material complementario}
-Este anexo queda reservado para material complementario que no debe interrumpir la lectura principal de la memoria. En la versión final puede incluir capturas de Open WebUI, Home Assistant, Netdata, Immich, Frigate y Telegram; fragmentos saneados de ficheros Docker Compose; salidas de validación; ejemplos de respuestas de las herramientas; y tablas completas de métricas.
+El repositorio público del proyecto, con la memoria, anexos, scripts, configuraciones saneadas y documentación de réplica, está disponible en:
+
+\begin{center}
+  \url{https://github.com/k1k3-d3v/Odin_ElAsistenteTotal}
+\end{center}
+
+Este anexo reúne el material complementario que no debe interrumpir la lectura principal de la memoria. Las capturas de Open WebUI, Home Assistant, Netdata, Immich, Frigate, Mealie y Telegram se han incorporado en los capítulos donde aportan evidencia directa; aquí se documentan además los ficheros saneados, las guías operativas, las salidas de validación y la trazabilidad del proyecto.
 
 El criterio para incorporar material al anexo será doble. Primero, debe aportar evidencia real del sistema desplegado. Segundo, no debe contener secretos, tokens, contraseñas, dominios sensibles ni rutas que comprometan la seguridad del entorno. Las configuraciones se incluirán, cuando sea necesario, en versión saneada.
 
-Como parte de este criterio, el repositorio incluye copias saneadas de los stacks Docker activos en \nolinkurl{server-compose/} y de las herramientas de Open WebUI en \nolinkurl{tools/openwebui-tools/}. Estos ficheros no contienen credenciales reales: los valores sensibles se han sustituido por variables de entorno o placeholders. Su objetivo es documentar la arquitectura, no desplegar directamente el servidor sin revisión previa.
+Como parte de este criterio, el repositorio incluye copias saneadas de los stacks Docker activos en \nolinkurl{server-compose/} y un catálogo de las herramientas de Open WebUI en \nolinkurl{tools/openwebui-tools/}. Estos ficheros no contienen credenciales reales. Su objetivo es documentar la arquitectura, no desplegar directamente el servidor sin revisión previa.
 
-\begin{table}[H]
-  \centering
+\begin{longtable}{p{0.48\textwidth}p{0.46\textwidth}}
   \caption{Material técnico versionado en el repositorio}
-  \label{tab:material-versionado}
-  \begin{tabularx}{\textwidth}{lX}
+  \label{tab:material-versionado}\\
     \toprule
     Ruta & Contenido \\
     \midrule
+    \endfirsthead
+    \toprule
+    Ruta & Contenido \\
+    \midrule
+    \endhead
     \nolinkurl{server-compose/} & Versiones saneadas de los stacks Docker activos: núcleo, Immich, audio, Frigate, proxy de Home Assistant, Netdata y PocketTTS. \\
-    \nolinkurl{tools/openwebui-tools/} & Export saneado de las tools de Open WebUI: código Python, especificaciones funcionales e índice. \\
+    \nolinkurl{tools/openwebui-tools/} & Catálogo saneado de las tools asignadas a Odín, sus funciones y componentes retirados. \\
     \nolinkurl{tools/odin_autorepair.py} & Herramienta propia de diagnóstico, alertas y reparación conservadora. \\
     \nolinkurl{tools/odin_ha_status.py} & Exportador de estado compatible con Home Assistant. \\
+    \nolinkurl{tools/benchmark_ollama.py} & Benchmark reproducible de carga fría, respuesta caliente, velocidad y comportamiento anti-alucinación. \\
+    \nolinkurl{tools/backup_diario.sh} & Copia selectiva de infraestructura con retención, SHA-256 y destino NVMe opcional. \\
+    \nolinkurl{tools/install_odin_dashboard.py} & Instalador idempotente del dashboard mediante la API WebSocket de Home Assistant. \\
+    \nolinkurl{home-assistant/odin-dashboard.json} & Configuración reproducible de las seis vistas y sus tarjetas. \\
+    \nolinkurl{home-assistant/assets/odin-dashboard-hero.png} & Imagen panorámica propia utilizada como cabecera del panel. \\
+    \nolinkurl{home-assistant/assets/views/} & Cabeceras temáticas procesadas para Servicios, Casa, Salud, Organización y Monitor, junto con sus atribuciones. \\
+    \texttt{docs/estado-final-tools-}\newline\texttt{integraciones-2026-06-09.md} & Estado consolidado de tools, proxies, Mealie, Home Assistant, Frigate, YouTube y Ollama tras el cambio de red. \\
+    \nolinkurl{docs/guia-replicacion-odin.md} & Guía reproducible de instalación: requisitos, red, secretos, despliegue por fases, tools, pruebas, backup, seguridad y diagnóstico. \\
+    \texttt{docs/auditoria-informe-}\newline\texttt{intermedio-final.md} & Matriz de trazabilidad que verifica la incorporación del informe de seguimiento en la memoria final. \\
+    \texttt{docs/benchmark-ia-voz-backup-}\newline\texttt{2026-06-12.md} & Protocolo y resultados completos de modelos Ollama, STT, TTS y restauración de backup. \\
     \bottomrule
-  \end{tabularx}
-\end{table}
+\end{longtable}
+
+\section{Guia de replicacion}
+La reproducibilidad de Odín no puede reducirse a ejecutar un único fichero
+Docker Compose. El sistema combina servicios con estado, credenciales propias,
+almacenamiento persistente, hardware opcional, una instancia externa de Home
+Assistant y tools que pueden producir acciones físicas. Por ello se ha creado
+una guía operativa independiente en
+\nolinkurl{docs/guia-replicacion-odin.md}.
+
+La guía distingue entre una réplica mínima y una réplica completa. La primera
+incluye Ollama, Open WebUI, Qdrant, Nextcloud, n8n y monitorización. La segunda
+añade Immich, Mealie, Frigate, Home Assistant, STT, TTS, proxies especializados,
+ingesta documental y tools de Open WebUI. El procedimiento se organiza por
+fases para que cada capa pueda validarse antes de incorporar la siguiente.
+
+\begin{enumerate}
+  \item Preparación del host, almacenamiento, Docker, VPN y nombres locales.
+  \item Generación y custodia de secretos sin incorporarlos al repositorio.
+  \item Instalación de Ollama y validación de inferencia local.
+  \item Despliegue del núcleo conversacional y de memoria.
+  \item Incorporación progresiva de nube privada, fotos, recetas y cámaras.
+  \item Conexión de Home Assistant y servicios Wyoming de voz.
+  \item Importación de tools, empezando por lectura y terminando con acciones físicas.
+  \item Pruebas funcionales, monitorización, backup y restauración.
+\end{enumerate}
+
+La guía también documenta problemas que no aparecen en una instalación ideal:
+URLs que dejan de ser válidas tras cambiar de red, imágenes Markdown que no
+cargan desde el navegador, modelos que anuncian una acción sin ejecutarla,
+entidades de Home Assistant que no coinciden con el vocabulario humano y
+truncados de contexto confundidos con fallos de Ollama. De esta forma, la
+reproducibilidad incluye tanto el despliegue como el diagnóstico y la operación.
+
+\section{Trazabilidad con el informe intermedio}
+La revisión entre el informe de seguimiento y la memoria final se documenta en
+\nolinkurl{docs/auditoria-informe-intermedio-final.md}. La matriz relaciona cada
+bloque intermedio con su capítulo definitivo y distingue entre contenido
+integrado, ampliado o sustituido por información posterior. Este criterio evita
+perder decisiones históricas sin presentar como vigente una configuración ya
+superada.

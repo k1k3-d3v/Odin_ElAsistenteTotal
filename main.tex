@@ -24,7 +24,11 @@
 \usepackage{array}
 \usepackage{tabularx}
 \usepackage{xcolor}
+\definecolor{upcblue}{RGB}{0,118,181}
 \usepackage{enumitem}
+\usepackage{pgfgantt}
+\usepackage{tikz}
+\usetikzlibrary{positioning,shapes.geometric,arrows.meta,shadows,fit,babel}
 
 % Codigo y enlaces
 \usepackage{listings}
@@ -49,7 +53,7 @@
 \titlespacing*{\chapter}{0pt}{-10pt}{24pt}
 
 % Datos del TFG
-\newcommand{\tfgtitle}{Proyecto Odín: el asistente total}
+\newcommand{\tfgtitle}{Odín: el asistente total}
 \newcommand{\tfgsubtitle}{Asistente personal local-first, soberano y proactivo}
 \newcommand{\tfgauthor}{Enrique de Vicente-Tutor Castillo}
 \newcommand{\tfgdirector}{Jordi Fornés}
@@ -72,6 +76,19 @@
     }
     \caption{#1}
     \label{#2}
+  \end{figure}
+}
+
+\newcommand{\evidencefigure}[3]{%
+  \begin{figure}[H]
+    \centering
+    \includegraphics[
+      width=0.96\textwidth,
+      height=0.72\textheight,
+      keepaspectratio
+    ]{#1}
+    \caption{#2}
+    \label{#3}
   \end{figure}
 }
 

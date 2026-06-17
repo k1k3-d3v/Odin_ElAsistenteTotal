@@ -5,14 +5,61 @@ El entorno de Odín se construye sobre un servidor doméstico con Ubuntu 24.04.4
 
 La estructura operativa se reorganizó bajo \nolinkurl{/home/k1k3/odin}. Dentro de ese árbol se separan dominios: \texttt{core} para el núcleo conversacional y servicios base, \texttt{audio} para voz, \texttt{media} para Immich, \texttt{automation} para Home Assistant/Frigate y automatizaciones, \texttt{monitoring} para Netdata y exportadores, \texttt{scripts} para cron y mantenimiento, y \texttt{data} para persistencia de Open WebUI. Esta estructura no existió desde el primer día; surgió de ordenar un sistema que había crecido mediante pruebas y servicios añadidos progresivamente.
 
-Docker Compose se usa como mecanismo principal de despliegue porque permite describir servicios, redes, volúmenes, reinicios y dependencias en ficheros versionables. En paralelo, algunos componentes se mantienen fuera de Docker por decisión de diseño: Ollama funciona como servicio systemd en el servidor, Tailscale como VPN del sistema y Home Assistant vive en una Raspberry Pi 5 independiente. Esta combinación evita forzar todo dentro de contenedores cuando una pieza ya es más estable o segura fuera de ellos.
+Docker Compose se usa como mecanismo principal de despliegue porque permite describir servicios, redes, volúmenes, reinicios y dependencias en ficheros versionables. La inspección operativa se realiza mediante comandos Docker, healthchecks, logs y el panel agregado de Home Assistant. En paralelo, algunos componentes se mantienen fuera de Docker por decisión de diseño: Ollama funciona como servicio systemd en el servidor, mientras que Tailscale y Home Assistant viven en una Raspberry Pi 5 independiente. Esta combinación evita forzar todo dentro de contenedores cuando una pieza ya es más estable o segura fuera de ellos.
 
 \section{Fase 1: infraestructura base}
-La infraestructura base parte de un único nodo físico. Sobre él se instalaron Docker, Docker Compose, herramientas de monitorización, ROCm para la GPU AMD, servicios systemd auxiliares y acceso por SSH dentro de la red/VPN. El diseño evita exposición pública directa: el acceso remoto se realiza mediante Tailscale y los servicios se consumen desde LAN o VPN.
+La infraestructura de cómputo parte de un servidor principal. Sobre él se instalaron Docker, Docker Compose, herramientas de monitorización, ROCm para la GPU AMD y servicios systemd auxiliares. El diseño evita exposición pública directa: el acceso remoto entra por Tailscale en la Raspberry Pi 5 y continúa hacia Odín mediante la LAN. El servidor no necesita ejecutar el nodo VPN.
 
 El almacenamiento se dividió en dos zonas. El disco raíz aloja sistema, contenedores, configuraciones y servicios. \nolinkurl{/mnt/almacen} se reserva para datos pesados, especialmente la biblioteca de Immich. Esta separación se volvió necesaria al comprobar el crecimiento de fotos y vídeos. Como política de seguridad, no se eliminaron volúmenes Docker ni carpetas históricas sin inventario previo.
 
-La estrategia de backup se define como trabajo operativo inmediato: se usará un NVMe externo conectado físicamente, tratado como una unidad transportable similar a un USB de gran capacidad. Esta decisión encaja con el tipo de datos del proyecto: fotos, documentos, configuraciones y memoria personal. El backup físico reduce dependencia de otra nube, pero exige definir procedimiento de copia, verificación, desconexión y restauración.
+La estrategia final de backup utiliza un NVMe Crucial de 1 TB, identificado por UUID y montado de forma persistente en \nolinkurl{/mnt/backup_nvme} con permisos restrictivos. Sobre él se inicializó un repositorio Restic: cada copia queda cifrada, es incremental y aprovecha deduplicación, por lo que una única política puede cubrir tanto la infraestructura como los datos masivos sin duplicar innecesariamente bloques.
+
+El script \nolinkurl{backup_diario.sh} genera primero un volcado consistente de MariaDB para Nextcloud y después copia \nolinkurl{/home/k1k3/odin} y la biblioteca de Immich situada en \nolinkurl{/mnt/almacen/immich}. Se excluyen cachés regenerables, logs, entornos virtuales, dependencias descargables y el propio fichero de apertura del repositorio. La retención conserva siete copias diarias, cuatro semanales y seis mensuales. Cada ejecución finaliza con \texttt{restic check}; la clave de recuperación se guarda con permisos \texttt{0600} fuera del servidor.
+
+\begin{table}[H]
+  \centering
+  \caption{Contenido protegido por el backup de Odín}
+  \label{tab:politica-backup-odin}
+  \small
+  \begin{tabularx}{\textwidth}{
+    >{\raggedright\arraybackslash}p{0.25\textwidth}
+    >{\raggedright\arraybackslash}X}
+    \toprule
+    Bloque & Contenido protegido \\
+    \midrule
+    Infraestructura & Árbol \texttt{/home/k1k3/odin}: ficheros Compose, configuraciones, scripts, tools, automatizaciones y dashboard de Home Assistant. \\
+    Datos de aplicaciones & Persistencia de Open WebUI, Qdrant, n8n, Frigate, Mealie, servicios de audio, monitorización y proxies locales. \\
+    Nextcloud & Configuración, aplicaciones y ficheros. Antes de la copia se genera un volcado consistente de MariaDB en \texttt{backups/db/nextcloud-all.sql}. \\
+    Immich & Biblioteca completa situada en \texttt{/mnt/almacen/immich}, incluidos originales, vídeos, miniaturas, perfiles y copias internas. \\
+    Elementos excluidos & Logs, cachés, \texttt{node\_modules}, entornos virtuales, \texttt{\_\_pycache\_\_}, base cruda de MariaDB y fichero de contraseña de Restic. \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\begin{table}[H]
+  \centering
+  \caption{Calendario y controles del backup de Odín}
+  \label{tab:calendario-backup-odin}
+  \small
+  \begin{tabularx}{\textwidth}{
+    >{\raggedright\arraybackslash}p{0.25\textwidth}
+    >{\raggedright\arraybackslash}p{0.22\textwidth}
+    >{\raggedright\arraybackslash}X}
+    \toprule
+    Operación & Programación & Resultado esperado \\
+    \midrule
+    Comprobaciones previas & Cada día, antes de las 04:00 & Cancelar la ejecución si el NVMe no está montado, falta Restic o no puede leerse la contraseña. \\
+    Volcado de Nextcloud & Diario, al iniciar el script & Exportar todas las bases MariaDB mediante una transacción consistente. \\
+    Backup incremental & Diario, 04:00 & Crear un snapshot cifrado y deduplicado de infraestructura, aplicaciones, Nextcloud e Immich. \\
+    Retención y limpieza & Después de cada backup & Conservar 7 copias diarias, 4 semanales y 6 mensuales; eliminar bloques que ya no estén referenciados. \\
+    Verificación automática & Después de la retención & Ejecutar \texttt{restic check} leyendo metadatos y una muestra del 1\% de los datos. \\
+    Restauración de prueba & Manual, tras cambios relevantes y periódicamente & Recuperar una muestra en una ruta temporal y comparar su SHA-256 con el original. \\
+    Revisión del registro & Tras cada ejecución o ante alerta & Confirmar que el script finalizó correctamente y revisar errores de montaje, permisos o espacio. \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+La tarea se ejecuta desde el \texttt{crontab} de \texttt{root}, porque algunos volúmenes Docker solo son legibles con privilegios administrativos. Si el NVMe no está montado o falta la clave local, el script termina con error antes de crear una copia incompleta. La primera ejecución procesó 212,133 GiB y creó el snapshot \texttt{45ac7833}. Las siguientes ejecuciones solo incorporan bloques nuevos o modificados. La política de retención mantiene siete estados diarios, cuatro semanales y seis mensuales; después se eliminan los bloques que dejan de estar referenciados. La comprobación lee metadatos y una muestra del contenido cifrado, y la restauración de prueba confirmó mediante SHA-256 que el fichero recuperado era idéntico al original.
 
 \section{Fase 2: inferencia local}
 La inferencia local se apoya principalmente en Ollama como servicio del sistema. Ollama permite servir modelos LLM mediante una API local y simplifica la gestión de modelos respecto a un despliegue manual de \texttt{llama.cpp}. Aun así, la base técnica de ejecución de modelos cuantizados y acelerados por hardware se relaciona con el ecosistema de \texttt{llama.cpp}, que se mantiene como referencia técnica para inferencia local eficiente \citep{ollamaDocs,llamacppRepo}.
@@ -22,7 +69,9 @@ El principal condicionante ha sido la GPU AMD. ROCm permite usar aceleración, p
 Por ese motivo, Odín combina tres decisiones. Primero, Ollama se mantiene como servicio systemd para poder arrancarlo, comprobarlo y repararlo con herramientas del sistema. Segundo, la autoreparabilidad no reinicia servicios de forma agresiva, sino que diagnostica antes de actuar. Tercero, algunas cargas se desplazan a CPU cuando usar GPU aporta más riesgo que beneficio, como ocurre con Frigate. En cambio, Immich sí usa ROCm porque su servicio de machine learning se beneficia de la aceleración sin saturar el flujo conversacional principal.
 
 \section{Fase 3: orquestación y automatización}
-La orquestación de Odín combina dos niveles. El primero corresponde a servicios de alto nivel, como Open WebUI, n8n, Home Assistant, Nextcloud, Qdrant, Immich, Frigate y los servicios de voz. El segundo corresponde a automatizaciones de sistema: tareas programadas, scripts de ingesta, informes de salud y herramientas de autoreparación. La capa de contenedores se apoya en Docker Compose, que permite describir servicios, redes y volúmenes en ficheros declarativos \citep{dockerComposeFileReference,dockerComposeVolumes}.
+La orquestación de Odín es deliberadamente híbrida. No se fuerza toda la lógica dentro de n8n ni se resuelve todo mediante código. La herramienta se elige según el tipo de problema. n8n resulta adecuado para flujos visuales que conectan webhooks, APIs, mensajería y servicios externos, especialmente cuando interesa inspeccionar entradas y salidas paso a paso. Los scripts Python y shell se reservan para procesos con lógica técnica propia, tratamiento intensivo de datos o acceso al sistema, como la ingesta documental, los informes de salud, la autoreparación y el backup. Cron programa tareas periódicas y systemd mantiene los servicios persistentes, controla sus reinicios y expone sus logs. Home Assistant conserva las automatizaciones domésticas, de forma que luces, presencia, voz y dispositivos sigan funcionando aunque el servidor de IA esté en mantenimiento.
+
+Estas capas se complementan. Open WebUI recibe la intención del usuario y selecciona una herramienta; esa herramienta puede llamar directamente a una API, activar un webhook de n8n o delegar una acción en Home Assistant. A su vez, los scripts de mantenimiento trabajan en segundo plano sin depender de una conversación. Docker Compose describe y reproduce los servicios, pero no sustituye a la lógica de orquestación. Esta separación evita convertir una sola plataforma en un punto único de fallo y permite usar en cada caso el mecanismo más sencillo, observable y mantenible.
 
 Durante la revisión operativa se detectó una situación típica de proyectos personales que crecen por iteración: existían scripts reorganizados dentro de \nolinkurl{/home/k1k3/odin/scripts/}, pero el cron de \texttt{root} seguía apuntando a rutas antiguas en \nolinkurl{/home/k1k3}. Esto producía errores periódicos aunque el sistema principal siguiera funcionando. La solución fue consolidar la programación bajo el usuario \texttt{k1k3}, desactivar el cron de \texttt{root} y dejar copias históricas antes de cada cambio.
 
@@ -32,6 +81,8 @@ También se separó la configuración de Telegram en un fichero \texttt{telegram
 
 \section{Fase 4: domótica e interacción}
 Home Assistant es la capa domótica de Odín y se ejecuta en una Raspberry Pi 5 separada del servidor principal. Esta separación es deliberada: la domótica debe seguir funcionando aunque el servidor de IA esté reiniciándose, probando modelos o reorganizando contenedores. Odín se integra con Home Assistant mediante tools de Open WebUI, HA Assist, HA Voice y un proxy local.
+
+Antes de consolidar esta arquitectura se evaluaron dos despliegues alternativos: Home Assistant en contenedor dentro del servidor y Home Assistant OS en una máquina virtual. El contenedor simplificaba la infraestructura, pero complicaba complementos, descubrimiento de red y mantenimiento de integraciones domésticas. La máquina virtual ofrecía mayor aislamiento, aunque añadía consumo y otra capa de administración. Tras estas pruebas se mantuvo Home Assistant OS en la Raspberry Pi, mientras que el servidor Odín asumió IA, automatización pesada, almacenamiento y servicios multimedia.
 
 La interacción doméstica cubre luces, sensores, presencia, temporizadores, música, calendario, lista de la compra y consultas de estado. Los temporizadores y la música se gestionan desde HA Voice, que ya funciona correctamente y resulta más natural que duplicar esa lógica dentro de Open WebUI. También existe una automatización de Home Assistant que notifica cada vez que alguien llega, usando un sensor de presencia.
 
@@ -52,13 +103,13 @@ La síntesis de voz ha sido todavía más problemática. El objetivo era consegu
     \toprule
     Herramienta & Tipo & Resultado \\
     \midrule
-    Whisper / faster-whisper & STT & Precisión alta, con pruebas en CPU y variantes de servidor. \\
+    Whisper / faster-whisper & STT & WER del 6,5\% en la prueba controlada; 5,32 s en caliente para 8,04 s de audio. \\
     Wyoming Whisper & STT & Útil por integración con el ecosistema Home Assistant/Wyoming. \\
-    Odin ONNX ASR & STT & Servicio propio para experimentar con inferencia y control local. \\
-    Piper & TTS & Estable y rápido; usado para el asistente físico/móvil. \\
+    Odin ONNX ASR & STT & WER del 6,5\%; 0,55 s en caliente para el mismo audio. \\
+    Piper & TTS & Primer audio en 0,05 s en caliente; usado por Home Assistant mediante Wyoming. \\
     Kokoro & TTS & Probado, pero no consolidado como solución final. \\
     Chatterbox & TTS & Funcionó en GPU, pero con latencia excesiva. \\
-    PocketTTS & TTS & Línea actual de prueba como servidor compatible con estilo OpenAI. \\
+    PocketTTS & TTS & Generó 4--5 s de audio en 1,81--3,80 s; línea experimental compatible con estilo OpenAI. \\
     \bottomrule
   \end{tabularx}
 \end{table}
@@ -81,7 +132,7 @@ El primer caso de uso real de esta herramienta fue el diagnóstico de una caída
 
 Como ampliación, la herramienta se integró con Telegram para ofrecer dos niveles de comunicación: un informe diario exhaustivo y alertas cuando aparece o cambia un problema relevante. El informe incluye el estado de Ollama, GPU, contenedores, disco, cron, Qdrant y logs de ingesta; además, enumera las fuentes revisadas y las fuentes de memoria procesadas recientemente. Esta integración convierte la monitorización en una funcionalidad proactiva real: Odín no solo almacena conocimiento, sino que informa sobre su propio estado operativo.
 
-Durante esta integración se detectó una deuda técnica importante: el cron seguía apuntando a rutas antiguas de scripts que habían sido reorganizados. En una primera iteración se corrigieron las rutas hacia \texttt{/home/k1k3/odin/scripts/} y se definió una programación periódica para sincronización incremental, ingesta horaria, alertas e informe diario. Sin embargo, al decidir reorganizar el almacenamiento y preparar un NVMe externo de 1 TB, la política operativa cambió: los cron se dejaron pausados de forma reversible, con copia histórica de la configuración, para evitar automatizaciones sobre una estructura de ficheros en transición.
+Durante esta integración se detectó una deuda técnica importante: el cron seguía apuntando a rutas antiguas de scripts que habían sido reorganizados. En una primera iteración se corrigieron las rutas hacia \texttt{/home/k1k3/odin/scripts/} y se definió una programación periódica para sincronización incremental, ingesta horaria, alertas e informe diario. Durante la reorganización se pausaron las tareas de forma reversible. Una vez montado y validado el NVMe, el backup quedó programado a las 04:00 con privilegios suficientes para leer los volúmenes persistentes de Docker.
 
 \section{Fase 7: reorganización de almacenamiento}
 El crecimiento de servicios como Immich obliga a separar con claridad el sistema operativo de los datos pesados. En la inspección del servidor se observó que el disco raíz concentraba una parte importante de la carga, mientras que \texttt{/mnt/almacen} disponía de espacio suficiente para actuar como almacenamiento auxiliar. Por ello se migró la biblioteca de Immich desde \texttt{/home/k1k3/Pictures/immich} hacia \texttt{/mnt/almacen/immich}.
@@ -91,7 +142,7 @@ La migración se realizó de forma conservadora: primero se detuvo únicamente e
 Esta fase también define una política de limpieza prudente. Se pueden eliminar contenedores detenidos, imágenes Docker no utilizadas y caché de construcción, pero se evita borrar volúmenes Docker, modelos, bases de datos o carpetas de cuarentena sin una revisión explícita. En un proyecto como Odín, parte del valor académico está precisamente en los experimentos fallidos; limpiarlos sin inventario supondría perder trazabilidad sobre decisiones técnicas.
 
 \section{Fase 8: organización de contenedores}
-El despliegue de Odín se apoya principalmente en Docker Compose. En el estado actual existen siete stacks activos: núcleo, fotos, audio, cámaras, proxy domótico, monitorización y TTS experimental. En la práctica corresponden a \texttt{odin-master}, \texttt{immich}, \texttt{audio}, \texttt{frigate}, \texttt{ha-proxy}, \texttt{netdata} y \texttt{pocket-tts}. Esta separación no es todavía perfecta, pero permite entender el sistema por dominios.
+El despliegue de Odín se apoya principalmente en Docker Compose. La revisión final registró 29 contenedores activos, distribuidos entre el núcleo, fotos, audio, cámaras, domótica, monitorización, recetas y proxies especializados. Los ficheros Compose constituyen la fuente reproducible y el inventario se valida mediante etiquetas de proyecto, estados de contenedor, healthchecks y endpoints funcionales.
 
 \begin{table}[H]
   \centering
@@ -101,23 +152,24 @@ El despliegue de Odín se apoya principalmente en Docker Compose. En el estado a
     \toprule
     Stack & Servicios & Función \\
     \midrule
-    \texttt{odin-master} & 11 & Open WebUI, Qdrant, Nextcloud, n8n, Evolution API, Cloudflared, Crawl4AI y utilidades. \\
+    \texttt{odin-master} & 11 & Open WebUI, Qdrant, Nextcloud, n8n, Evolution API, Cloudflared, Crawl4AI y Stirling PDF. \\
     \texttt{immich} & 4 & Gestión de fotos, base de datos, Redis y machine learning con ROCm. \\
     \texttt{audio} & 4 & Piper, faster-whisper, Wyoming Whisper y ASR propio. \\
     \texttt{frigate} & 1 & Videovigilancia y detección de personas. \\
     \texttt{ha-proxy} & 1 & Proxy local hacia Home Assistant. \\
     \texttt{netdata} & 1 & Monitorización visual de host, Docker, discos, red y alarmas. \\
     \texttt{pocket-tts} & 1 & Servidor TTS compatible con una API de estilo OpenAI. \\
+    Mealie y proxies & 6 & Recetas y servicios locales para fotos, notas, Frigate, tools y nombres internos. \\
+    \midrule
+    \textbf{Total} & \textbf{29} & \textbf{Contenedores activos en la revisión final del 9 de junio de 2026.} \\
     \bottomrule
   \end{tabularx}
 \end{table}
 
 La revisión mostró que todos los contenedores activos estaban levantados y que los servicios con \textit{healthcheck} aparecían como \texttt{healthy}. Como parte de la reorganización, el stack principal se movió desde \nolinkurl{/home/k1k3/odin-master} a \nolinkurl{/home/k1k3/odin/core/odin-master}, se actualizó el montaje de datos de Open WebUI a \nolinkurl{/home/k1k3/odin/data/openweb_ui_data} y \texttt{ha-proxy} pasó de ser un contenedor manual a formar parte de un stack Compose propio. Home Assistant no se ejecuta en Docker dentro de Odín, sino en la Raspberry Pi 5; el proxy únicamente facilita el acceso local desde el servidor. Para la observabilidad visual se añadió Netdata, accesible desde la red local y embebible en Home Assistant mediante una tarjeta Webpage/iframe \citep{netdataDockerInstall,homeAssistantIframeCard}. Esta organización facilita documentar cada herramienta con sus fuentes oficiales: Open WebUI para interfaz y extensibilidad \citep{openwebuiDocs,openwebuiToolsDocs,openwebuiFunctionsDocs}, Immich para fotos \citep{immichDockerInstall}, Qdrant para almacenamiento vectorial \citep{qdrantDocs,qdrantStorageDocs}, n8n para automatización \citep{n8nDocs,n8nDockerDocs} y Frigate para videovigilancia \citep{frigateInstallDocs}. Quedan tareas de orden: separar responsabilidades dentro de \texttt{odin-master}, mover secretos históricos a ficheros \texttt{.env} y revisar volúmenes procedentes de pruebas antiguas antes de eliminarlos.
 
-\pendingfigure{Estado de los stacks Docker de Odín agrupados por dominio funcional}{fig:docker-stacks-visual}
-
 \subsection{Inventario completo de contenedores}
-La \cref{tab:contenedores-docker-completos} recoge el inventario operativo completo observado el 11 de mayo de 2026. Esta tabla es importante para la memoria porque transforma el despliegue real en una evidencia verificable: no se describe una arquitectura ideal, sino el sistema que está funcionando en el servidor. Para evitar exponer secretos, se documentan nombres de contenedor, imagen, stack, función y fuente técnica, pero no variables de entorno sensibles ni credenciales.
+La \cref{tab:contenedores-docker-completos} recoge el inventario operativo actualizado el 9 de junio de 2026. La revisión registró 29 contenedores activos, incluidos Mealie y los proxies especializados añadidos después de la primera auditoría. Para evitar exponer secretos, se documentan nombres, agrupación y función, pero no variables de entorno sensibles ni credenciales.
 
 \begingroup
 \tiny
@@ -155,11 +207,17 @@ La \cref{tab:contenedores-docker-completos} recoge el inventario operativo compl
   \texttt{frigate} & \texttt{frigate} & Videovigilancia, cámaras y detección de personas. En Odín se usa CPU para no saturar la GPU AMD. & \citep{frigateInstallDocs} \\
   \texttt{piper} & \texttt{audio} & Síntesis de voz estable para asistente físico o móvil. & \citep{linuxserverPiperDocs} \\
   \texttt{faster-whisper-server} & \texttt{audio} & Servicio STT basado en Whisper/faster-whisper para transcripción en CPU. & \citep{speachesDocs} \\
-  \texttt{wyoming-whisper} & \texttt{audio} & Integración de Whisper mediante protocolo Wyoming, útil para Home Assistant. & \citep{wyomingWhisperRepo,homeAssistantDocs} \\
+  \texttt{wyoming-whisper} & \texttt{audio} & Integración de Whisper mediante protocolo Wyoming, útil para Home Assistant. & \citep{wyomingProtocolRepo,wyomingWhisperRepo,homeAssistantDocs} \\
   \texttt{odin-asr} & \texttt{audio} & Servicio propio de reconocimiento de voz basado en ONNX para experimentar con control local. & \citep{rocmDocs} \\
   \texttt{pockettts-server} & \texttt{pocket-tts} & TTS experimental compatible con una API de estilo OpenAI. & \citep{openwebuiDocs} \\
   \texttt{ha-proxy} & \texttt{home-assistant-proxy} & Proxy TCP/HTTP mediante \texttt{socat} hacia Home Assistant alojado en Raspberry Pi 5. & \citep{alpineSocatDockerHub,homeAssistantDocs} \\
   \texttt{netdata} & \texttt{netdata} & Monitorización visual de CPU, memoria, discos, red, Docker y alarmas. & \citep{netdataDockerInstall} \\
+  \texttt{mealie} & \texttt{mealie} & Gestor privado de recetas, menús y listas culinarias, integrado con una tool de Open WebUI. & \citep{mealieDocs} \\
+  \texttt{mealie-tool-proxy} & Servicios locales & API mínima para crear e importar recetas sin exponer el token de Mealie al modelo. & Implementación propia \\
+  \texttt{immich-photo-proxy} & Servicios locales & Publica de forma controlada las imágenes recuperadas desde Immich para que Open WebUI pueda renderizarlas. & Implementación propia \\
+  \texttt{nextcloud-note-proxy} & Servicios locales & Encapsula el guardado de notas en Nextcloud y evita credenciales dentro de la tool conversacional. & Implementación propia \\
+  \texttt{frigate-image-proxy} & Servicios locales & Sirve capturas y eventos JPEG de Frigate con cabeceras compatibles con el navegador. & Implementación propia \\
+  \texttt{odin-local-proxy} & Servicios locales & Proxy Caddy para nombres locales y accesos internos del ecosistema Odín. & \citep{caddyDocs} \\
 \end{longtable}
 \endgroup
 
@@ -172,7 +230,7 @@ El contenedor \texttt{webui-odin} proporciona la interfaz principal. Open WebUI 
 
 \texttt{qdrant-odin} sostiene la memoria semántica. Qdrant permite almacenar vectores, colecciones y metadatos, lo que encaja con una arquitectura RAG en la que los documentos no se consultan únicamente por nombre de archivo, sino por similitud semántica \citep{qdrantDocs,qdrantStorageDocs}. En la práctica, la colección \texttt{memoria\_ia} actúa como índice de conocimiento personal: documentos de Nextcloud, notas y contenido extraído pueden convertirse en embeddings y recuperarse posteriormente como contexto.
 
-\texttt{n8n-odin} representa la capa de orquestación. Su papel no es sustituir al código propio, sino reducir fricción para conectar servicios: llamadas HTTP, webhooks, calendarios, mensajes, integraciones con Home Assistant y flujos de automatización \citep{n8nDocs,n8nDockerDocs}. Esta separación es importante: Open WebUI puede ser la cara conversacional, pero n8n es una de las manos operativas. Permite que una intención detectada en una conversación acabe en una acción concreta.
+\texttt{n8n-odin} representa una de las capas de orquestación, no la única. Su papel no es sustituir al código propio, sino reducir fricción al conectar llamadas HTTP, webhooks, calendarios, mensajes e integraciones entre servicios \citep{n8nDocs,n8nDockerDocs}. Cuando el proceso requiere manipulación compleja, acceso al sistema, pruebas automatizadas o control detallado de errores, se utiliza un script Python o shell. Cuando depende de sensores y dispositivos domésticos, se mantiene en Home Assistant. Esta distribución permite que una intención conversacional termine en una acción concreta sin concentrar toda la lógica de Odín en una sola herramienta.
 
 \texttt{nextcloud-odin} y \texttt{nextcloud-db} aportan la nube privada. Nextcloud permite mantener documentos, notas, ficheros y material de trabajo en infraestructura propia \citep{nextcloudDocs}. La base \texttt{nextcloud-db}, basada en MariaDB, queda separada porque el estado de una nube privada es crítico: perder la base de datos puede ser más grave que perder una caché. Esta decisión conecta con la filosofía \textit{local-first}: los datos personales deben seguir estando bajo control del usuario aunque el sistema use capas de IA encima.
 
@@ -204,7 +262,7 @@ La capa de audio reúne cuatro contenedores: Piper, faster-whisper, Wyoming Whis
 
 \texttt{faster-whisper-server} proporciona STT mediante una interfaz de servidor. La imagen desplegada es CPU, lo que reduce dependencia de ROCm y evita competir con Ollama o Immich por GPU. Esta elección sacrifica parte del rendimiento potencial, pero mejora aislamiento y previsibilidad. El proyecto \texttt{speaches} mantiene una aproximación compatible con APIs de voz, lo que facilita integraciones posteriores \citep{speachesDocs}.
 
-\texttt{wyoming-whisper} existe por integración. El protocolo Wyoming se usa dentro del ecosistema de Home Assistant para conectar satélites de voz y servicios de transcripción; por eso esta pieza no se evalúa solo por precisión, sino por encaje con la domótica \citep{wyomingWhisperRepo,homeAssistantDocs}. En Odín, donde Home Assistant vive en una Raspberry Pi 5 y el servidor principal aporta cómputo, esta separación puede ser útil: HA coordina dispositivos y Odín ejecuta tareas más pesadas.
+\texttt{wyoming-whisper} existe por integración. El protocolo Wyoming se usa dentro del ecosistema de Home Assistant para conectar satélites de voz y servicios de transcripción; por eso esta pieza no se evalúa solo por precisión, sino por encaje con la domótica \citep{wyomingProtocolRepo,wyomingWhisperRepo,homeAssistantDocs}. En Odín, donde Home Assistant vive en una Raspberry Pi 5 y el servidor principal aporta cómputo, esta separación puede ser útil: HA coordina dispositivos y Odín ejecuta tareas más pesadas.
 
 \texttt{odin-asr} es el servicio propio basado en ONNX. Su importancia académica es distinta a la de los contenedores anteriores: no se incluye solo para ``tener otro STT'', sino para experimentar con control local, formatos de modelo y despliegue propio. Aunque una herramienta externa pueda ser más madura, un componente propio permite justificar decisiones, medir límites y mostrar aportación técnica en la memoria.
 
@@ -213,7 +271,7 @@ La capa de audio reúne cuatro contenedores: Piper, faster-whisper, Wyoming Whis
 
 \texttt{ha-proxy} es deliberadamente simple. Home Assistant no se ha levantado en Docker en Odín porque ya está instalado en la Raspberry Pi 5. El contenedor basado en \texttt{alpine/socat} solo actúa como puente hacia esa instancia \citep{alpineSocatDockerHub,homeAssistantDocs}. Esta decisión evita duplicar HA, reduce riesgo y respeta la arquitectura real de la casa: la Raspberry Pi queda como centro domótico y Odín como servidor de IA, memoria y automatización.
 
-\texttt{netdata} aporta la capa visual de monitorización. A diferencia del JSON de estado, pensado para sensores y automatizaciones, Netdata ofrece un panel navegable con CPU, memoria, red, discos, procesos, Docker y alarmas \citep{netdataDockerInstall}. Se integra en Home Assistant mediante una tarjeta Webpage/iframe \citep{homeAssistantIframeCard}. Así se cubren dos necesidades diferentes: lectura automática de estado para alertas y una interfaz humana bonita para inspeccionar el servidor.
+\texttt{netdata} aporta la capa visual de monitorización. A diferencia del JSON de estado, pensado para sensores y automatizaciones, Netdata ofrece un panel navegable con CPU, memoria, red, discos, procesos, Docker y alarmas \citep{netdataDockerInstall}. Inicialmente se probó su integración mediante una tarjeta Webpage/iframe \citep{homeAssistantIframeCard}, pero la versión final utiliza tarjetas nativas y conserva Netdata como enlace opcional debido a restricciones de contenido mixto y acceso a red privada.
 
 \texttt{pockettts-server} es el TTS experimental compatible con estilo OpenAI. Su papel actual es servir como línea de prueba para una voz más natural y conectable desde interfaces que ya entienden APIs de tipo OpenAI. No sustituye todavía a Piper, porque la experiencia de voz exige estabilidad y baja latencia. En la memoria debe aparecer como ejemplo de iteración técnica: se probaron varias alternativas, se mantuvo una opción estable y se dejó otra como línea de mejora.
 
@@ -225,9 +283,9 @@ El objetivo a medio plazo es separar \texttt{odin-master} en dominios más claro
 \section{Fase 9: herramientas de Open WebUI}
 La parte más diferencial de Odín no es únicamente ejecutar modelos locales, sino conectar la conversación con acciones reales. Para ello se han creado herramientas de Open WebUI. Open WebUI permite ampliar la interfaz mediante \textit{tools} y \textit{functions}, de modo que el modelo pueda invocar código Python con parámetros estructurados y devolver resultados al chat \citep{openwebuiToolsDocs,openwebuiFunctionsDocs}. En Odín estas herramientas convierten el chat en una interfaz operativa sobre Nextcloud, Immich, Home Assistant, Frigate, n8n, Qdrant y el propio servidor.
 
-Durante la revisión se identificaron once herramientas instaladas en la base de datos de Open WebUI. La \cref{tab:openwebui-tools} resume su función. El código se documenta sin incluir credenciales, tokens ni URLs privadas completas.
+En la consolidación final se identificaron once tools registradas en la base de datos de Open WebUI, de las cuales nueve están asignadas al modelo Odín. Las tools históricas específicas de compra y recordatorios permanecen registradas, pero sus funciones están consolidadas en la integración principal de Home Assistant. El conector duplicado de Home Assistant Assist fue eliminado para evitar rutas contradictorias. La \cref{tab:openwebui-tools} resume el estado funcional. El código se documenta sin incluir credenciales, tokens ni URLs privadas completas.
 
-\pendingfigure{Panel de Open WebUI con las herramientas de Odín disponibles para el modelo}{fig:openwebui-tools-panel}
+\evidencefigure{evidence/02-openwebui-tools.png}{Panel de Open WebUI con las herramientas asignadas al modelo Odín.}{fig:openwebui-tools-panel}
 
 \begingroup
 \scriptsize
@@ -252,7 +310,7 @@ Durante la revisión se identificaron once herramientas instaladas en la base de
   Salud sistema & diagnóstico y mantenimiento & Solicita informes o acciones de mantenimiento del servidor mediante webhook. \\
   Vigilancia Frigate & cámaras, captura, evento & Consulta cámaras, obtiene capturas actuales y recupera eventos recientes de Frigate. \\
   Home Assistant & entidades, acciones, compra, calendario, salud & Capa avanzada para buscar entidades, ejecutar acciones domóticas, gestionar lista de la compra, calendario y sensores de salud. \\
-  HA Assist & lenguaje natural & Envía lenguaje natural al endpoint conversacional de Home Assistant Assist. \\
+  Mealie & crear e importar recetas & Crea recetas estructuradas desde texto e importa contenido desde URLs o imágenes. \\
   Recordatorio & calendario & Crea eventos de calendario a partir de fechas relativas y horas estructuradas. \\
   Compra & lista & Gestiona una lista de la compra: añadir, borrar o leer elementos. \\
   QR & generación QR & Genera códigos QR embebidos directamente en el chat. \\
@@ -274,7 +332,7 @@ El flujo comienza con una consulta en lenguaje natural. La tool la envía a la c
 
 Este detalle parece pequeño, pero es importante para la experiencia de usuario. No basta con decir ``he encontrado una foto''; la utilidad real es que la imagen aparezca en la conversación. Esta tool convierte Immich en memoria visual accesible desde lenguaje natural, que era uno de los objetivos del mapa inicial.
 
-\pendingfigure{Búsqueda de recuerdos visuales en Immich desde una conversación de Open WebUI}{fig:immich-busqueda-chat}
+\evidencefigure{evidence/03-immich-chat.png}{Búsqueda semántica de un recuerdo visual de Immich y renderizado de la fotografía dentro de Open WebUI.}{fig:immich-busqueda-chat}
 
 \subsection{Flujo: web, vídeos e ingesta de conocimiento}
 La herramienta \texttt{guardar\_transcripcion\_de\_video\_o\_pagina\_web} contiene dos funciones. \texttt{get\_youtube\_transcript} extrae texto de un vídeo de YouTube, mientras que \texttt{search\_and\_crawl\_web} puede leer una URL concreta o buscar contenido en internet mediante Crawl4AI. Internamente usa librerías como \texttt{youtube\_transcript\_api}, \texttt{crawl4ai}, \texttt{aiohttp}, \texttt{tiktoken} y estrategias de generación de Markdown.
@@ -287,18 +345,34 @@ Este flujo permite que Odín convierta contenido externo en material procesable.
 La descripción impone una regla de seguridad: el modelo no debe inventar métricas, procesos ni servicios. Si Quique pide reiniciar algo, debe indicar el servicio concreto; si no lo indica, la herramienta debe usarse en modo diagnóstico. Este diseño reduce el riesgo de que una conversación provoque una acción destructiva por ambigüedad. La herramienta se complementa con \texttt{odin\_autorepair.py}, los informes de Telegram y el exportador de estado para Home Assistant.
 
 \subsection{Flujo: cámaras y vigilancia}
-La herramienta de vigilancia de Frigate integra las cámaras en la conversación. La función de consulta obtiene las cámaras conectadas; la función de foto actual devuelve la captura más reciente de una cámara concreta, y la consulta del último evento recupera una detección grabada, por ejemplo una persona.
+La herramienta de vigilancia de Frigate integra las cámaras en la conversación. La función de consulta obtiene las cámaras conectadas; la función de foto actual devuelve la captura más reciente; la consulta del último evento recupera una detección grabada; y \texttt{ultima\_persona} filtra eventos de tipo persona, usa el reconocimiento disponible en \texttt{sub\_label} y devuelve identidad y captura.
 
-La tool incluye una regla útil: si el usuario no da el nombre exacto de la cámara, primero se deben consultar las cámaras disponibles. Esto evita inventar identificadores internos de Frigate. Igual que en Immich, las funciones visuales devuelven Markdown de imagen y el modelo debe conservarlo para que se renderice en el chat.
+Frigate detecta actualmente la cámara \texttt{tapo\_salon}, que en la interacción se considera la cámara de la entrada. Si solo existe una cámara, la tool la selecciona automáticamente. Las imágenes no se entregan directamente desde la API interna: un proxy mínimo en el puerto 2293 valida la petición, recupera el JPEG y añade cabeceras CORS. Igual que en Immich, las funciones visuales devuelven Markdown de imagen y el modelo debe conservarlo para que se renderice en el chat.
 
-\pendingfigure{Consulta de cámaras y eventos de Frigate desde Odín}{fig:frigate-openwebui}
+\evidencefigure{evidence/04-frigate-chat.png}{Consulta del último evento de persona de Frigate y visualización de la captura en Open WebUI.}{fig:frigate-openwebui}
 
 \subsection{Flujo: domótica y Home Assistant}
-Odín tiene dos capas para Home Assistant. La primera, \texttt{home\_assistant}, trabaja de forma más estructurada: busca entidades, ejecuta acciones, gestiona calendario, lista de la compra y datos de salud. La segunda delega lenguaje natural directamente en Home Assistant Assist mediante \nolinkurl{/api/conversation/process}. Ambas son útiles, pero tienen filosofías distintas.
+La integración final de Home Assistant utiliza una única tool asignada a Odín. Trabaja de forma estructurada: busca entidades, ejecuta acciones específicas, gestiona calendario, lista de la compra y datos de salud. El conector duplicado que delegaba lenguaje natural en Home Assistant Assist fue retirado del modelo porque podía elegir una ruta incorrecta o devolver una respuesta conversacional sin ejecutar la acción física.
 
-La vía estructurada permite controlar mejor la acción: primero se buscan entidades candidatas y después se ejecuta el servicio adecuado. Esto evita que el modelo diga que ha encendido algo solo por haber encontrado una entidad. La vía Assist, en cambio, aprovecha el agente conversacional de Home Assistant, sus áreas, alias, frases personalizadas e intents. Es más natural, pero delega más decisión en HA.
+La búsqueda de entidades se amplió con alias y dominios. Por ejemplo, \textit{aspirador}, \textit{robot}, \textit{Dreame} y \textit{D10} se asocian al dominio \texttt{vacuum}; luces a \texttt{light}; enchufes a \texttt{switch}; persianas a \texttt{cover}; y clima a \texttt{climate}. Esta corrección fue necesaria porque una comparación textual simple no relacionaba ``aspirador'' con la entidad \texttt{vacuum.d10\_plus\_gen\_2}.
+
+Para el aspirador se aplicó además un patrón atómico. La función \texttt{controlar\_aspirador} recibe una acción natural y ejecuta directamente \texttt{vacuum.start}, \texttt{vacuum.pause}, \texttt{vacuum.stop} o \texttt{vacuum.return\_to\_base}. Después consulta el estado real antes de confirmar. Así se evita un fallo observado en modelos con tools: localizar correctamente una entidad, escribir ``ejecutando'' y no realizar la segunda llamada.
 
 Además, \texttt{home\_assistant} incluye funciones para lista de la compra, calendario y salud. \texttt{manage\_shopping\_list} permite añadir, borrar o leer elementos. \texttt{manage\_calendar} crea eventos con fechas y horas estructuradas. \texttt{get\_health\_status} intenta leer datos de salud desde sensores expuestos en Home Assistant. Los temporizadores y la música no necesitan una tool propia porque se resuelven desde Home Assistant y HA Voice, que ya funcionan como capa domótica natural. Esto cubre varias ramas del mapa inicial: control domótico, recordatorios, lista de la compra, historial de salud y acciones desde conversación.
+
+\subsection{Flujo: recetas con Mealie}
+Las recetas se almacenaban inicialmente como notas Markdown en Nextcloud. Aunque el guardado funcionaba, ese formato no ofrecía una estructura específica para ingredientes, pasos, tiempos, raciones e imagen. Por este motivo se desplegó Mealie 1.12.0 como servicio local en el puerto 9925 y se añadió la tool \texttt{mealie\_recetas}.
+
+La integración no expone directamente el token de Mealie. Un proxy local en el puerto 2292 ofrece operaciones limitadas para crear una receta desde texto, importar una URL compatible con el scraper de Mealie o importar una imagen. La carga de imágenes descarga el recurso público y lo adjunta a la receta mediante la API oficial. Las pruebas verificaron la creación, actualización de ingredientes y pasos, carga de imagen y eliminación posterior de las recetas de prueba. La interpretación de una imagen adjunta al chat depende de que el modelo seleccionado tenga capacidad de visión.
+
+\evidencefigure{evidence/19-mealie-recetas.png}{Biblioteca local de Mealie después de crear e importar recetas mediante la integración de Odín.}{fig:mealie-recetas}
+
+\subsection{Estabilizacion tras el cambio de red}
+El traslado a una nueva red doméstica reveló una deuda de configuración: varias tools conservaban direcciones de la subred anterior \texttt{192.168.86.0/24}. La solución final evita sustituir una dependencia frágil por otra. Las comunicaciones entre servicios del mismo servidor usan \texttt{127.0.0.1}; los recursos que debe cargar el navegador se sirven mediante proxies LAN específicos.
+
+Se añadieron cuatro proxies de propósito limitado: imágenes de Immich en el puerto 2290, notas de Nextcloud en 2291, operaciones de Mealie en 2292 e imágenes de Frigate en 2293. Los proxies separan secretos del código de las tools, reducen dependencia de webhooks públicos y permiten controlar tipo de contenido, CORS, caché y parámetros aceptados.
+
+También se corrigió la interacción con YouTube. La librería \texttt{youtube-transcript-api} funcionaba correctamente, pero el modelo podía responder ``procesando'' sin llamar a la función. La descripción y el prompt obligan ahora a que la primera acción sea \texttt{get\_youtube\_transcript}, sin simular trabajo en segundo plano. Finalmente, se amplió el contexto de Odín de 4096 a 16384 tokens. El modelo admite un contexto mayor, pero 16384 equilibra conversaciones largas y consumo de memoria en un servidor con 30 GiB de RAM.
 
 \subsection{Cobertura respecto al mapa funcional}
 La \cref{tab:cobertura-mapa-funcional} compara lo que se quería inicialmente con lo que ya existe en Odín. La idea no es vender que todo está terminado al mismo nivel, sino distinguir entre funcionalidad implementada, funcionalidad parcial y funcionalidad que queda fuera de alcance.
@@ -322,7 +396,7 @@ La \cref{tab:cobertura-mapa-funcional} compara lo que se quería inicialmente co
   Guardar ideas, notas y archivos & Implementado & \texttt{guardar\_nota}, Nextcloud y n8n. \\
   Crear recordatorios & Implementado & \texttt{recordatorio} y calendario vía n8n/Home Assistant. \\
   Consultar estado del sistema & Implementado & \texttt{salud\_del\_sistema}, \texttt{odin\_autorepair.py}, Telegram y JSON para HA. \\
-  Control de domótica & Implementado & \texttt{home\_assistant} y \texttt{home\_assistant\_connector}. \\
+  Control de domótica & Implementado & \texttt{home\_assistant}, búsqueda por alias y acciones atómicas. \\
   Crear temporizadores & Implementado vía HA & Se gestionan desde Home Assistant/HA Voice, sin necesidad de duplicar una tool específica en Open WebUI. \\
   Reproducir música & Implementado vía HA Voice & La reproducción musical funciona desde HA Voice, que es la interfaz más natural para este caso. \\
   Buscar en internet & Implementado & \texttt{search\_and\_crawl\_web} con Crawl4AI. \\
@@ -331,6 +405,7 @@ La \cref{tab:cobertura-mapa-funcional} compara lo que se quería inicialmente co
   Revisar grabaciones/cámaras & Implementado & \texttt{vigilancia\_frigate}. \\
   Historial de salud & Parcial según sensores & \texttt{get\_health\_status}; depende de que Wear OS/Health Connect alimenten HA. \\
   Buscar fotos en Immich & Implementado & \texttt{buscar\_fotos}. \\
+  Gestionar recetas & Implementado & Mealie y \texttt{mealie\_recetas}. \\
   Actualizar memoria tras actividad & Implementado & Cron de ingesta y scripts de actualización documentados. \\
   Avisar vulnerabilidad de contraseña & Fuera de alcance & Se omite porque los gestores/servicios externos ya lo cubren. \\
   Autoclasificar correos & Fuera de alcance & Se omite por el mismo criterio indicado por el autor. \\
@@ -340,12 +415,72 @@ La \cref{tab:cobertura-mapa-funcional} compara lo que se quería inicialmente co
   Backup externo/nube & Parcial & Hay política y almacenamiento en \nolinkurl{/mnt/almacen}; falta cerrar plan de copia final. \\
   Subida automática de fotos & Implementado & Immich con biblioteca migrada a \nolinkurl{/mnt/almacen/immich}. \\
   Limpiar caché / nuevo chat & Resuelto por UX & No requiere una función propia: cuando la conversación acumula contexto, se puede iniciar un nuevo chat. \\
-  Dashboard de control & Pendiente & Netdata y JSON HA cubren monitorización; queda crear un dashboard único desde Home Assistant. \\
+  Dashboard de control & Implementado & Dashboard Odín en Home Assistant con resumen, servicios, casa, cámaras y Netdata. \\
   Dar voz a Odín & Implementado con limitación & Piper/HA Voice cubren la voz funcional. Se acepta como límite que no se alcanzará una voz más realista y rápida dentro del alcance. \\
 \end{longtable}
 \endgroup
 
-La conclusión de esta matriz es clara: la mayor parte funcional del proyecto ya existe. Lo implementado con más solidez es memoria documental, notas, fotos, domótica, estado del sistema, presencia/cámaras, monitorización, ingesta, temporizadores y música mediante Home Assistant. Lo pendiente real se concentra en cerrar un dashboard único de control, formalizar la política definitiva de backup, documentar mejor los datos de salud si los sensores quedan estables y plantear como trabajo futuro un agente de ordenador capaz de actuar sobre el escritorio. La voz queda como una limitación aceptada: funciona, pero no alcanza todavía la naturalidad ideal que se buscaba al inicio.
+La conclusión de esta matriz es clara: la mayor parte funcional del proyecto ya existe. Lo implementado con más solidez es memoria documental, notas, fotos, domótica, estado del sistema, presencia/cámaras, monitorización, ingesta, temporizadores, música, consumo eléctrico, backup cifrado y el dashboard unificado de Home Assistant. La ampliación principal queda como trabajo futuro: un agente de ordenador capaz de actuar sobre el escritorio con permisos y confirmaciones explícitas. La voz queda como una limitación aceptada: funciona, pero no alcanza todavía la naturalidad ideal que se buscaba al inicio.
+
+\subsection{Dashboard operativo de Home Assistant}
+El cierre de la capa visual se realizó mediante un dashboard de Home Assistant llamado \textit{Odín}. El exportador \texttt{odin\_ha\_status.py} comprueba endpoints HTTP y TCP, resume Docker, discos, Qdrant y avisos de autoreparación y publica 24 entidades en Home Assistant mediante su API. El cron actualiza estos estados cada cinco minutos, por lo que el panel se recupera también después de reiniciar Home Assistant.
+
+El dashboard contiene seis vistas: resumen operativo, catálogo de servicios, domótica y vigilancia, salud personal, organización cotidiana y monitorización. La vista de salud utiliza 25 entidades sincronizadas desde el Pixel 9 Pro mediante Health Connect y separa actividad, sueño, constantes cardiovasculares, respiración, oxígeno, composición corporal y métricas todavía sin lectura. La vista Organización incorpora las entidades nativas \texttt{todo.lista\_de\_la\_compra}, \texttt{todo.lista\_tareas\_casa} y el calendario. Las listas se pueden editar, completar y ampliar desde el propio panel.
+
+La vista Monitor se rediseñó para evitar un iframe de Netdata. Cuando Home Assistant se abría desde una URL pública HTTPS, el navegador podía bloquear la conexión HTTP hacia una dirección privada o solicitar autenticación de nuevo. El panel utiliza ahora únicamente entidades nativas de Home Assistant para mostrar infraestructura, discos, servicios y avisos. Netdata queda como enlace opcional para diagnóstico profundo dentro de la LAN.
+
+Las tarjetas de servicios muestran disponibilidad real y ofrecen acceso directo a Open WebUI, Nextcloud, Immich, Mealie, n8n, Qdrant, Frigate y Netdata. La configuración se conserva en \nolinkurl{home-assistant/odin-dashboard.json} y puede reinstalarse mediante \nolinkurl{tools/install_odin_dashboard.py}.
+
+\subsubsection{Diseño visual y jerarquía de información}
+La primera versión era funcional, pero se parecía demasiado a una colección de tarjetas independientes. La revisión visual tomó como referencia dashboards domésticos que priorizan una imagen ambiental, navegación estable y una cantidad reducida de información primaria \citep{redditWifeApprovedDashboardV2}. No se reprodujo su composición ni su identidad; se trasladaron tres principios: una portada reconocible, navegación por dominios y controles secundarios después del contexto.
+
+La portada de Odín utiliza una imagen panorámica propia de un servidor doméstico integrado en un despacho nocturno. Sobre ella se muestran solo cuatro indicadores: estado global, contenedores, memoria vectorial y avisos. El resto se organiza debajo en bloques de exploración, estado operativo, salud, biblioteca personal y núcleo de inteligencia. Esta jerarquía permite comprender el sistema antes de interactuar con él.
+
+\begin{table}[H]
+  \centering
+  \caption{Estructura funcional del dashboard Odín}
+  \label{tab:dashboard-odin-vistas}
+  \begin{tabularx}{\textwidth}{lX}
+    \toprule
+    Vista & Contenido y finalidad \\
+    \midrule
+    Resumen & Cabecera panorámica, estado global, accesos por dominio, discos, memoria, avisos, salud resumida y servicios troncales. \\
+    Servicios & Disponibilidad de IA, automatización, datos, contenidos, voz, mensajería, vigilancia y monitorización, con accesos directos. \\
+    Casa & Cámara Tapo, detecciones de Frigate, aspirador Dreame, televisión, consolas, móviles, ubicación y previsión meteorológica. \\
+    Salud & Actividad, sueño, pulso, oxígeno, respiración, calorías, peso, grasa corporal y métricas clínicas disponibles mediante Health Connect. \\
+    Organización & Lista de la compra, tareas domésticas y calendario editables mediante tarjetas nativas. \\
+    Monitor & Estado nativo de host, servicios, discos y avisos; reservas para consumo y backup, con Netdata como acceso opcional. \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+La solución utiliza tarjetas nativas de Home Assistant para reducir dependencias. La cabecera se implementa con \texttt{picture-elements}; las métricas y acciones emplean \texttt{tile}, \texttt{button}, \texttt{gauge}, \texttt{history-graph}, \texttt{entities}, \texttt{todo-list}, \texttt{calendar}, \texttt{map}, \texttt{media-control}, \texttt{weather-forecast} y \texttt{markdown}. Resumen, Servicios, Salud, Organización y Monitor utilizan una rejilla de cuatro columnas; Casa conserva tres por la relación entre la cámara y el mapa del aspirador. Las cabeceras ocupan el ancho completo sin alterar el contenido ni el orden de las tarjetas editadas manualmente. La navegación y los accesos de Salud emplean el icono \texttt{mdi:heart-pulse}, de forma que el corazón identifica claramente este dominio.
+
+La tipografía inicial de las cabeceras tenía poco peso y alcanzaba un tamaño excesivo en pantallas anchas. La revisión adopta la fuente principal de Home Assistant, peso 600 y un máximo de 40 píxeles. El resultado conserva el carácter editorial de la referencia, pero mejora legibilidad y coherencia con el resto de tarjetas.
+
+La vista Casa se amplió con entidades ya disponibles en la instalación: Google TV, televisión del salón, Xbox Series X, Pixel 9 Pro, iPhone de Ivet y \texttt{weather.forecast\_casa}. Las tarjetas permiten controlar reproducción y volumen, consultar batería y dirección geocodificada, visualizar ambos móviles sobre el mapa y revisar la previsión de cinco días. Se descartaron reproductores antiguos en estado \texttt{unavailable} para que el panel represente el hogar operativo y no el historial completo de integraciones.
+
+La primera versión servía la imagen desde el puerto 8765 de Odín. Este enfoque fallaba en algunos móviles y accesos remotos porque el navegador debía conectar desde una página pública a un recurso de la red privada. La versión definitiva sube las imágenes al almacenamiento gestionado por Home Assistant y utiliza rutas del mismo origen, \nolinkurl{/api/image/serve/.../original}. Así, la autenticación, el esquema HTTPS y la resolución de red son los mismos que los del dashboard.
+
+Cada vista utiliza una imagen diferente y relacionada con su función: servidor doméstico para Resumen, racks para Servicios, interior residencial para Casa, tecnología de bienestar para Salud, lista escrita para Organización y estación de trabajo para Monitor. Las cabeceras externas proceden de Unsplash y se conservan localmente con atribución; la de Salud fue generada específicamente para Odín con un reloj inteligente y un pulsioxímetro en un entorno doméstico sereno. Todas fueron recortadas y comprimidas antes de subirlas a Home Assistant. De este modo, el panel no solicita recursos externos durante el uso.
+
+Los dos enchufes Sonoff ya monitorizan la torre principal y la Raspberry Pi. Home Assistant registra potencia instantánea, tensión, corriente y energía diaria y mensual; también se habilitaron los contadores totales de energía que la integración había creado desactivados. La vista Monitor presenta controles de los enchufes, consumo actual, gráficas de potencia de 24 horas, evolución energética semanal y un cálculo de coste acumulado. Mientras no se introduzca la tarifa exacta del contrato se utiliza una estimación explícita de 0,20 euros por kWh. Las reservas se mantienen únicamente para el estado, fecha y tamaño del futuro backup NVMe.
+
+\evidencefigure{evidence/05-dashboard-resumen.png}{Vista Resumen del dashboard Odín en escritorio, con cabecera panorámica, meteorología, biblioteca, salud y núcleo de servicios.}{fig:dashboard-odin-resumen}
+
+\evidencefigure{evidence/06-dashboard-servicios.png}{Vista Servicios con los bloques de IA, automatización, voz, vigilancia, monitorización y datos personales.}{fig:dashboard-odin-servicios}
+
+\evidencefigure{evidence/07-dashboard-casa.png}{Vista Casa con cámara Tapo, aspirador Dreame y mapa de limpieza.}{fig:dashboard-odin-casa}
+
+\evidencefigure{evidence/08-dashboard-salud.png}{Vista Salud con resumen de Health Connect, pasos, calorías, constantes, sueño y composición corporal.}{fig:dashboard-odin-salud}
+
+\evidencefigure{evidence/09-dashboard-organizacion.png}{Vista Organización con lista de la compra, tareas domésticas y calendario.}{fig:dashboard-odin-organizacion}
+
+\evidencefigure{evidence/10-dashboard-monitor.png}{Vista Monitor con estado del servidor, discos, backup NVMe y gráficas nativas de consumo.}{fig:dashboard-odin-monitor}
+
+\evidencefigure{evidence/11-dashboard-consumo.png}{Historial de potencia de la torre y la Raspberry Pi obtenido mediante los enchufes Sonoff.}{fig:dashboard-odin-consumo-backup}
+
+\evidencefigure{evidence/12-dashboard-movil.png}{Dashboard Odín en formato móvil, con cabecera, meteorología y tarjetas adaptadas al ancho disponible.}{fig:dashboard-odin-movil}
 
 \section{Problemas encontrados}
 El principal problema técnico fue la combinación de IA local y GPU AMD. Aunque ROCm permite ejecutar cargas aceleradas, la compatibilidad práctica de algunas herramientas no fue directa. En TTS se probaron varias alternativas y la búsqueda de una voz realista y rápida se convirtió en uno de los mayores bloqueos. Piper quedó como solución funcional y HA Voice como capa práctica para interacción, mientras que opciones más ambiciosas quedaron limitadas por latencia, compatibilidad o madurez.

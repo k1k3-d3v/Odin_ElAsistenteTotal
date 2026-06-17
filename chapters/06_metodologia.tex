@@ -11,6 +11,21 @@ El seguimiento del trabajo se apoya en control de versiones, documentación téc
 \section{Mecanismos de rigor y control}
 El rigor se garantiza mediante validaciones por capas. Primero se comprueba la estabilidad de la infraestructura. Después se validan servicios individuales. Finalmente se prueban flujos completos: entrada, procesamiento, decisión, acción y persistencia. Para cada subsistema se documentarán criterios de aceptación, errores encontrados y medidas de mitigación.
 
+\section{Evolución y endurecimiento de la metodología}
+La metodología inicial se volvió más rigurosa a medida que aumentó el número de servicios y dependencias. Cada iteración terminó siguiendo un ciclo estable:
+
+\begin{enumerate}
+  \item formular una hipótesis o necesidad concreta;
+  \item aplicar un cambio pequeño y reversible;
+  \item comprobar el servicio de forma aislada mediante API, registro o prueba directa;
+  \item validar después el flujo completo desde la interfaz utilizada por el usuario;
+  \item documentar el resultado, las credenciales implicadas y el procedimiento de recuperación.
+\end{enumerate}
+
+Este cambio introdujo prácticas que no estaban suficientemente desarrolladas en el planteamiento inicial: configuraciones sanitizadas, comprobaciones de salud de contenedores, separación entre prueba técnica y aceptación funcional, inventario explícito de puertos y nombres locales y preferencia por modificaciones reversibles. También se adoptó como criterio que una respuesta del modelo no demuestra por sí sola que una acción se haya ejecutado; el resultado debe verificarse en el sistema de destino.
+
+La consecuencia principal fue un desplazamiento de esfuerzo desde la instalación hacia la integración, el diagnóstico y la documentación reproducible. Este ajuste explica parte de la desviación respecto a la planificación original y constituye uno de los aprendizajes centrales del proyecto.
+
 \section{Profundización en herramientas}
 Una prioridad de la memoria final será explicar con detalle las herramientas utilizadas, no como una lista decorativa sino como decisiones de ingeniería. Para cada herramienta principal se incluirá:
 \begin{itemize}
