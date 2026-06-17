@@ -4,6 +4,54 @@ Repositorio del Trabajo de Fin de Grado de Enrique de Vicente-Tutor Castillo.
 
 Odín es un asistente personal local-first, autoalojado y proactivo. El objetivo del repositorio es reunir la memoria en LaTeX y, progresivamente, la documentación técnica, configuraciones y despliegues del ecosistema.
 
+## Vista rápida
+
+Odín integra conversación, domótica, memoria personal, videovigilancia, recetas, salud, monitorización del servidor y copias de seguridad en un único entorno autoalojado.
+
+![Dashboard principal de Odín](figures/evidence/05-dashboard-resumen.png)
+
+## Qué puede hacer
+
+### Control y visión del hogar
+
+El panel de Home Assistant centraliza cámaras, presencia, aspirador, móviles, televisión, sensores y consumo eléctrico.
+
+| Casa | Consumo |
+| --- | --- |
+| ![Dashboard de casa](figures/evidence/07-dashboard-casa.png) | ![Dashboard de consumo](figures/evidence/11-dashboard-consumo.png) |
+
+### Conversación con herramientas
+
+Open WebUI actúa como interfaz conversacional. Desde el chat, Odín puede usar herramientas para buscar fotos en Immich, consultar cámaras de Frigate, guardar notas, crear recetas, consultar Nextcloud, revisar el sistema o interactuar con Home Assistant.
+
+| Recuerdos visuales | Videovigilancia |
+| --- | --- |
+| ![Búsqueda de fotos en Immich desde Open WebUI](figures/evidence/03-immich-chat.png) | ![Consulta de Frigate desde Open WebUI](figures/evidence/04-frigate-chat.png) |
+
+| Memoria personal | Herramientas disponibles |
+| --- | --- |
+| ![Consulta a la memoria documental](figures/evidence/18-consulta-memoria.png) | ![Herramientas de Open WebUI](figures/evidence/02-openwebui-tools.png) |
+
+### Servicios personales
+
+El sistema incluye biblioteca documental, fotografías, recetas, automatización, STT/TTS, monitorización y herramientas propias.
+
+| Servicios | Recetas |
+| --- | --- |
+| ![Dashboard de servicios](figures/evidence/06-dashboard-servicios.png) | ![Recetas en Mealie](figures/evidence/19-mealie-recetas.png) |
+
+### Salud y operación
+
+Odín también recoge datos de Health Connect, estado de infraestructura, métricas de Netdata, avisos proactivos y validaciones operativas.
+
+| Salud | Monitor |
+| --- | --- |
+| ![Dashboard de salud](figures/evidence/08-dashboard-salud.png) | ![Dashboard de monitorización](figures/evidence/10-dashboard-monitor.png) |
+
+| Netdata | Avisos |
+| --- | --- |
+| ![Netdata](figures/evidence/15-netdata.png) | ![Alerta proactiva](figures/evidence/17-alerta-proactiva.jpg) |
+
 ## Compilar
 
 ```bash
